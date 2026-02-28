@@ -1,0 +1,46 @@
+piece_key,piece_title,section,abs_start_sec,abs_end_sec,duration_sec,bpm,relation,ratio
+esporo,1. Esporo / La planta,introduction,0.0,48.0,48.0,48,seed pulse,1:1
+esporo,1. Esporo / La planta,replication,48.0,150.0,102.0,72,3:2 expansion,3:2
+esporo,1. Esporo / La planta,bridge,150.0,192.0,42.0,54,3:4 contraction,3:4
+esporo,1. Esporo / La planta,climax,192.0,258.0,66.0,81,3:2 expansion,3:2
+esporo,1. Esporo / La planta,coda,258.0,300.0,42.0,54,2:3 settling,2:3
+gameto,2. Gameto / El grano,introduction,300.0,343.2,43.2,54,piece reset,1:1
+gameto,2. Gameto / El grano,replication,343.2,435.0,91.8,72,4:3 lift,4:3
+gameto,2. Gameto / El grano,bridge,435.0,472.8,37.8,48,2:3 suspension,2:3
+gameto,2. Gameto / El grano,climax,472.8,532.2,59.4,80,5:3 release,5:3
+gameto,2. Gameto / El grano,coda,532.2,570.0,37.8,60,3:4 settling,3:4
+meiosis,3. Meiosis / Flor,introduction,570.0,622.8,52.8,60,piece reset,1:1
+meiosis,3. Meiosis / Flor,replication,622.8,735.0,112.2,90,3:2 duplication,3:2
+meiosis,3. Meiosis / Flor,bridge,735.0,781.2,46.2,60,2:3 return,2:3
+meiosis,3. Meiosis / Flor,climax,781.2,853.8,72.6,96,8:5 pressure,8:5
+meiosis,3. Meiosis / Flor,coda,853.8,900.0,46.2,64,2:3 release,2:3
+megaspora,4. Megaspora / Espora,introduction,900.0,972.9,72.9,36,piece reset,1:1
+megaspora,4. Megaspora / Espora,replication,972.9,1090.3,117.5,48,4:3 germination,4:3
+megaspora,4. Megaspora / Espora,bridge,1090.3,1155.1,64.8,42,7:8 drift,7:8
+megaspora,4. Megaspora / Espora,climax,1155.1,1232.1,77.0,63,3:2 dilation,3:2
+megaspora,4. Megaspora / Espora,coda,1232.1,1305.0,72.9,42,2:3 settling,2:3
+polygonum,5. Polygonum / Embryo sac,introduction,1305.0,1357.8,52.8,48,piece reset,1:1
+polygonum,5. Polygonum / Embryo sac,replication,1357.8,1470.0,112.2,64,4:3 opening,4:3
+polygonum,5. Polygonum / Embryo sac,bridge,1470.0,1516.2,46.2,56,7:8 chambering,7:8
+polygonum,5. Polygonum / Embryo sac,climax,1516.2,1588.8,72.6,84,3:2 expansion,3:2
+polygonum,5. Polygonum / Embryo sac,coda,1588.8,1635.0,46.2,56,2:3 withdrawal,2:3
+oosfera,6. Oosfera,introduction,1635.0,1678.2,43.2,42,piece reset,1:1
+oosfera,6. Oosfera,replication,1678.2,1770.0,91.8,56,4:3 activation,4:3
+oosfera,6. Oosfera,bridge,1770.0,1807.8,37.8,42,3:4 hollowing,3:4
+oosfera,6. Oosfera,climax,1807.8,1867.2,59.4,70,5:3 ignition,5:3
+oosfera,6. Oosfera,coda,1867.2,1905.0,37.8,49,7:10 seal,7:10
+filotaxis,7. Filotaxis,introduction,1905.0,1933.8,28.8,96,piece reset,1:1
+filotaxis,7. Filotaxis,replication,1933.8,2005.8,72.0,128,4:3 packing,4:3
+filotaxis,7. Filotaxis,bridge,2005.8,2029.8,24.0,144,9:8 tightening,9:8
+filotaxis,7. Filotaxis,climax,2029.8,2109.0,79.2,192,4:3 overload,4:3
+filotaxis,7. Filotaxis,coda,2109.0,2145.0,36.0,96,1:2 cutback,1:2
+protoespora,8. Proto-espora,introduction,2145.0,2190.6,45.6,40,piece reset,1:1
+protoespora,8. Proto-espora,replication,2190.6,2287.5,96.9,60,3:2 activation,3:2
+protoespora,8. Proto-espora,bridge,2287.5,2327.4,39.9,45,3:4 cooling,3:4
+protoespora,8. Proto-espora,climax,2327.4,2390.1,62.7,72,8:5 bloom,8:5
+protoespora,8. Proto-espora,coda,2390.1,2430.0,39.9,48,2:3 residue,2:3
+microspora,9. Microspora / Pollen grain,introduction,2430.0,2472.9,42.9,54,piece reset,1:1
+microspora,9. Microspora / Pollen grain,replication,2472.9,2575.2,102.3,81,3:2 vocal uptake,3:2
+microspora,9. Microspora / Pollen grain,bridge,2575.2,2634.6,59.4,72,8:9 shadowing,8:9
+microspora,9. Microspora / Pollen grain,climax,2634.6,2710.5,75.9,96,4:3 pressure,4:3
+microspora,9. Microspora / Pollen grain,coda,2710.5,2760.0,49.5,36,3:8 extinction halo,3:8
