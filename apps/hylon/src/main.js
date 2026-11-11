@@ -258,3 +258,21 @@ try {
   $('#workspace').inert = false; $('#config-modal').disabled = false;
   }
 } catch (e) { db = null; $('#workspace').inert = false; $('#config-modal').disabled = false; $('#storage-status').textContent = 'MEMORY ONLY · EXPORT JSON'; notify(`Local archive unavailable: ${e.message}. Export JSON before closing.`); }
+
+// Fullscreen is a local display action; hardware authority never follows it.
+const fullscreenButton = $('#fullscreen');
+fullscreenButton.onclick = async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+    else notify('Fullscreen is unavailable here. Use the browser fullscreen command.');
+  } catch { notify('Fullscreen request denied by this browser. Use its fullscreen command or open HYLON in Chrome.'); }
+};
+document.addEventListener('fullscreenchange', () => {
+  const label = document.fullscreenElement ? 'Exit fullscreen' : 'Enter fullscreen';
+  fullscreenButton.title = label; fullscreenButton.setAttribute('aria-label', label);
+  fullscreenButton.setAttribute('aria-pressed', String(Boolean(document.fullscreenElement)));
+});
+if (import.meta.hot) {
+  import.meta.hot.on('vite:beforeFullReload', () => { sampler?.stop(); laser?.stop(); audio.stopInput(); });
+}

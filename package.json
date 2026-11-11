@@ -11,7 +11,8 @@
     "package:offline": "npm run build && node tools/package-offline.mjs",
     "build:klais": "python3 tools/build-klais.py --workers 4",
     "test:assets": "python3 -m unittest discover -s tests -p 'test_*.py'",
-    "package:klais": "npm run build && node tools/package-offline.mjs --with-klais"
+    "package:klais": "npm run build && node tools/package-offline.mjs --with-klais",
+    "check": "npm test && npm run test:assets && npm run build"
   },
   "dependencies": {
     "dockview-core": "5.0.0"

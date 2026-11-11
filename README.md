@@ -20,7 +20,7 @@ npm run build
 npm start
 ```
 
-Open `http://localhost:4173` in Chrome or Edge. After preparation, starting the built console needs only Node and the local files; no Internet or npm installation is required. On macOS, double-click `tools/HYLON.command`. Keep its Terminal open. For development use `npm run dev`; for a prepared offline ZIP use `npm run package:offline`.
+Open `http://localhost:4173` in Chrome or Edge. After preparation, starting the built console needs only Node and the local files; no Internet or npm installation is required. On macOS, double-click `tools/HYLON.command`. Keep its Terminal open. For local live updates use `tools/HYLON-dev.command` or `npm run dev` at the same localhost:4173 origin (stop the static server first); CSS hot updates and automatic reloads require no manual refresh. `npm run check` runs local validation. The top-bar corner icon toggles fullscreen. For a frozen build use `npm start`; for a prepared offline ZIP use `npm run package:offline`.
 
 Read [the field guide](docs/HYLON-FIELD-GUIDE.md) before the room visit. JSON export is the portable backup; browser storage is tied to this localhost origin and browser profile. This is an initial capture console, not the completed HYLON score runtime or a commissioned organ/laser controller.
 

@@ -1,3 +1,4 @@
+import { HeliosUsb } from '../../../packages/hylon-laser/helios-usb.js';
 import { mountLaserProfile } from './laser-profile.js';
 import { projectLaserPoint } from '../../../packages/hylon-laser/profile.js';
 import { MidiPoints, testFrame, sweepFrame } from '../../../packages/hylon-laser/patterns.js';
@@ -7,7 +8,7 @@ export function mountLaser(container, { notify = () => {} } = {}) {
   container.classList.add('helios-pod');
   container.innerHTML = `<div class="panel-body">
     <div class="eyebrow">HELIOS / FIELD TESTS</div><p class="status" data-status>PREVIEW STOPPED · physical output unavailable / commissioning pending</p>
-    <div class="toolbar"><button data-usb>SELECT HELIOS USB</button><span class="muted" data-usb-status>No USB selection requested.</span></div>
+    <div class="toolbar"><button data-usb>CONNECT HELIOS USB</button><button data-usb-status-button>DAC STATUS</button><button class="danger" data-usb-stop>STOP DAC / CLOSE SHUTTER</button><button data-usb-disconnect>DISCONNECT</button><span class="muted" data-usb-status>USB disconnected · no automatic connection.</span></div>
     <section data-profile-root></section>
     <div class="toolbar"><label class="field">Mode<select data-mode><option value="frame">TEST / FULL FRAME</option><option value="sweep">TEST / SWEEP</option><option value="text">TEST / TEXT</option><option value="midi">MIDI / RANDOM XY</option></select></label><button class="primary" data-start>START PREVIEW</button><button class="danger" data-stop>BLACKOUT</button></div>
     <div class="toolbar" data-frame-controls><label class="field">Geometry<select data-shape><option value="square">Full square / normalized field</option><option value="high">High / top edge</option><option value="low">Low / bottom edge</option></select></label></div>
@@ -16,13 +17,15 @@ export function mountLaser(container, { notify = () => {} } = {}) {
     <div class="toolbar" data-midi-controls hidden><label class="field checkbox"><input type="checkbox" data-route>Route selected MIDI input to XY preview</label><label class="field">Channel<select data-channel><option value="all">All channels</option>${Array.from({ length: 16 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}</select></label><button data-demo>DEMO NOTE / C4 / 96</button><span data-count>0 held points</span></div>
     <canvas data-canvas width="720" height="720" role="img" aria-label="Normalized HELIOS field preview" style="display:block;width:100%;max-height:65vh;object-fit:contain;background:#000;aspect-ratio:1"></canvas>
     <p class="muted">Full frame = 100% of the configured normalized field, not a calibrated scan angle. X: left to right; Y: top to bottom. Each note-on chooses a random XY; intensity = (velocity / 127) × configured intensity scale; note-off removes it. Maximum 32 held points.</p>
-    <p class="muted">USB selection reads descriptors only. It never opens a device, sends frames or changes a shutter. Physical operation requires a verified projector profile, independent interlock and scan-failure shutdown. Stationary dots and canvas text are screen-only.</p>
+    <p class="muted">CONNECT opens and claims the HELIOS, then sends shutter-close and STOP. Controls send physical USB commands. No frames or shutter-open commands are available. Close TouchDesigner before connecting. Physical operation requires a verified projector profile, independent interlock and scan-failure shutdown. Stationary dots and canvas text are screen-only.</p>
   </div>`;
   const q = name => container.querySelector(`[data-${name}]`);
   const canvas = q('canvas'), ctx = canvas.getContext('2d'), points = new MidiPoints();
   let running = false, disposed = false, animation = 0, previous = null, elapsed = 0, demoTimer;
   const clear = () => { if (ctx) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); } };
+  const usb = new HeliosUsb({ usb: navigator.usb, onState: message => { if (!disposed) q('usb-status').textContent = message; } });
   function stop() {
+    if (usb.device && !usb.busy) usb.stop().catch(error => notify(error.message));
     running = false; cancelAnimationFrame(animation); clearTimeout(demoTimer); points.clear();
     previous = null; elapsed = 0; clear(); q('count').textContent = '0 held points';
     q('status').textContent = 'PREVIEW STOPPED · physical output unavailable';
@@ -76,15 +79,13 @@ export function mountLaser(container, { notify = () => {} } = {}) {
   q('speed').oninput = () => { elapsed = 0; q('speed-label').textContent = `${Number(q('speed').value).toFixed(1)} s / pass`; };
   for (const name of ['route', 'channel']) q(name).onchange = () => points.clear();
   q('demo').onclick = () => { if (!running) start(); points.receive([0x90, 60, 96]); clearTimeout(demoTimer); demoTimer = setTimeout(() => points.receive([0x80, 60, 0]), 600); };
-  q('usb').onclick = async () => {
-    if (!navigator.usb) { q('usb-status').textContent = 'WebUSB unavailable. Use Chrome/Edge on localhost.'; return; }
-    try {
-      const device = await navigator.usb.requestDevice({ filters: [{ vendorId: 0x1209, productId: 0xe500 }] });
-      if (!disposed) q('usb-status').textContent = `${device.productName || 'Helios Laser DAC'} · 1209:e500 · selected / unopened / output unavailable`;
-    } catch (error) { if (!disposed) q('usb-status').textContent = error.name === 'NotFoundError' ? 'USB selection cancelled.' : error.message; }
-  };
+  const usbAction = action => async () => { try { await action(); } catch (error) { notify(error.message); } };
+  q('usb').onclick = usbAction(() => usb.connect());
+  q('usb-status-button').onclick = usbAction(() => usb.status());
+  q('usb-stop').onclick = usbAction(() => usb.stop());
+  q('usb-disconnect').onclick = usbAction(() => usb.disconnect());
   const visibility = () => { if (document.hidden) stop(); };
   const disconnect = () => { stop(); q('usb-status').textContent = 'USB disconnected · select again when ready.'; };
   document.addEventListener('visibilitychange', visibility); navigator.usb?.addEventListener('disconnect', disconnect); clear();
-  return { stop, midi, dispose() { stop(); disposed = true; profile.dispose(); document.removeEventListener('visibilitychange', visibility); navigator.usb?.removeEventListener('disconnect', disconnect); container.replaceChildren(); } };
+  return { stop, midi, dispose() { stop(); disposed = true; profile.dispose(); usb.dispose().catch(error => notify(error.message)); document.removeEventListener('visibilitychange', visibility); navigator.usb?.removeEventListener('disconnect', disconnect); container.replaceChildren(); } };
 }
