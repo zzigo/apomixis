@@ -4,7 +4,11 @@
 
 Apomixis is a generative cycle for automaton organ. The project explores how code can produce musical behaviors that exceed direct single-performer gesture through dense temporal layering, timbral mutation, repetition, and formal self-replication.
 
-This repository contains SuperCollider materials for a nine-piece cycle:
+Apomixis is the first planned score for HYLON, a reusable performance editor/runtime. GLIP is intended to supply the Klais sampler; the planned public Apomixis viewer will show generations, formal state and lyrics. The browser ecosystem is specified work, not an implemented release.
+
+Read [AGENTS.md](AGENTS.md) for the consolidated requirements, evidence, architecture, parallel workstreams, interfaces, safety gates and acceptance criteria.
+
+The nine-piece cycle is:
 
 1. Esporo
 2. Gameto
@@ -16,12 +20,11 @@ This repository contains SuperCollider materials for a nine-piece cycle:
 8. Proto-Espora
 9. Microspora
 
-## Repository Structure
+## SuperCollider archive
 
-- `ApomixisSetKlais.scd`: global setup, instrument abstractions, and reusable control definitions
-- `ApomixisCore.scd`: shared compositional logic, macroform tools, and export helpers
-- `01_...09_*.scd`: individual piece files
-- `exports/`: derived graphs and tempo data
+The previous implementation is preserved under [archive/supercollider](archive/supercollider/README.md), following the composer's decision on 2026-11-11. It is historical compositional and migration reference, not the active runtime. Its MIDI and CC assignments are placeholders; do not run its setup or performance commands against connected hardware.
+
+[Score notes](Apomixis_Score_Notes_EN.md) remain as compositional reference. The master records unresolved timing, register-name and hardware-mapping differences.
 
 ## Scope
 
