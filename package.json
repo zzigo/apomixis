@@ -2,13 +2,16 @@
   "name": "apomixis-hylon",
   "private": true,
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "start": "node tools/serve.mjs",
     "test": "node --test tests/*.test.mjs",
-    "package:offline": "npm run build && node tools/package-offline.mjs"
+    "package:offline": "npm run build && node tools/package-offline.mjs",
+    "build:klais": "python3 tools/build-klais.py --workers 4",
+    "test:assets": "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "package:klais": "npm run build && node tools/package-offline.mjs --with-klais"
   },
   "dependencies": {
     "dockview-core": "5.0.0"
