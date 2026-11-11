@@ -1,0 +1,176 @@
+SPORE-SCORE 1
+# Apomixis 01 / candidate score. Durations in seconds; notes use MIDI C4=60.
+# Voice variables bind musical roles to logical divisions, never to a MIDI port.
+id apomixis.spore
+version 0.1.0-draft.1
+title "SPORE"
+number esporo
+duration 300
+seed 1931
+audition-transpose 12
+source-sha256 b9fd61ecc755e34e837bb6adbcf7948d202616a347fd51646c9c8a75485c2e2f
+
+voice $SO = so range 24 84
+voice $RE = re range 24 84
+voice $PO = po range 24 84
+voice $GO = go range 24 84
+voice $PE = pe range 24 53
+
+# FROM stops sound when TO is played; coupling is one-hop, not recursive.
+coupling ii_i = $PO -> $GO transpose 0
+coupling iii_i = $RE -> $GO transpose 0
+coupling iv_i = $SO -> $GO transpose 0
+coupling iii_ii = $RE -> $PO transpose 0
+coupling iv_ii = $SO -> $PO transpose 0
+coupling iv_iii = $SO -> $RE transpose 0
+coupling iii16_i = $RE -> $GO transpose -12
+coupling ii16_ii = $PO -> $PO transpose -12
+coupling ii4_ii = $PO -> $PO transpose 12
+coupling iii16_iii = $RE -> $RE transpose -12
+coupling iii4_iii = $RE -> $RE transpose 12
+coupling i_p = $GO -> $PE transpose 0
+coupling ii_p = $PO -> $PE transpose 0
+coupling iii_p = $RE -> $PE transpose 0
+coupling iii4_p = $RE -> $PE transpose 12
+coupling iv_p = $SO -> $PE transpose 0
+
+fertility $SO 178 262
+fertility $RE 95 272
+fertility $PO 30 283
+fertility $GO 0 end
+fertility $PE 0 end
+
+# Repeated times are deliberate discontinuities in the harmonicity curve.
+harmonicity 0 "m2" "I · semitone seed: capsule pressure, beating"
+harmonicity 44 "m2" ""
+harmonicity 48 "m2" "R · replication opens the interval"
+harmonicity 80 "m3" ""
+harmonicity 110 "M3" ""
+harmonicity 135 "P4" ""
+harmonicity 150 "P5" "B · drift through unstable intervals"
+harmonicity 165 "TT 4+" ""
+harmonicity 180 "m7" ""
+harmonicity 192 "M7" ""
+harmonicity 192 "petrushka" "C · host captured: polytonal hyper-harmony"
+harmonicity 215 "petrushka" ""
+harmonicity 230 "augurs" ""
+harmonicity 245 "axis" ""
+harmonicity 258 "mode2" ""
+harmonicity 258 "resonance" "O · résonance folds to the octave, then dissolves to the seed"
+harmonicity 266 "resonance" ""
+harmonicity 266 "P8" ""
+harmonicity 272 "P8" ""
+harmonicity 292 "m2" ""
+harmonicity 300 "m2" ""
+
+section I "Introduction" 0 to 48 bpm 48
+relation "seed pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 2 5 7 9
+cap 4
+dispersion 0.1
+polyembryony 0.15
+tuber 0.3
+swell 0.3
+crescendo 0.15
+registers $GO bourdon8
+registers $PO salicional8
+registers $RE voixCeleste8 corDeNuit8
+registers $SO -
+registers $PE soubasse32
+couplings -
+bio "dormant spore · capsule pressurisation (Sphagnum ≈ 4–5 atm)"
+end
+
+section R "Replication" 48 to 150 bpm 72
+relation "3:2 expansion"
+rule B1357/S1357 "REPLICATOR"
+texture striated
+mutation 0.01
+field 0 2 4 5 7 9 11
+cap 10
+dispersion 0.3
+polyembryony 0.35
+tuber 0.18
+swell 0.6
+crescendo 0.35
+registers $GO bourdon8 fluteHarmonique8 prestant4
+registers $PO bourdon8 fluteOctaviante4 clarinette8
+registers $RE violeDeGambe8 voixCeleste8 nazard223
+registers $SO seraphon8
+registers $PE soubasse32 soubasse16 flute8
+couplings ii_p iii_ii
+bio "discharge · clones travel together in vortex rings (≈32 000 g)"
+end
+
+section B "Bridge" 150 to 192 bpm 54
+relation "3:4 contraction"
+rule B3678/S34678 "DAY&NIGHT"
+texture hocket
+mutation 0.02
+field 0 2 3 5 7 9 10
+cap 7
+dispersion 0.2
+polyembryony 0.5
+tuber 0.35
+swell 0.45
+crescendo 0.25
+registers $GO dulciane8
+registers $PO salicional8 bourdon16
+registers $RE quintaton16 voixHumaine8
+registers $SO seraphon8
+registers $PE flute32 violonbasse16
+couplings ii16_ii iv_iii iii_p
+bio "aerial drift without destination · Equisetum elaters walk"
+end
+
+section C "Climax" 192 to 258 bpm 81
+relation "3:2 expansion"
+rule B2/S "SEEDS"
+texture granulation
+mutation 0.06
+field 0 1 2 3 4 5 6 7 8 9 10 11
+cap 12
+dispersion 0.4
+polyembryony 0.45
+tuber 0.4
+swell 1
+crescendo 0.85
+registers $GO montre16 diapason8 prestant4 quinte223 octave2
+registers $PO principal8 doublette2 cornetV8
+registers $RE diapason8 tierce135 pleinJeuIV223
+registers $SO tubaAnglais8
+registers $PE contrebasse16 soubasse16 principal4
+couplings ii_i iii_i iv_i i_p ii_p iii4_iii
+hack true
+hack-registers $GO trompette8 bombarde16
+hack-registers $PO clarinette8
+hack-registers $RE basson16 bassonHautbois8
+hack-registers $SO tubaMagna16
+hack-registers $PE bombarde16 contrebombarde32
+bio "mass release · the host is captured (fern catapult ≈10⁵ g)"
+end
+
+section O "Coda" 258 to 300 bpm 54
+relation "2:3 settling"
+rule B3/S23 "LIFE → 1"
+texture tutti
+mutation 0
+field 0 5 7
+cap 4
+dispersion 0
+polyembryony 0.25
+tuber 0.45
+swell 0.2
+crescendo 0.08
+registers $GO bourdon8
+registers $PO salicional8
+registers $RE voixCeleste8
+registers $SO -
+registers $PE soubasse32
+couplings iii_p
+extinction true
+bio "apomixis · a single clone survives and passes to 02 GAMETO"
+end
