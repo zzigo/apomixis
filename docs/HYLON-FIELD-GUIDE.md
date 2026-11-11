@@ -1,4 +1,4 @@
-# HYLON 0.2 — offline field guide
+# HYLON 0.3 — offline field guide
 
 Purpose: take the laptop to the hall, identify the organ's incoming stop messages and leave with an independent capture backup. This build prioritizes **capture and MIDI/audio configuration**, followed by **local sampler audition**, then **laser screen preview**.
 
@@ -77,3 +77,7 @@ Drag Dockview tabs/splits to arrange the workspace. Layout is remembered locally
 - Physical MIDI/SysEx capture on the Klais, mic/hardware routing, speaker-output switching, real sample tuning/loops and physical Helios emission have **not** been tested. The app is ready for supervised capture testing, not certified hardware operation.
 
 Relevant API references: [Web MIDI permission](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess), [audio output selection](https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/setSinkId). The exported session shape is documented in `contracts/capture-session.schema.json`; runtime checks additionally enforce MIDI framing, reference integrity, checksums and aggregate budgets.
+
+## Audio mixer
+
+Choose **05 AUDIO** for fixed stereo sampler/mic mixing, shared reverb/delay and mic vocoder/chopper. Mic processing starts muted and uses one selected A/B input lane; **ENABLE MIC FX** opens the selected device and deliberately enables monitoring. See **AUDIO-POD-GUIDE.md** in the prepared package or `docs/AUDIO-POD-GUIDE.md` in source.

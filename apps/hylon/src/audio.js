@@ -1,20 +1,33 @@
 export class AudioSystem {
-  constructor(onChange = () => {}) {
+  constructor(onChange = () => {}, { createMixer = null } = {}) {
     this.onChange = onChange; this.context = null; this.stream = null;
     this.devices = []; this.inputId = ''; this.outputId = ''; this.routes = [0, 1];
     this.gains = [1, 1]; this.monitor = false; this.bus = null; this.nodes = []; this.analysers = [];
-    this.inputRevision = 0;
+    this.inputRevision = 0; this.createMixer = createMixer; this.mixer = null; this.micLane = 0; this.masterLevel = .3;
   }
   async ensure() {
     if (!this.context) {
       this.context = new AudioContext({ latencyHint: 'interactive' });
-      this.bus = this.context.createGain(); this.bus.gain.value = 0.3;
+      this.bus = this.context.createGain(); this.bus.gain.value = this.masterLevel;
       this.bus.connect(this.context.destination);
+      if (this.createMixer) this.mixer = this.createMixer(this.context, this.bus);
     }
     if (this.context.state !== 'running') await this.context.resume();
     this.onChange(); return this.context;
   }
-  destination() { return this.bus; }
+  destination() { return this.mixer?.samplerInput || this.bus; }
+  setMasterGain(value) {
+    if (!Number.isFinite(value) || value < 0 || value > 1) return;
+    this.masterLevel = value; this.bus?.gain.setTargetAtTime(value, this.context.currentTime, .02); this.onChange();
+  }
+  setMicLane(index) {
+    if (![0, 1].includes(index)) return;
+    if (this.mixer) {
+      this.analysers.forEach(n => { try { n.analyser.disconnect(this.mixer.micInput); } catch {} });
+      this.analysers[index]?.analyser.connect(this.mixer.micInput);
+    }
+    this.micLane = index; this.onChange();
+  }
   async refresh() {
     if (!navigator.mediaDevices?.enumerateDevices) throw new Error('Audio devices unavailable. Use localhost in Chrome.');
     this.devices = await navigator.mediaDevices.enumerateDevices(); this.onChange();
@@ -46,7 +59,8 @@ export class AudioSystem {
       this.splitter.connect(gain, channel); gain.connect(analyser); analyser.connect(monitor); monitor.connect(this.bus);
       this.nodes.push(gain, analyser, monitor); this.analysers.push({ analyser, gain, monitor });
     });
-    this.monitor = false; await this.refresh(); this.onChange();
+    this.setMicLane(this.micLane);
+    this.monitor = false; this.mixer?.enableMic(false); await this.refresh(); this.onChange();
   }
   route(index, channel) {
     if (!this.splitter || !Number.isInteger(index) || !this.analysers[index] || !Number.isInteger(channel) || channel < 0 || channel >= this.channels) return;
@@ -60,7 +74,8 @@ export class AudioSystem {
   }
   setMonitor(value) {
     this.monitor = !!value;
-    this.analysers.forEach(n => n.monitor.gain.setTargetAtTime(this.monitor ? 1 : 0, this.context.currentTime, 0.02));
+    this.mixer?.enableMic(this.monitor && !!this.stream);
+    this.analysers.forEach(n => n.monitor.gain.setTargetAtTime(this.monitor && !this.mixer ? 1 : 0, this.context.currentTime, 0.02));
     this.onChange();
   }
   async setOutput(id) {
@@ -69,7 +84,7 @@ export class AudioSystem {
     await this.context.setSinkId(id); this.outputId = id; this.onChange();
   }
   stopInput() {
-    this.inputRevision++;
+    this.inputRevision++; this.mixer?.enableMic(false);
     this.stream?.getTracks().forEach(t => t.stop()); this.stream = null; this.monitor = false;
     this.nodes.forEach(n => { try { n.disconnect(); } catch {} });
     this.nodes = []; this.analysers = []; this.settings = null; this.onChange();

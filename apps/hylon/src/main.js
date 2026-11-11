@@ -6,6 +6,8 @@ import { CaptureStore, LIMITS } from './capture.js';
 import { AudioSystem } from './audio.js';
 import { openArchive, readSession, writeSession } from './persistence.js';
 import { mountSampler } from './sampler.js';
+import { createAudioMixer } from '../../../packages/hylon-audio/mixer.js';
+import { mountMixer } from './mixer-pod.js';
 import { mountLaser } from './laser.js';
 
 const $ = (s, root = document) => root.querySelector(s);
@@ -15,12 +17,12 @@ const run = fn => async (...args) => { try { await fn(...args); } catch (e) { no
 const download = (name, value, type = 'application/json') => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([value], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
 let store = new CaptureStore(), db = null, inputPort = null, access = null, inputId = '', outputId = '', channel = 'all';
 let selected = store.session.slots[0].id, division = 'all', search = '', saveRevision = 0, saveTimer, renderTimer, inputRevision = 0;
-let sampler, laser;
+let sampler, laser, audioPod;
 let dirty = false, releaseLease;
 $('#workspace').inert = true;
 $('#config-modal').disabled = true;
-const audio = new AudioSystem(() => renderConfig());
-const roots = Object.fromEntries(['capture', 'config', 'monitor', 'sampler', 'laser'].map(id => [id, node('section', undefined, 'pod-root')]));
+const audio = new AudioSystem(() => { renderConfig(); audioPod?.sync(); }, { createMixer: createAudioMixer });
+const roots = Object.fromEntries(['capture', 'config', 'monitor', 'sampler', 'laser', 'audio'].map(id => [id, node('section', undefined, 'pod-root')]));
 const configBody = node('div', undefined, 'panel-body'); roots.config.append(configBody);
 
 async function save() {
@@ -145,6 +147,7 @@ function renderConfig() {
   $('#audio-output', configBody).disabled = !audio.context?.setSinkId;
   $('#output-help', configBody).textContent = audio.context?.setSinkId ? 'Output changes apply to this audio context.' : 'Enable audio to check output selection; otherwise use system audio settings.';
   $('#audio-status', configBody).textContent = audio.stream ? `${audio.channels} input channel(s) reported · ${audio.settings.sampleRate || '?'} Hz · monitoring ${audio.monitor ? 'ON' : 'muted'}` : `Input stopped · audio ${audio.context?.state || 'not started'}`;
+  $('#master-gain', configBody).value = audio.masterLevel;
   $('#audio-monitor', configBody).checked = audio.monitor; $('#audio-monitor', configBody).disabled = !audio.stream;
   const routes = $('#audio-routes', configBody); routes.replaceChildren();
   for (let i = 0; i < 2; i++) {
@@ -189,18 +192,19 @@ $('#start-input', configBody).onclick = run(() => audio.start(audio.inputId));
 $('#stop-input', configBody).onclick = () => audio.stopInput();
 $('#audio-output', configBody).onchange = run(e => audio.setOutput(e.target.value));
 $('#audio-monitor', configBody).onchange = e => audio.setMonitor(e.target.checked);
-$('#master-gain', configBody).oninput = e => { if (audio.bus) audio.bus.gain.setTargetAtTime(Number(e.target.value), audio.context.currentTime, 0.02); };
+$('#master-gain', configBody).oninput = e => audio.setMasterGain(Number(e.target.value));
 navigator.mediaDevices?.addEventListener('devicechange', () => audio.refresh().catch(e => notify(e.message)));
 
 sampler = mountSampler(roots.sampler, { getAudioContext: () => audio.ensure(), getDestination: () => audio.destination(), notify });
 laser = mountLaser(roots.laser, { notify });
-const titles = { capture: 'REGISTRATION CAPTURE', config: 'I/O CONFIGURATION', monitor: 'MIDI MONITOR', sampler: 'KLAIS / LOCAL SAMPLER', laser: 'HELIOS / FIELD TESTS' };
+audioPod = mountMixer(roots.audio, { audio, notify });
+const titles = { capture: 'REGISTRATION CAPTURE', config: 'I/O CONFIGURATION', monitor: 'MIDI MONITOR', sampler: 'KLAIS / LOCAL SAMPLER', laser: 'HELIOS / FIELD TESTS', audio: 'AUDIO / MIXER & FX' };
 const dock = createDockview($('#workspace'), {
   theme: { name: 'hylon', className: 'dockview-theme-hylon', gap: 5 }, disableFloatingGroups: true,
   createComponent: ({ name }) => {
     let visibility;
     const stop = () => { if (name === 'sampler') sampler.stop(); if (name === 'laser') laser.stop(); if (name === 'capture') store.cancel(); };
-    return { element: roots[name], init({ api }) { visibility = api.onDidVisibilityChange(() => { if (!api.isVisible) stop(); }); }, dispose() { visibility?.dispose(); stop(); } };
+    return { element: roots[name], init({ api }) { if (name === 'audio') audioPod.setVisible(api.isVisible); visibility = api.onDidVisibilityChange(() => { if (name === 'audio') audioPod.setVisible(api.isVisible); if (!api.isVisible) stop(); }); }, dispose() { visibility?.dispose(); if (name === 'audio') audioPod.setVisible(false); stop(); } };
   }
 });
 dock.layout($('#workspace').clientWidth, $('#workspace').clientHeight);
@@ -209,7 +213,7 @@ function defaultLayout() {
   dock.addPanel({ id: 'capture', component: 'capture', title: titles.capture });
   dock.addPanel({ id: 'config', component: 'config', title: titles.config, initialWidth: 375, position: { referencePanel: 'capture', direction: mobile ? 'within' : 'right' } });
   dock.addPanel({ id: 'monitor', component: 'monitor', title: titles.monitor, inactive: true, position: { referencePanel: 'capture', direction: 'within' } });
-  for (const id of ['sampler', 'laser']) dock.addPanel({ id, component: id, title: titles[id], inactive: true, position: { referencePanel: 'config', direction: 'within' } });
+  for (const id of ['sampler', 'laser', 'audio']) dock.addPanel({ id, component: id, title: titles[id], inactive: true, position: { referencePanel: 'config', direction: 'within' } });
   dock.getPanel('capture').api.setActive();
   if (!mobile) requestAnimationFrame(() => dock.getPanel('config')?.api.group.api.setSize({ width: 375 }));
 }
@@ -220,7 +224,7 @@ function activate(id) {
   let panel = dock.getPanel(id);
   if (!panel) panel = dock.addPanel({ id, component: id, title: titles[id] });
   panel.api.setActive();
-  if (id === 'sampler' || id === 'laser') panel.api.maximize();
+  if (id === 'sampler' || id === 'laser' || id === 'audio') panel.api.maximize();
 }
 document.querySelectorAll('[data-panel]').forEach(b => b.onclick = () => { activate(b.dataset.panel); document.querySelectorAll('[data-panel]').forEach(n => n.classList.toggle('active', n === b)); });
 $('#reset-layout').onclick = defaultLayout;
@@ -228,9 +232,9 @@ const dialog = $('#config-dialog');
 $('#config-modal').onclick = () => { $('#modal-config').append(configBody); dialog.showModal(); };
 $('#close-config').onclick = () => dialog.close();
 dialog.addEventListener('close', () => roots.config.append(configBody));
-$('#stop-all').onclick = () => { store.cancel(); sampler.stop(); laser.stop(); audio.stopInput(); renderCapture(); notify('Capture ended · sampler stopped · input monitoring stopped · laser preview blacked out. No MIDI output was sent.'); };
-document.addEventListener('visibilitychange', () => { if (document.hidden) { store.cancel(); sampler.stop(); audio.setMonitor(false); renderCapture(); if (dirty) { clearTimeout(saveTimer); saveTimer = null; save(); } } });
-window.addEventListener('pagehide', () => { store.cancel(); sampler.stop(); laser.stop(); audio.stopInput(); clearTimeout(saveTimer); save(); });
+$('#stop-all').onclick = () => { store.cancel(); sampler.stop(); laser.stop(); audioPod.cancelPendingMic(); audio.stopInput(); audio.mixer?.panic(); renderCapture(); notify('Capture ended · sampler stopped · input monitoring stopped · FX tails cleared · laser preview blacked out. No MIDI output was sent.'); };
+document.addEventListener('visibilitychange', () => { if (document.hidden) { store.cancel(); sampler.stop(); audioPod.cancelPendingMic(); audio.setMonitor(false); renderCapture(); if (dirty) { clearTimeout(saveTimer); saveTimer = null; save(); } } });
+window.addEventListener('pagehide', () => { store.cancel(); sampler.stop(); laser.stop(); audioPod.cancelPendingMic(); audio.stopInput(); audio.mixer?.panic(); clearTimeout(saveTimer); save(); });
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 setInterval(() => { if (store.target || $('#capture-state', roots.capture).classList.contains('listening')) renderCapture(); }, 500);
 const meterData = new Uint8Array(256);
@@ -274,5 +278,5 @@ document.addEventListener('fullscreenchange', () => {
   fullscreenButton.setAttribute('aria-pressed', String(Boolean(document.fullscreenElement)));
 });
 if (import.meta.hot) {
-  import.meta.hot.on('vite:beforeFullReload', () => { sampler?.stop(); laser?.stop(); audio.stopInput(); });
+  import.meta.hot.on('vite:beforeFullReload', () => { sampler?.stop(); laser?.stop(); audioPod?.cancelPendingMic(); audio.stopInput(); audio.mixer?.panic(); });
 }
