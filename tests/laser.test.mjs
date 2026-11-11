@@ -40,3 +40,27 @@ test('MIDI validates data, isolates channels, bounds points and handles all note
   mapper.receive([0x90, 1, 1]); mapper.clear(); assert.equal(mapper.notes.size, 0);
   assert.throws(() => new MidiPoints({ random: () => NaN }).receive([0x90, 60, 1]));
 });
+
+import { defaultLaserProfile, validateLaserProfile, parseLaserProfile, projectLaserPoint } from '../packages/hylon-laser/profile.js';
+test('laser profile keeps unknown hardware null and refuses imported output authority', () => {
+  const profile = defaultLaserProfile();
+  assert.equal(profile.scanRatePps, null); assert.equal(profile.angleXDeg, null); assert.equal(profile.angleYDeg, null);
+  assert.equal(profile.target, 'ceiling'); assert.equal(profile.interlock, 'unknown');
+  assert.deepEqual(parseLaserProfile(JSON.stringify(profile)), profile);
+  for (const extra of [{ armed: true }, { verified: true }, { schemaVersion: 2 }, { interlock: true }]) assert.throws(() => validateLaserProfile({ ...profile, ...extra }));
+  assert.throws(() => parseLaserProfile(' '.repeat(16385)));
+});
+test('laser calibration keeps transformed field inside normalized bounds and applies flips', () => {
+  const profile = validateLaserProfile({ ...defaultLaserProfile(), widthPercent: 40, heightPercent: 20, offsetXPercent: 60, offsetYPercent: -80, flipX: true });
+  assert.deepEqual(projectLaserPoint(profile, 0, 0), [1, 0]);
+  const corners = [[0, 0], [0, 1], [1, 0], [1, 1]].map(([x, y]) => projectLaserPoint(profile, x, y));
+  assert(corners.flat().every(value => value >= -1e-12 && value <= 1 + 1e-12));
+  assert(projectLaserPoint(profile, 0, 0)[0] > projectLaserPoint(profile, 1, 0)[0]);
+  assert.throws(() => validateLaserProfile({ ...profile, offsetXPercent: 61 }));
+  assert.throws(() => projectLaserPoint(profile, NaN, .5));
+});
+test('laser configuration rejects malformed scan and field settings without guessing ratings', () => {
+  const profile = defaultLaserProfile();
+  for (const extra of [{ scanRatePps: 0 }, { scanRatePps: 100001 }, { scanRatePps: 2.5 }, { scanRatePps: '30000' }, { angleXDeg: NaN }, { angleYDeg: 0 }, { widthPercent: 0 }, { intensityPercent: 101 }, { flipX: 1 }, { model: '<'.repeat(121) }]) assert.throws(() => validateLaserProfile({ ...profile, ...extra }));
+  assert.equal(validateLaserProfile({ ...profile, scanRatePps: 25000, angleXDeg: 8, intensityPercent: 0 }).intensityPercent, 0);
+});
