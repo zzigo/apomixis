@@ -2,6 +2,8 @@
 
 Consolidated **2026-11-11**. Scope: this repository and coordinated ecosystem work. This is an implementation contract and evidence ledger, not a claim that the specified browser system already exists.
 
+Current implementation phase (2026-11-11): the composer prioritizes an offline HYLON field console for the hall visit: **SysEx capture and MIDI/audio configuration → sampler → laser**. The initial interface is in `apps/hylon/`; its operational scope and verification record are in `docs/HYLON-FIELD-GUIDE.md`. This authorizes local implementation and software verification, superseding the original documentation-only task boundary below. Physical MIDI replay and laser emission remain outside the initial capture build. Full score/generator/public-viewer milestones remain future work; the local sampler is an audition adapter pending GLIP integration.
+
 ## 1. Operating rules
 
 - Keep the same `zzigo/apomixis` repository. **SuperCollider is archived reference, not the active runtime**, by the composer's current instruction. Preserve `archive/supercollider/` and Git history; do not load its setup to inspect it or introduce an SC runtime dependency.
