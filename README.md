@@ -55,3 +55,7 @@ This is a compositional workspace, not a turnkey software package. Some mappings
 ## Public Note
 
 This README is intentionally brief. Detailed routing, calibration, and production-specific setup are handled separately from this public overview.
+
+## AUDIO pod
+
+HYLON 0.3 adds the fixed stereo sampler channel, shared reverb/delay sends and returns, mic vocoder/chopper and minimal vertical faders with real stereo peak meters. Choose **05 AUDIO**; microphone processing starts muted. See [audio operation and verification](docs/AUDIO-POD-GUIDE.md).

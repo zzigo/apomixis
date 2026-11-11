@@ -96,3 +96,22 @@ test('sink failure preserves last successful selection; unsupported sink explain
   await assert.rejects(audio.setOutput('other'), /system audio settings/);
   assert.equal(audio.outputId, 'speakers');
 });
+
+test('fixed sampler destination and single mic lane use effects without legacy dry bypass', async t => {
+  environment(t); let mixer;
+  const audio = new AudioSystem(() => {}, { createMixer(context, output) {
+    mixer = { samplerInput: new FakeNode(), micInput: new FakeNode(), enabled: false, enableMic(value) { this.enabled = value; } };
+    return mixer;
+  } });
+  audio.setMasterGain(.2); await audio.start('mic');
+  assert.equal(audio.destination(), mixer.samplerInput); assert.equal(audio.bus.gain.value, .2);
+  assert.equal(mixer.enabled, false);
+  assert.equal(audio.analysers[0].analyser.connections.filter(c => c.destination === mixer.micInput).length, 1);
+  audio.setMonitor(true); assert.equal(mixer.enabled, true);
+  assert(audio.analysers.every(n => n.monitor.gain.value === 0));
+  audio.setMicLane(1); audio.setMicLane(1);
+  assert.equal(audio.analysers[0].analyser.connections.filter(c => c.destination === mixer.micInput).length, 0);
+  assert.equal(audio.analysers[1].analyser.connections.filter(c => c.destination === mixer.micInput).length, 1);
+  audio.setMasterGain(.4); assert.equal(audio.bus.gain.value, .4);
+  audio.stopInput(); assert.equal(mixer.enabled, false); assert.equal(audio.monitor, false);
+});
