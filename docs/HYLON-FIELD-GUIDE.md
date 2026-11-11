@@ -1,4 +1,4 @@
-# HYLON 0.3 — offline field guide
+# HYLON 0.4 — offline field guide
 
 Purpose: take the laptop to the hall, identify the organ's incoming stop messages and leave with an independent capture backup. This build prioritizes **capture and MIDI/audio configuration**, followed by **local sampler audition**, then **laser screen preview**.
 
@@ -81,3 +81,7 @@ Relevant API references: [Web MIDI permission](https://developer.mozilla.org/en-
 ## Audio mixer
 
 Choose **05 AUDIO** for fixed stereo sampler/mic mixing, shared reverb/delay and mic vocoder/chopper. Mic processing starts muted and uses one selected A/B input lane; **ENABLE MIC FX** opens the selected device and deliberately enables monitoring. See **AUDIO-POD-GUIDE.md** in the prepared package or `docs/AUDIO-POD-GUIDE.md` in source.
+
+## SPORE
+
+**06 SPORE** contains the first independent generator and its five-minute TXT draft score. Header voice variables and named couplings compile to logical events. Start visually, or deliberately enable local additive audition through AUDIO. See **SPORE-GUIDE.md** and the independent `scores/SPORE.score.txt` in the prepared package. No physical organ output or automatic public publication is added.

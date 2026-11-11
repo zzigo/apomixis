@@ -59,3 +59,7 @@ This README is intentionally brief. Detailed routing, calibration, and productio
 ## AUDIO pod
 
 HYLON 0.3 adds the fixed stereo sampler channel, shared reverb/delay sends and returns, mic vocoder/chopper and minimal vertical faders with real stereo peak meters. Choose **05 AUDIO**; microphone processing starts muted. See [audio operation and verification](docs/AUDIO-POD-GUIDE.md).
+
+## SPORE generator and TXT score
+
+Choose **06 SPORE** in HYLON 0.4. The seeded generator, five-minute draft TXT score, voice bindings/couplings, transport and additive audition are separate modules. Expand its score editor to edit/import text and apply it with playback stopped. [Score source](scores/apomixis/spore/0.1.0-draft.1/score.txt) · [operation, grammar and verification](docs/SPORE-GUIDE.md). `npm run build:spore` regenerates the compiled JSON; `npm run check` checks consistency. Local audio uses the shared mixer; no organ or laser output.

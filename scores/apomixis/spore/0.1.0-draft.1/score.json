@@ -1,0 +1,618 @@
+{
+  "schemaVersion": 1,
+  "kind": "spore-score",
+  "status": "draft",
+  "generatorVersion": "spore-0.1.0",
+  "timeUnit": "seconds",
+  "sections": [
+    {
+      "id": "I",
+      "name": "Introduction",
+      "start": 0,
+      "dur": 48,
+      "bpm": 48,
+      "regs": {
+        "go": [
+          "bourdon8"
+        ],
+        "po": [
+          "salicional8"
+        ],
+        "re": [
+          "voixCeleste8",
+          "corDeNuit8"
+        ],
+        "so": [],
+        "pe": [
+          "soubasse32"
+        ]
+      },
+      "couplers": [],
+      "rel": "seed pulse",
+      "rule": "B3/S23",
+      "ruleName": "LIFE",
+      "texture": "tutti",
+      "mu": 0,
+      "field": [
+        0,
+        2,
+        5,
+        7,
+        9
+      ],
+      "cap": 4,
+      "disp": 0.1,
+      "poly": 0.15,
+      "tuber": 0.3,
+      "swell": 0.3,
+      "cresc": 0.15,
+      "bio": "dormant spore · capsule pressurisation (Sphagnum ≈ 4–5 atm)"
+    },
+    {
+      "id": "R",
+      "name": "Replication",
+      "start": 48,
+      "dur": 102,
+      "bpm": 72,
+      "regs": {
+        "go": [
+          "bourdon8",
+          "fluteHarmonique8",
+          "prestant4"
+        ],
+        "po": [
+          "bourdon8",
+          "fluteOctaviante4",
+          "clarinette8"
+        ],
+        "re": [
+          "violeDeGambe8",
+          "voixCeleste8",
+          "nazard223"
+        ],
+        "so": [
+          "seraphon8"
+        ],
+        "pe": [
+          "soubasse32",
+          "soubasse16",
+          "flute8"
+        ]
+      },
+      "couplers": [
+        "ii_p",
+        "iii_ii"
+      ],
+      "rel": "3:2 expansion",
+      "rule": "B1357/S1357",
+      "ruleName": "REPLICATOR",
+      "texture": "striated",
+      "mu": 0.01,
+      "field": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9,
+        11
+      ],
+      "cap": 10,
+      "disp": 0.3,
+      "poly": 0.35,
+      "tuber": 0.18,
+      "swell": 0.6,
+      "cresc": 0.35,
+      "bio": "discharge · clones travel together in vortex rings (≈32 000 g)"
+    },
+    {
+      "id": "B",
+      "name": "Bridge",
+      "start": 150,
+      "dur": 42,
+      "bpm": 54,
+      "regs": {
+        "go": [
+          "dulciane8"
+        ],
+        "po": [
+          "salicional8",
+          "bourdon16"
+        ],
+        "re": [
+          "quintaton16",
+          "voixHumaine8"
+        ],
+        "so": [
+          "seraphon8"
+        ],
+        "pe": [
+          "flute32",
+          "violonbasse16"
+        ]
+      },
+      "couplers": [
+        "ii16_ii",
+        "iv_iii",
+        "iii_p"
+      ],
+      "rel": "3:4 contraction",
+      "rule": "B3678/S34678",
+      "ruleName": "DAY&NIGHT",
+      "texture": "hocket",
+      "mu": 0.02,
+      "field": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        9,
+        10
+      ],
+      "cap": 7,
+      "disp": 0.2,
+      "poly": 0.5,
+      "tuber": 0.35,
+      "swell": 0.45,
+      "cresc": 0.25,
+      "bio": "aerial drift without destination · Equisetum elaters walk"
+    },
+    {
+      "id": "C",
+      "name": "Climax",
+      "start": 192,
+      "dur": 66,
+      "bpm": 81,
+      "regs": {
+        "go": [
+          "montre16",
+          "diapason8",
+          "prestant4",
+          "quinte223",
+          "octave2"
+        ],
+        "po": [
+          "principal8",
+          "doublette2",
+          "cornetV8"
+        ],
+        "re": [
+          "diapason8",
+          "tierce135",
+          "pleinJeuIV223"
+        ],
+        "so": [
+          "tubaAnglais8"
+        ],
+        "pe": [
+          "contrebasse16",
+          "soubasse16",
+          "principal4"
+        ]
+      },
+      "couplers": [
+        "ii_i",
+        "iii_i",
+        "iv_i",
+        "i_p",
+        "ii_p",
+        "iii4_iii"
+      ],
+      "rel": "3:2 expansion",
+      "rule": "B2/S",
+      "ruleName": "SEEDS",
+      "texture": "granulation",
+      "mu": 0.06,
+      "field": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "cap": 12,
+      "disp": 0.4,
+      "poly": 0.45,
+      "tuber": 0.4,
+      "swell": 1,
+      "cresc": 0.85,
+      "hack": true,
+      "hackRegs": {
+        "go": [
+          "trompette8",
+          "bombarde16"
+        ],
+        "po": [
+          "clarinette8"
+        ],
+        "re": [
+          "basson16",
+          "bassonHautbois8"
+        ],
+        "so": [
+          "tubaMagna16"
+        ],
+        "pe": [
+          "bombarde16",
+          "contrebombarde32"
+        ]
+      },
+      "bio": "mass release · the host is captured (fern catapult ≈10⁵ g)"
+    },
+    {
+      "id": "O",
+      "name": "Coda",
+      "start": 258,
+      "dur": 42,
+      "bpm": 54,
+      "regs": {
+        "go": [
+          "bourdon8"
+        ],
+        "po": [
+          "salicional8"
+        ],
+        "re": [
+          "voixCeleste8"
+        ],
+        "so": [],
+        "pe": [
+          "soubasse32"
+        ]
+      },
+      "couplers": [
+        "iii_p"
+      ],
+      "rel": "2:3 settling",
+      "rule": "B3/S23",
+      "ruleName": "LIFE → 1",
+      "texture": "tutti",
+      "mu": 0,
+      "field": [
+        0,
+        5,
+        7
+      ],
+      "cap": 4,
+      "disp": 0,
+      "poly": 0.25,
+      "tuber": 0.45,
+      "swell": 0.2,
+      "cresc": 0.08,
+      "extinction": true,
+      "bio": "apomixis · a single clone survives and passes to 02 GAMETO"
+    }
+  ],
+  "harmonicityCurve": [
+    [
+      0,
+      0,
+      "I · semitone seed: capsule pressure, beating"
+    ],
+    [
+      44,
+      0,
+      ""
+    ],
+    [
+      48,
+      0,
+      "R · replication opens the interval"
+    ],
+    [
+      80,
+      2,
+      ""
+    ],
+    [
+      110,
+      3,
+      ""
+    ],
+    [
+      135,
+      4,
+      ""
+    ],
+    [
+      150,
+      6,
+      "B · drift through unstable intervals"
+    ],
+    [
+      165,
+      5,
+      ""
+    ],
+    [
+      180,
+      9,
+      ""
+    ],
+    [
+      192,
+      10,
+      ""
+    ],
+    [
+      192,
+      12,
+      "C · host captured: polytonal hyper-harmony"
+    ],
+    [
+      215,
+      12,
+      ""
+    ],
+    [
+      230,
+      13,
+      ""
+    ],
+    [
+      245,
+      14,
+      ""
+    ],
+    [
+      258,
+      15,
+      ""
+    ],
+    [
+      258,
+      16,
+      "O · résonance folds to the octave, then dissolves to the seed"
+    ],
+    [
+      266,
+      16,
+      ""
+    ],
+    [
+      266,
+      11,
+      ""
+    ],
+    [
+      272,
+      11,
+      ""
+    ],
+    [
+      292,
+      0,
+      ""
+    ],
+    [
+      300,
+      0,
+      ""
+    ]
+  ],
+  "fertility": {
+    "open": {
+      "so": 178,
+      "re": 95,
+      "po": 30,
+      "go": 0,
+      "pe": 0
+    },
+    "close": {
+      "so": 262,
+      "re": 272,
+      "po": 283,
+      "go": 300,
+      "pe": 300
+    }
+  },
+  "voiceBindings": {
+    "$SO": {
+      "division": "so",
+      "range": [
+        24,
+        84
+      ]
+    },
+    "$RE": {
+      "division": "re",
+      "range": [
+        24,
+        84
+      ]
+    },
+    "$PO": {
+      "division": "po",
+      "range": [
+        24,
+        84
+      ]
+    },
+    "$GO": {
+      "division": "go",
+      "range": [
+        24,
+        84
+      ]
+    },
+    "$PE": {
+      "division": "pe",
+      "range": [
+        24,
+        53
+      ]
+    }
+  },
+  "couplings": {
+    "ii_i": {
+      "from": "po",
+      "to": "go",
+      "tr": 0,
+      "fromVoice": "$PO",
+      "toVoice": "$GO",
+      "label": "ii_i",
+      "morph": "graft"
+    },
+    "iii_i": {
+      "from": "re",
+      "to": "go",
+      "tr": 0,
+      "fromVoice": "$RE",
+      "toVoice": "$GO",
+      "label": "iii_i",
+      "morph": "graft"
+    },
+    "iv_i": {
+      "from": "so",
+      "to": "go",
+      "tr": 0,
+      "fromVoice": "$SO",
+      "toVoice": "$GO",
+      "label": "iv_i",
+      "morph": "graft"
+    },
+    "iii_ii": {
+      "from": "re",
+      "to": "po",
+      "tr": 0,
+      "fromVoice": "$RE",
+      "toVoice": "$PO",
+      "label": "iii_ii",
+      "morph": "graft"
+    },
+    "iv_ii": {
+      "from": "so",
+      "to": "po",
+      "tr": 0,
+      "fromVoice": "$SO",
+      "toVoice": "$PO",
+      "label": "iv_ii",
+      "morph": "graft"
+    },
+    "iv_iii": {
+      "from": "so",
+      "to": "re",
+      "tr": 0,
+      "fromVoice": "$SO",
+      "toVoice": "$RE",
+      "label": "iv_iii",
+      "morph": "graft"
+    },
+    "iii16_i": {
+      "from": "re",
+      "to": "go",
+      "tr": -12,
+      "fromVoice": "$RE",
+      "toVoice": "$GO",
+      "label": "iii16_i",
+      "morph": "roots"
+    },
+    "ii16_ii": {
+      "from": "po",
+      "to": "po",
+      "tr": -12,
+      "fromVoice": "$PO",
+      "toVoice": "$PO",
+      "label": "ii16_ii",
+      "morph": "roots"
+    },
+    "ii4_ii": {
+      "from": "po",
+      "to": "po",
+      "tr": 12,
+      "fromVoice": "$PO",
+      "toVoice": "$PO",
+      "label": "ii4_ii",
+      "morph": "shoot"
+    },
+    "iii16_iii": {
+      "from": "re",
+      "to": "re",
+      "tr": -12,
+      "fromVoice": "$RE",
+      "toVoice": "$RE",
+      "label": "iii16_iii",
+      "morph": "roots"
+    },
+    "iii4_iii": {
+      "from": "re",
+      "to": "re",
+      "tr": 12,
+      "fromVoice": "$RE",
+      "toVoice": "$RE",
+      "label": "iii4_iii",
+      "morph": "shoot"
+    },
+    "i_p": {
+      "from": "go",
+      "to": "pe",
+      "tr": 0,
+      "fromVoice": "$GO",
+      "toVoice": "$PE",
+      "label": "i_p",
+      "morph": "graft"
+    },
+    "ii_p": {
+      "from": "po",
+      "to": "pe",
+      "tr": 0,
+      "fromVoice": "$PO",
+      "toVoice": "$PE",
+      "label": "ii_p",
+      "morph": "graft"
+    },
+    "iii_p": {
+      "from": "re",
+      "to": "pe",
+      "tr": 0,
+      "fromVoice": "$RE",
+      "toVoice": "$PE",
+      "label": "iii_p",
+      "morph": "graft"
+    },
+    "iii4_p": {
+      "from": "re",
+      "to": "pe",
+      "tr": 12,
+      "fromVoice": "$RE",
+      "toVoice": "$PE",
+      "label": "iii4_p",
+      "morph": "shoot"
+    },
+    "iv_p": {
+      "from": "so",
+      "to": "pe",
+      "tr": 0,
+      "fromVoice": "$SO",
+      "toVoice": "$PE",
+      "label": "iv_p",
+      "morph": "graft"
+    }
+  },
+  "audition": {
+    "kind": "additive-study",
+    "logicalStopsVerified": false,
+    "transposeSemitones": 12
+  },
+  "provenance": {
+    "source": "references/spore/sketch-v2.html",
+    "sourceVersion": 2,
+    "sourcePitchC4": 60,
+    "sourceSha256": "b9fd61ecc755e34e837bb6adbcf7948d202616a347fd51646c9c8a75485c2e2f"
+  },
+  "scoreId": "apomixis.spore",
+  "scoreVersion": "0.1.0-draft.1",
+  "title": "SPORE",
+  "numberId": "esporo",
+  "duration": 300,
+  "seed": 1931,
+  "contentHash": "95f1a374b80a79ef9a58c21e7878588e0cf14262484f8c3f4b29b69fcc0e2a32"
+}

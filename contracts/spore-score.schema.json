@@ -1,0 +1,578 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hylon:spore-score:1",
+  "title": "SPORE compiled draft score v1",
+  "description": "Structural schema; the compiler additionally enforces section coverage, unique divisions, range span, coupling references, curve ordering and hash.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "status",
+    "generatorVersion",
+    "timeUnit",
+    "scoreId",
+    "scoreVersion",
+    "title",
+    "numberId",
+    "duration",
+    "seed",
+    "contentHash",
+    "sections",
+    "harmonicityCurve",
+    "fertility",
+    "voiceBindings",
+    "couplings",
+    "audition",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "const": "spore-score"
+    },
+    "status": {
+      "const": "draft"
+    },
+    "generatorVersion": {
+      "const": "spore-0.1.0"
+    },
+    "timeUnit": {
+      "const": "seconds"
+    },
+    "scoreId": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "scoreVersion": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "title": {
+      "type": "string"
+    },
+    "numberId": {
+      "type": "string"
+    },
+    "duration": {
+      "const": 300
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/$defs/section"
+      }
+    },
+    "harmonicityCurve": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 512,
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 300
+          },
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 16
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "fertility": {
+      "type": "object",
+      "required": [
+        "open",
+        "close"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "open": {
+          "type": "object",
+          "required": [
+            "so",
+            "re",
+            "po",
+            "go",
+            "pe"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "so": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            },
+            "re": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            },
+            "po": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            },
+            "go": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            },
+            "pe": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            }
+          }
+        },
+        "close": {
+          "type": "object",
+          "required": [
+            "so",
+            "re",
+            "po",
+            "go",
+            "pe"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "so": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            },
+            "re": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            },
+            "po": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            },
+            "go": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            },
+            "pe": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000000.0
+            }
+          }
+        }
+      }
+    },
+    "voiceBindings": {
+      "type": "object",
+      "minProperties": 5,
+      "maxProperties": 5,
+      "propertyNames": {
+        "pattern": "^\\$[A-Za-z][\\w]{0,31}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "division",
+          "range"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "division": {
+            "enum": [
+              "so",
+              "re",
+              "po",
+              "go",
+              "pe"
+            ]
+          },
+          "range": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "integer",
+              "minimum": 24,
+              "maximum": 84
+            }
+          }
+        }
+      }
+    },
+    "couplings": {
+      "type": "object",
+      "maxProperties": 64,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "tr",
+          "fromVoice",
+          "toVoice",
+          "label",
+          "morph"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "enum": [
+              "so",
+              "re",
+              "po",
+              "go",
+              "pe"
+            ]
+          },
+          "to": {
+            "enum": [
+              "so",
+              "re",
+              "po",
+              "go",
+              "pe"
+            ]
+          },
+          "tr": {
+            "enum": [
+              -12,
+              0,
+              12
+            ]
+          },
+          "fromVoice": {
+            "type": "string"
+          },
+          "toVoice": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "morph": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "audition": {
+      "type": "object",
+      "required": [
+        "kind",
+        "logicalStopsVerified",
+        "transposeSemitones"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "additive-study"
+        },
+        "logicalStopsVerified": {
+          "const": false
+        },
+        "transposeSemitones": {
+          "enum": [
+            0,
+            12
+          ]
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "source",
+        "sourceVersion",
+        "sourcePitchC4",
+        "sourceSha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "const": "references/spore/sketch-v2.html"
+        },
+        "sourceVersion": {
+          "const": 2
+        },
+        "sourcePitchC4": {
+          "const": 60
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "registrations": {
+      "type": "object",
+      "required": [
+        "so",
+        "re",
+        "po",
+        "go",
+        "pe"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "so": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "enum": [
+              "seraphon8",
+              "tubaMagna16",
+              "tubaAnglais8"
+            ]
+          }
+        },
+        "re": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "enum": [
+              "quintaton16",
+              "diapason8",
+              "fluteTraversiere8",
+              "violeDeGambe8",
+              "voixCeleste8",
+              "corDeNuit8",
+              "fluteOctaviante4",
+              "viole4",
+              "nazard223",
+              "octavin2",
+              "tierce135",
+              "pleinJeuIV223",
+              "basson16",
+              "trompetteH8",
+              "bassonHautbois8",
+              "voixHumaine8",
+              "soprano4"
+            ]
+          }
+        },
+        "po": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "enum": [
+              "bourdon16",
+              "principal8",
+              "salicional8",
+              "bourdon8",
+              "octave4",
+              "fluteOctaviante4",
+              "doublette2",
+              "cornetV8",
+              "pleinJeuIII113",
+              "clarinette8"
+            ]
+          }
+        },
+        "go": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "enum": [
+              "montre16",
+              "diapason8",
+              "fluteHarmonique8",
+              "dulciane8",
+              "bourdon8",
+              "prestant4",
+              "fluteDouce4",
+              "quinte223",
+              "octave2",
+              "fournitureV2",
+              "bombarde16",
+              "trompette8",
+              "clairon4"
+            ]
+          }
+        },
+        "pe": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "enum": [
+              "flute32",
+              "soubasse32",
+              "contrebasse16",
+              "violonbasse16",
+              "soubasse16",
+              "flute8",
+              "violoncelle8",
+              "bourdon8",
+              "principal4",
+              "contrebombarde32",
+              "bombarde16",
+              "trompette8",
+              "clairon4"
+            ]
+          }
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "start",
+        "dur",
+        "bpm",
+        "regs",
+        "couplers",
+        "rel",
+        "rule",
+        "ruleName",
+        "texture",
+        "mu",
+        "field",
+        "cap",
+        "disp",
+        "poly",
+        "tuber",
+        "swell",
+        "cresc",
+        "bio"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 300
+        },
+        "dur": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "bpm": {
+          "type": "number",
+          "minimum": 12,
+          "maximum": 240
+        },
+        "regs": {
+          "$ref": "#/$defs/registrations"
+        },
+        "hackRegs": {
+          "$ref": "#/$defs/registrations"
+        },
+        "couplers": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "string"
+          }
+        },
+        "rel": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "string",
+          "pattern": "^B[0-8]*/S[0-8]*$"
+        },
+        "ruleName": {
+          "type": "string"
+        },
+        "texture": {
+          "enum": [
+            "tutti",
+            "striated",
+            "hocket",
+            "granulation"
+          ]
+        },
+        "field": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 11
+          }
+        },
+        "cap": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "hack": {
+          "type": "boolean"
+        },
+        "extinction": {
+          "type": "boolean"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "mu": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "disp": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "poly": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "tuber": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "swell": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "cresc": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}

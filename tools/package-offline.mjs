@@ -16,6 +16,12 @@ try {
   await cp('tools/HYLON.command', join(folder, 'tools/HYLON.command'));
   await cp('docs/HYLON-FIELD-GUIDE.md', join(folder, 'README.md'));
   await cp('docs/KLAIS-SAMPLER-GUIDE.md', join(folder, 'KLAIS-SAMPLER-GUIDE.md'));
+  await cp('docs/SPORE-GUIDE.md', join(folder, 'SPORE-GUIDE.md'));
+  await mkdir(join(folder, 'contracts'), { recursive: true });
+  await cp('contracts/spore-score.schema.json', join(folder, 'contracts/spore-score.schema.json'));
+  await mkdir(join(folder, 'scores'), { recursive: true });
+  await cp('scores/apomixis/spore/0.1.0-draft.1/score.txt', join(folder, 'scores/SPORE.score.txt'));
+  await cp('scores/apomixis/spore/0.1.0-draft.1/score.json', join(folder, 'scores/SPORE.score.json'));
   await cp('docs/AUDIO-POD-GUIDE.md', join(folder, 'AUDIO-POD-GUIDE.md'));
   await cp('docs/HELIOS-POD-GUIDE.md', join(folder, 'HELIOS-POD-GUIDE.md'));
   await cp('licenses/DOCKVIEW-MIT.txt', join(folder, 'DOCKVIEW-LICENSE'));
