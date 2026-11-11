@@ -53,3 +53,7 @@ test('HELIOS removal revokes device and dispose cancels pending chooser', async 
   const pending = r.adapter.connect(); await r.adapter.dispose(); choose(r.device);
   await assert.rejects(pending, /cancelled/); assert.equal(r.device.opened, false);
 });
+test('HELIOS emergency stop requests shutter close and STOP then disconnects',async()=>{
+  const {adapter,device,calls}=rig();await adapter.connect();const before=calls.length;await adapter.emergencyStop();
+  assert.deepEqual(calls.slice(before).filter(c=>c[0]==='out'),[['out',6,2,0],['out',6,1,0]]);assert.equal(adapter.device,null);assert.equal(device.opened,false);
+});

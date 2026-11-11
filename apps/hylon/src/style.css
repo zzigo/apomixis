@@ -2,3 +2,5 @@
 
 .helios-pod [hidden]{display:none!important}
 #fullscreen{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:7px}
+
+#super-panic{font-weight:700;border-color:#e66f9b;background:#30131d;color:#ff9aba;white-space:nowrap}@media(max-width:759px){.masthead{gap:6px;padding:0 9px}.masthead .session-state{display:none}.masthead .brand{font-size:20px;margin-right:auto}#super-panic,#stop-all{font-size:9px;padding:7px}}

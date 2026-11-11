@@ -1,6 +1,6 @@
 # SPORE — independent generator and TXT draft score
 
-HYLON 0.4 integrates the composer's **SPORE sketch v2** as **06 SPORE**. The original HTML is preserved byte-for-byte at `references/spore/sketch-v2.html`; the original external file is untouched. This is a candidate for Apomixis 01 Esporo, not an approved complete score release or public LIVE viewer.
+HYLON 0.5 integrates the composer's **SPORE sketch v2** as **06 SPORE**. The original HTML is preserved byte-for-byte at `references/spore/sketch-v2.html`; the original external file is untouched. This is a candidate for Apomixis 01 Esporo, not an approved complete score release or public LIVE viewer.
 
 ## Where each responsibility lives
 
@@ -61,13 +61,13 @@ Header `fertility $VOICE OPEN CLOSE` controls band opening/closing (`end` uses d
 
 ## Operation
 
-1. Choose **06 SPORE**. Playback starts stopped, with **LOCAL AUDIO** off. PLAY first runs the generator visually. Views show actual generator state and generated note intent, not a separate animation simulation.
+1. Choose **06 SPORE**. Playback starts stopped, with **SIMULATION** selected. PLAY first runs the generator visually. Views show actual generator state and generated note intent, not a separate animation simulation.
 2. Expand **SCORE TXT / VOICE BINDINGS / COUPLINGS**. Edit or import a TXT file, then **APPLY SCORE TXT**. Validation finishes before replacing the active score. Successful apply stops old sources, replaces score/generator, resets transport and shows the new hash. Invalid text leaves the active score intact.
 3. Editor text is saved as a local **unapplied draft**. Reload always starts with the bundled active score, stopped; a saved editor draft requires APPLY. **EXPORT SCORE TXT** exports active text; **EXPORT EDITOR TXT** exports the editor's current draft. Import only loads editor text and does not apply/play it.
-4. For sound, select **LOCAL AUDIO**, then PLAY. Changing the audio route pauses playback. The additive study feeds the shared AUDIO **sampler stereo channel**, so its fader and reverb/delay sends also process SPORE. It does not open a new context or add a second reverb. The sketch's hidden +12 audio octave is now explicit in the score header, pending musical review. This is not the sampled Klais or an exact organ model.
+4. For local sound, select **LOCAL AUDIO**, then PLAY. For physical notes, select the MIDI port and ENABLE NOTE OUT in I/O, then choose **MIDI OUT** in SPORE and PLAY. Fixed divisions GO/PO/RE/SO/PE map to channels 1/2/3/4/5; source note values are sent without the additive +12. MIDI and local audio are exclusive for SPORE. See `MIDI-OUT-GUIDE.md`. Changing the audio route pauses playback. The additive study feeds the shared AUDIO **sampler stereo channel**, so its fader and reverb/delay sends also process SPORE. It does not open a new context or add a second reverb. The sketch's hidden +12 audio octave is now explicit in the score header, pending musical review. This is not the sampled Klais or an exact organ model.
 5. Texture, polyembryony and harmonicity controls configure subsequent generations and enter a generation-indexed journal. Manual harmonicity is a fixed value until changed, not render-clock glide. The score curve remains deterministic.
 6. Seek or a macro click replays from the seed under **current controls** and leaves playback paused. It skips past attacks and does not re-sound notes already underway. Seek resets the control journal for that new run. Pause/explicit resume preserve future queued starts but cut currently sounding voices. RESET returns to zero; APPLY SEED accepts uint32, including zero. Speed changes cancel/reschedule future local output.
-7. Switching to AUDIO may leave SPORE running so its mixer can be adjusted. Closing the SPORE pod, global Stop All, page hide, input loss/change or HMR reload stops its output; none auto-resumes. Stop All also clears shared FX tails. No organ MIDI or laser output is added.
+7. Switching to AUDIO may leave SPORE running so its mixer can be adjusted. Closing the SPORE pod, global Stop All, page hide, input loss/change or HMR reload stops its output; none auto-resumes. Stop All also clears shared FX tails. SPORE sends physical notes only in explicitly enabled MIDI mode; no stop/coupler/SysEx or laser commands are derived from the score.
 
 Keyboard controls are scoped to the focused SPORE pod, not the whole app. Click a figure to focus it. Space toggles transport; MACRO 1–5 seeks sections; MICRO 0–4 selects score/tutti/striated/hocket/granulation; HARMONICITY 1–9 and Shift+1–8 choose the source banks, arrows step modes and 0 toggles polyembryony. Drag/wheel the harmonicity figure for manual control. Inputs/editor consume their own keyboard events.
 
@@ -98,3 +98,5 @@ TXT is authoritative. `npm run build:spore` compiles the source TXT into JSON; `
 `/spore-check.html` is a dev-only, non-audible harness excluded from the production bundle. Five browser checks passed: complete TXT/generator agreement with Node; snapshot replay; finite additive audio in a supplied OfflineAudioContext; named PO→GO coupling adding exactly one voice; cancellation of a future scheduled note. Main UI verified invalid-text rejection, renamed voice bindings, 200-second seek/playback and no console errors. Actual organ/sample mappings, exact tuning, subjective listening, physical hardware, public viewer and full concert load remain unverified.
 
 The offline ZIP includes built application, `scores/SPORE.score.txt`, compiled JSON and this guide. It requires no remote script/font/audio dependency for SPORE. No production deployment or automatic publication is authorized.
+
+HYLON 0.5 MIDI follow-up: output state shows the chosen port, TX/held/dropped counts and fixed channels. Stop/seek/route changes cancel owned SPORE notes. Startup/reload/score apply disable physical output. SUPER PANIC also sends operator-requested CC123/120 and forces master zero; raise master manually before returning to local audio.

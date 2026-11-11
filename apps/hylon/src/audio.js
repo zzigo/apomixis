@@ -83,6 +83,11 @@ export class AudioSystem {
     if (!this.context.setSinkId) throw new Error('Output selection unsupported; choose output in system audio settings.');
     await this.context.setSinkId(id); this.outputId = id; this.onChange();
   }
+  panic() {
+    this.stopInput(); this.mixer?.panic(); this.masterLevel = 0;
+    if (this.bus) { this.bus.gain.cancelScheduledValues(this.context.currentTime); this.bus.gain.setValueAtTime(0, this.context.currentTime); }
+    this.onChange();
+  }
   stopInput() {
     this.inputRevision++; this.mixer?.enableMic(false);
     this.stream?.getTracks().forEach(t => t.stop()); this.stream = null; this.monitor = false;
