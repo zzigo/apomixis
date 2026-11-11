@@ -8,33 +8,33 @@ import { createSporeRenderer } from './spore-renderer.js';
 import './spore.css';
 const formatTime = t => `${String(Math.floor(t / 60)).padStart(2, '0')}:${(t % 60).toFixed(1).padStart(4, '0')}`;
 const SAVE_KEY = 'hylon-spore-score-text-v1';
-export function mountSpore(container, { audio, notify = () => {} } = {}) {
+export function mountSpore(container, { audio, midiOut, onOutputChange = () => {}, notify = () => {} } = {}) {
   container.innerHTML = `<div class="panel-body spore-pod" tabindex="0"><div class="spore-heading"><h1>SPORE</h1><span class="eyebrow">APOMIXIS / 01 / GENERATOR</span><span class="badge">LOCAL DRAFT / NOT PUBLIC LIVE</span></div>
-    <div class="spore-controls"><button data-play class="primary">PLAY</button><button data-pause>STOP / HOLD</button><button data-reset>RESET</button><label class="field">Speed<select data-speed>${[1, 2, 4, 8, 16].map(n => `<option>${n}</option>`).join('')}</select></label><label class="field">Seed<input data-seed type="number" min="0" max="4294967295" value="1931"></label><button data-reseed>APPLY SEED</button><label class="field">Texture<select data-texture><option value="auto">Score</option>${Object.keys(CATALOG.TEX).map(name => `<option>${name}</option>`).join('')}</select></label><label class="field checkbox"><input data-sat type="checkbox" checked>Polyembryony</label><label class="field checkbox"><input data-audition type="checkbox">LOCAL AUDIO / additive study</label></div>
+    <div class="spore-controls"><button data-play class="primary">PLAY</button><button data-pause>STOP / HOLD</button><button data-reset>RESET</button><label class="field">Speed<select data-speed>${[1, 2, 4, 8, 16].map(n => `<option>${n}</option>`).join('')}</select></label><label class="field">Seed<input data-seed type="number" min="0" max="4294967295" value="1931"></label><button data-reseed>APPLY SEED</button><label class="field">Texture<select data-texture><option value="auto">Score</option>${Object.keys(CATALOG.TEX).map(name => `<option>${name}</option>`).join('')}</select></label><label class="field checkbox"><input data-sat type="checkbox" checked>Polyembryony</label><div class="spore-output-buttons" role="group" aria-label="SPORE output"><button data-output="preview" class="active" aria-pressed="true">SIMULATION</button><button data-output="audio" aria-pressed="false">LOCAL AUDIO</button><button data-output="midi" aria-pressed="false">MIDI OUT</button></div><p data-output-status class="status">OUTPUT: SIMULATION · no sound or MIDI</p></div>
     <div class="spore-controls"><label class="field">Harmonicity<select data-harm-source><option value="score">Score curve</option><option value="manual">Manual</option></select></label><input data-harm type="range" min="0" max="16" step="0.01" value="0" aria-label="SPORE harmonicity"><output data-harm-label>m2</output><label class="field">Seek / seconds<input data-seek type="number" min="0" max="300" step="0.1" value="0"></label><button data-seek-button>SEEK / PAUSE</button><button data-export-score>EXPORT SCORE TXT</button><button data-export-session>EXPORT SESSION JSON</button></div>
     <p data-status class="status">Compiling bundled score…</p><div data-metrics class="spore-metrics"></div>
     <details class="spore-editor"><summary>SCORE TXT / VOICE BINDINGS / COUPLINGS</summary><p class="muted">Edit declarative text. APPLY validates then replaces the active score with playback stopped. Saved drafts never auto-play or arm devices.</p><textarea data-editor maxlength="65536" aria-label="SPORE score text" spellcheck="false"></textarea><div class="toolbar"><button data-apply class="primary">APPLY SCORE TXT</button><button data-original>RESTORE BUNDLED TEXT</button><label class="file-button">IMPORT TXT<input data-import-text type="file" accept=".txt,text/plain"></label><button data-export-editor>EXPORT EDITOR TXT</button></div><p data-score-status class="status spore-score-status"></p></details>
     <div class="spore-grid">${[['macro', 'MACRO / FORM & ENTROPY'], ['meso', 'MESO / SUBSTRATE & LINEAGES'], ['morph', 'MORPHOLOGY / LOGICAL STOPS & COUPLINGS'], ['micro', 'MICRO / GENERATED NOTE INTENT'], ['harm', 'HARMONICITY / EMBRYO MODES']].map(([id, title]) => `<section class="spore-figure spore-${id}" data-pod="${id}"><h3>${title}</h3><canvas data-spore-id="c${id[0].toUpperCase() + id.slice(1)}" role="img" aria-label="SPORE ${id} visualization"></canvas></section>`).join('')}<section class="spore-figure spore-side" data-pod="side"><h3>GENOME / TRANSLATION</h3><pre data-spore-id="trans"></pre><pre data-spore-id="geno"></pre></section></div>
-    <p class="muted">Additive study uses the shared AUDIO sampler channel, reverb and delay. It preserves the sketch's explicit +12 audition octave; it is not the GLIP samples or physical organ. Voice bindings and couplings are logical score intent. Generated note graphics include intent that may be dropped by audition limits. No MIDI/USB output. Focus this pod for Space, 1–9 and arrow shortcuts.</p></div>`;
+    <p class="muted">Additive study uses the shared AUDIO sampler channel, reverb and delay. It preserves the sketch's explicit +12 audition octave; it is not the GLIP samples or physical organ. Voice bindings and couplings are logical score intent. Generated note graphics include intent that may be dropped by audition limits. MIDI mode sends bounded notes only via the selected enabled output and I/O division map; no stop/coupler/SysEx commands. LOCAL AUDIO and MIDI OUT are exclusive for SPORE. Focus this pod for Space, 1–9 and arrow shortcuts.</p></div>`;
   const q = key => container.querySelector(`[data-${key}]`);
-  let activeText = scoreText, score, generator, transport, renderer, audition, disposed = false, visible = false, active = 'harm', drawFrame = 0, lastDraw = 0, revision = 0, compiling = 0, drag = null;
+  let outputMode = 'preview', activeText = scoreText, score, generator, transport, renderer, audition, disposed = false, visible = false, active = 'harm', drawFrame = 0, lastDraw = 0, revision = 0, compiling = 0, drag = null;
   const status = text => { if (!disposed) q('status').textContent = text; };
   const handle = fn => async (...args) => { try { await fn(...args); } catch (error) { status(error.message); notify(`SPORE: ${error.message}`); } };
   q('editor').value = scoreText;
   try { const draft = localStorage.getItem(SAVE_KEY); if (draft && draft.length <= 65536) q('editor').value = draft; } catch {}
-  function pause(reason = 'paused') { revision++; transport?.pause(reason); audition?.stop(); q('play').textContent = 'PLAY'; }
+  function pause(reason = 'paused') { revision++; transport?.pause(reason); audition?.stop(); midiOut?.stop(); q('play').textContent = 'PLAY'; }
   function configure() {
     if (!generator) return;
     generator.configure({ texture: q('texture').value, polyembryony: q('sat').checked, harmonicity: q('harm-source').value === 'score' ? null : Number(q('harm').value) });
   }
   function connectScore(nextScore, text = scoreText) {
     activeText = text;
-    pause('score-change'); transport?.dispose(); audition?.dispose(); audition = null;
+    pause('score-change'); midiOut?.disarm('score-change'); transport?.dispose(); audition?.dispose(); audition = null;
     score = nextScore; generator = createSporeGenerator(score); renderer = createSporeRenderer(container, score);
     q('seed').value = score.seed; q('texture').value = 'auto'; q('sat').checked = true; q('harm-source').value = 'score'; q('harm').value = 0;
     transport = createGeneratorTransport({ generator, durationMs: score.duration * 1000,
-      onEvent(event, timing) { if (q('audition').checked) audition?.dispatch(event, timing); },
-      onStop(reason) { audition?.stop(); q('play').textContent = 'PLAY'; status(`Paused / ${reason} · no hardware output`); }
+      onEvent(event, timing) { if (outputMode === 'audio') audition?.dispatch(event, timing); else if (outputMode === 'midi') midiOut.dispatch(event, timing); },
+      onStop(reason) { audition?.stop(); midiOut?.stop(); q('play').textContent = 'PLAY'; status(`Paused / ${reason} · ${outputMode.toUpperCase()} output stopped`); }
     });
     transport.setSpeed(Number(q('speed').value));
     q('score-status').textContent = `ACTIVE ${score.scoreId} / ${score.scoreVersion} / ${score.contentHash}`;
@@ -50,14 +50,18 @@ export function mountSpore(container, { audio, notify = () => {} } = {}) {
   q('play').onclick = handle(async () => {
     if (!transport) throw new Error('Apply a valid score first.'); if (transport.view().running) { pause(); return; }
     const mine = ++revision;
-    if (q('audition').checked) { const context = await audio.ensure(); if (disposed || mine !== revision) return; audition ||= createSporeAudition(context, audio.destination(), score); transport.setClock(() => context.currentTime); }
-    else transport.setClock(() => performance.now() / 1000);
-    if (mine !== revision) return; transport.play(); q('play').textContent = 'PAUSE'; status(q('audition').checked ? 'Playing / additive study → AUDIO sampler stereo bus' : 'Playing / visual score simulation only');
+    if (outputMode === 'audio') { const context = await audio.ensure(); if (disposed || mine !== revision) return; audition ||= createSporeAudition(context, audio.destination(), score); transport.setClock(() => context.currentTime); }
+    else { if (outputMode === 'midi') midiOut.assertReady(); transport.setClock(() => performance.now() / 1000); }
+    if (mine !== revision) return; transport.play(); q('play').textContent = 'PAUSE'; status(outputMode === 'audio' ? 'Playing / additive study → AUDIO sampler stereo bus' : outputMode === 'midi' ? 'Playing / selected MIDI OUT · local SPORE audio off' : 'Playing / visual score simulation only');
   });
   q('pause').onclick = () => pause(); q('reset').onclick = () => { pause('reset'); transport?.reset(); };
   q('reseed').onclick = handle(() => { if (!q('seed').value.trim()) throw new Error('Enter a uint32 seed'); const seed = Number(q('seed').value); pause('seed-change'); transport?.reset(seed); });
   q('speed').onchange = handle(() => { transport?.setSpeed(Number(q('speed').value)); q('play').textContent = transport?.view().running ? 'PAUSE' : 'PLAY'; });
-  q('audition').onchange = () => pause('audio-route-change');
+  container.querySelectorAll('[data-output]').forEach(button => button.onclick = () => {
+    pause('output-change'); outputMode = button.dataset.output; audition?.dispose(); audition = null; onOutputChange(outputMode);
+    container.querySelectorAll('[data-output]').forEach(item => { item.classList.toggle('active', item === button); item.setAttribute('aria-pressed', String(item === button)); });
+    q('output-status').textContent = outputMode === 'midi' ? 'OUTPUT: MIDI OUT · select port and enable notes in I/O / fixed Klais channels 1–5 · local SPORE audio off' : outputMode === 'audio' ? 'OUTPUT: LOCAL AUDIO · additive study → AUDIO sampler stereo bus' : 'OUTPUT: SIMULATION · no sound or MIDI';
+  });
   for (const key of ['texture', 'sat', 'harm-source', 'harm']) q(key).addEventListener('input', handle(configure));
   q('seek-button').onclick = handle(() => { pause('seek'); transport?.seek(Number(q('seek').value) * 1000); });
   function download(name, text, type) { const url = URL.createObjectURL(new Blob([text], { type })), link = document.createElement('a'); link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
@@ -68,7 +72,7 @@ export function mountSpore(container, { audio, notify = () => {} } = {}) {
     try { if (file.size > 65536) throw new Error('SPORE TXT exceeds 64 KiB'); const text = await file.text(); if (disposed || mine !== compiling) return; q('editor').value = text; q('editor').oninput(); }
     finally { event.target.value = ''; }
   });
-  q('export-session').onclick = handle(() => { if (!generator) throw new Error('No active score'); download('SPORE.session.json', JSON.stringify({ kind: 'spore-local-draft-session', schemaVersion: 1, publicLive: false, scoreHash: score.contentHash, snapshot: generator.snapshot(), transport: transport.view(), audio: q('audition').checked ? 'additive-study' : 'none', audition: audition?.stats() || null, generatedIntent: generator.view().allEvents, hist: generator.view().hist, mutations: generator.view().mutations }, null, 2), 'application/json'); });
+  q('export-session').onclick = handle(() => { if (!generator) throw new Error('No active score'); download('SPORE.session.json', JSON.stringify({ kind: 'spore-local-draft-session', schemaVersion: 1, publicLive: false, scoreHash: score.contentHash, snapshot: generator.snapshot(), transport: transport.view(), outputMode, midi: outputMode === 'midi' ? midiOut.summary() : null, audio: outputMode === 'audio' ? 'additive-study' : 'none', audition: audition?.stats() || null, generatedIntent: generator.view().allEvents, hist: generator.view().hist, mutations: generator.view().mutations }, null, 2), 'application/json'); });
   function setActive(name) { active = name; container.querySelectorAll('[data-pod]').forEach(element => element.classList.toggle('active', element.dataset.pod === active)); }
   container.querySelectorAll('[data-pod]').forEach(element => element.addEventListener('pointerdown', () => { setActive(element.dataset.pod); container.querySelector('.spore-pod').focus({ preventScroll: true }); }));
   function setHarm(value) { q('harm-source').value = 'manual'; q('harm').value = Math.max(0, Math.min(16, value)); configure(); }
@@ -91,12 +95,14 @@ export function mountSpore(container, { audio, notify = () => {} } = {}) {
     }
   };
   container.addEventListener('keydown', keydown); setActive('harm');
-  const tick = setInterval(() => { if (!transport) return; if (transport.view().running && q('audition').checked && audio.context?.state !== 'running') { pause('audio-suspended'); return; } transport.tick(); }, 25);
+  const tick = setInterval(() => { if (!transport) return; if (transport.view().running && outputMode === 'audio' && audio.context?.state !== 'running') { pause('audio-suspended'); return; } if (transport.view().running && outputMode === 'midi' && !midiOut.summary().armed) { pause('MIDI-disabled'); return; } transport.tick(); }, 25);
   function draw(now) {
     if (disposed || !visible || document.hidden) { drawFrame = 0; return; }
     if (generator && now - lastDraw > 80) {
       lastDraw = now; const state = generator.view(), view = transport.view(), t = view.positionMs / 1000;
       renderer.render(state, t, generator.options);
+      if (outputMode === 'midi') { const m = midiOut.summary(); q('output-status').textContent = `OUTPUT: MIDI OUT / ${m.armed ? 'ENABLED' : 'DISABLED'} / ${m.portName || 'no port'} · TX ${m.sent} · HELD ${m.heldPitches} · DROPPED ${m.dropped} · UNMAPPED ${m.unmapped} · ${Object.entries(m.mapping).filter(([,ch])=>ch).map(([d,ch])=>`${d.toUpperCase()}→${ch}`).join(' ') || 'no channels mapped'} · local SPORE audio off`; }
+
       q('metrics').textContent = `T ${formatTime(t)} / 05:00 · GEN ${state.gen} · POP ${state.pop} · GENOTYPES ${state.geno} · H ${state.H.toFixed(2)} bit · DROPPED ${view.dropped + (audition?.stats().dropped || 0)}`;
       if (generator.options.harmonicity === null) { const curve = score.harmonicityCurve; let value = curve.at(-1)[1]; for (let i = 0; i < curve.length - 1; i++) if (t >= curve[i][0] && t < curve[i + 1][0]) { value = curve[i][1] + (curve[i + 1][1] - curve[i][1]) * (t - curve[i][0]) / (curve[i + 1][0] - curve[i][0]); break; } q('harm').value = value; }
       q('harm-label').textContent = CATALOG.MODES[Math.round(Number(q('harm').value))].label;

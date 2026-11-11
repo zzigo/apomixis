@@ -71,5 +71,10 @@ export class HeliosUsb {
     try { if (device && !this.busy) await this.safeStop(device); }
     finally { if (device) await this.close(device); this.onState('DISCONNECTED · no automatic reconnect'); }
   }
+  async emergencyStop() {
+    ++this.epoch; const device = this.device; this.device = null;
+    try { if (device) await this.safeStop(device); }
+    finally { if (device) await this.close(device); this.onState('DISCONNECTED / SUPER PANIC · STOP/shutter-close requested; optical state unverified'); }
+  }
   async dispose() { this.disposed = true; this.usb?.removeEventListener('disconnect', this.disconnectListener); await this.disconnect(); }
 }

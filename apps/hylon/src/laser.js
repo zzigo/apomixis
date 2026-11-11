@@ -24,8 +24,8 @@ export function mountLaser(container, { notify = () => {} } = {}) {
   let running = false, disposed = false, animation = 0, previous = null, elapsed = 0, demoTimer;
   const clear = () => { if (ctx) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); } };
   const usb = new HeliosUsb({ usb: navigator.usb, onState: message => { if (!disposed) q('usb-status').textContent = message; } });
-  function stop() {
-    if (usb.device && !usb.busy) usb.stop().catch(error => notify(error.message));
+  function stop({ hardware = true } = {}) {
+    if (hardware && usb.device && !usb.busy) usb.stop().catch(error => notify(error.message));
     running = false; cancelAnimationFrame(animation); clearTimeout(demoTimer); points.clear();
     previous = null; elapsed = 0; clear(); q('count').textContent = '0 held points';
     q('status').textContent = 'PREVIEW STOPPED · physical output unavailable';
@@ -87,5 +87,5 @@ export function mountLaser(container, { notify = () => {} } = {}) {
   const visibility = () => { if (document.hidden) stop(); };
   const disconnect = () => { stop(); q('usb-status').textContent = 'USB disconnected · select again when ready.'; };
   document.addEventListener('visibilitychange', visibility); navigator.usb?.addEventListener('disconnect', disconnect); clear();
-  return { stop, midi, dispose() { stop(); disposed = true; profile.dispose(); usb.dispose().catch(error => notify(error.message)); document.removeEventListener('visibilitychange', visibility); navigator.usb?.removeEventListener('disconnect', disconnect); container.replaceChildren(); } };
+  return { stop, midi, async panic() { stop({ hardware: false }); await usb.emergencyStop(); }, dispose() { stop(); disposed = true; profile.dispose(); usb.dispose().catch(error => notify(error.message)); document.removeEventListener('visibilitychange', visibility); navigator.usb?.removeEventListener('disconnect', disconnect); container.replaceChildren(); } };
 }

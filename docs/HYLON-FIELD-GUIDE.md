@@ -1,4 +1,4 @@
-# HYLON 0.4 — offline field guide
+# HYLON 0.5 — offline field guide
 
 Purpose: take the laptop to the hall, identify the organ's incoming stop messages and leave with an independent capture backup. This build prioritizes **capture and MIDI/audio configuration**, followed by **local sampler audition**, then **laser screen preview**.
 
@@ -22,7 +22,7 @@ Use the **same URL, port, browser and browser profile** throughout the visit: In
 ## Capture a registration
 
 1. Open **02 I/O**. Leave **Request SysEx permission** checked and press **CONNECT MIDI** yourself. If SysEx access is denied, inspect browser/OS permissions; uncheck it and reconnect only if you want CC/PC-only observation. The status must say whether SysEx is enabled.
-2. Choose the exact **MIDI input**. Nothing selects a device automatically. Capture channel defaults to all; SysEx has no channel and is always eligible from the selected port. Output selection is informational and remains locked: this build has no MIDI send or replay path.
+2. Choose the exact **MIDI input**. Nothing selects a device automatically. Capture channel defaults to all; SysEx has no channel and is always eligible from the selected port. Physical note output is separately enabled in I/O; starting capture disables it and releases owned notes. Captured SysEx/registration replay remains unavailable.
 3. In **01 CAPTURE**, search or filter a division, then choose a registration. The 74 initial stop/tremulant/coupler labels come from the archived provisional catalog. They are not a verified console map. Use **ADD CUSTOM SLOT** for missing controls, scene messages or different console labels, and record details in Session notes.
 4. Start with the registration OFF on the console. Press **CAPTURE ON**, activate only that registration, then **END CAPTURE**. The window accepts multiple SysEx/CC/PC messages, including repeated observations, for at most 15 seconds. It never echoes them.
 5. Press **CAPTURE OFF**, deactivate that registration, then **END CAPTURE**. Repeat both transitions to compare messages. Do not infer that a repeated toggle is an idempotent ON/OFF command.
@@ -59,15 +59,15 @@ Read the [Klais sampler guide](KLAIS-SAMPLER-GUIDE.md) for preparation, controls
 
 ## Laser
 
-**04 LASER** provides screen-only phyllotaxis/line preview, bounded geometry controls, reduced-motion handling and Blackout. It requests no USB permission and cannot emit a physical laser frame. Blackout clears this screen only.
+**04 LASER** provides full-frame/high-low, sweep, text and MIDI XY previews. CONNECT HELIOS USB explicitly opens the selected DAC and requests shutter close/STOP; status, stop and disconnect controls are physical USB operations. No light frame or shutter-open operation exists. Blackout clears preview and requests shutdown when connected. See **HELIOS-POD-GUIDE.md**.
 
-Helios connection/output remains a separate commissioning milestone after the sampler: actual projector limits, venue exclusion zones, independent hardware interlock/shutter/watchdog and shutdown verification are still needed. MIDI/audio do not depend on a laser adapter.
+Helios frame emission and physical acceptance remain a separate commissioning milestone: actual projector limits, venue exclusion zones, independent hardware interlock/shutter/watchdog and shutdown verification are still needed. MIDI/audio do not depend on a laser adapter.
 
 ## Layout and stop
 
 Drag Dockview tabs/splits to arrange the workspace. Layout is remembered locally with separate narrow/wide profiles. **I/O MODAL** moves the same configuration controls into a dialog; close it to return to the dock. **RESET LAYOUT** restores capture-first arrangement. On narrow screens the pods are tabs.
 
-**STOP ALL** ends capture, stops local sampler voices, stops audio input/monitoring and blacks out screen preview. It sends no MIDI, CC reset, SysEx or USB. It is not an organ panic or physical laser emergency stop.
+**STOP ALL** ends capture, stops SPORE/sampler voices and audio input, clears FX tails, releases owned MIDI notes, disables output and blacks out laser preview/requesting connected HELIOS shutdown. It sends no guessed registration reset or captured SysEx. **SUPER PANIC** additionally hard-mutes master, sends CC123/120 on all 16 selected-output channels and requests HELIOS close/STOP/disconnect. Physical response is not guaranteed; see **MIDI-OUT-GUIDE.md**.
 
 ## Verification record — 2026-11-11
 
@@ -85,3 +85,7 @@ Choose **05 AUDIO** for fixed stereo sampler/mic mixing, shared reverb/delay and
 ## SPORE
 
 **06 SPORE** contains the first independent generator and its five-minute TXT draft score. Header voice variables and named couplings compile to logical events. Start visually, or deliberately enable local additive audition through AUDIO. See **SPORE-GUIDE.md** and the independent `scores/SPORE.score.txt` in the prepared package. No physical organ output or automatic public publication is added.
+
+## Note tester / MIDI output / SUPER PANIC
+
+Select a MIDI output in I/O and ENABLE NOTE OUT to use TEST NOTE. SPORE has exclusive SIMULATION / LOCAL AUDIO / MIDI OUT output buttons. The fixed console mapping is Manual I–IV→channels 1–4, pedal→5. Header SUPER PANIC hard-mutes local audio and requests MIDI CC123/120 on all channels of the selected output plus HELIOS shutdown if connected. Ordinary capture/Stop All disables note output and releases owned notes. See **MIDI-OUT-GUIDE.md** in the prepared package.

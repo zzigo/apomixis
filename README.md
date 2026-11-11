@@ -10,7 +10,7 @@ Read [AGENTS.md](AGENTS.md) for the consolidated requirements, evidence, archite
 
 ## HYLON offline field console
 
-The local interface is implemented in `apps/hylon/`: passive per-registration SysEx/CC/PC capture, MIDI device selection, audio routing/meters, a layered Klais multisampler, single-file audition and laser screen preview. It has no physical MIDI transmission or laser emission.
+The local interface is implemented in `apps/hylon/`: passive per-registration SysEx/CC/PC capture, MIDI device selection, audio routing/meters, a layered Klais multisampler, single-file audition and laser screen preview. Physical note output is available through explicit MIDI I/O enable; laser frame emission and SysEx replay remain unavailable.
 
 Prepare once with Node.js 22+ and Internet access:
 
@@ -62,4 +62,8 @@ HYLON 0.3 adds the fixed stereo sampler channel, shared reverb/delay sends and r
 
 ## SPORE generator and TXT score
 
-Choose **06 SPORE** in HYLON 0.4. The seeded generator, five-minute draft TXT score, voice bindings/couplings, transport and additive audition are separate modules. Expand its score editor to edit/import text and apply it with playback stopped. [Score source](scores/apomixis/spore/0.1.0-draft.1/score.txt) · [operation, grammar and verification](docs/SPORE-GUIDE.md). `npm run build:spore` regenerates the compiled JSON; `npm run check` checks consistency. Local audio uses the shared mixer; no organ or laser output.
+Choose **06 SPORE** in HYLON 0.5. The seeded generator, five-minute draft TXT score, voice bindings/couplings, transport and additive audition are separate modules. Expand its score editor to edit/import text and apply it with playback stopped. [Score source](scores/apomixis/spore/0.1.0-draft.1/score.txt) · [operation, grammar and verification](docs/SPORE-GUIDE.md). `npm run build:spore` regenerates the compiled JSON; `npm run check` checks consistency. Local audio uses the shared mixer; physical notes use the separate enabled MIDI OUT route. No laser frame output.
+
+## MIDI note output and SUPER PANIC
+
+HYLON 0.5 adds a MIDI I/O note tester, fixed Klais channels I–IV/pedal = 1–5, exclusive SPORE SIMULATION / LOCAL AUDIO / MIDI OUT buttons and a fixed header SUPER PANIC. [MIDI operation and verification](docs/MIDI-OUT-GUIDE.md). Select an output and ENABLE NOTE OUT before physical notes.

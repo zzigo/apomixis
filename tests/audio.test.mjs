@@ -115,3 +115,8 @@ test('fixed sampler destination and single mic lane use effects without legacy d
   audio.setMasterGain(.4); assert.equal(audio.bus.gain.value, .4);
   audio.stopInput(); assert.equal(mixer.enabled, false); assert.equal(audio.monitor, false);
 });
+test('SUPER PANIC releases microphone and forces master to exact zero',async t=>{
+  const input=stream();environment(t,async()=>input);const audio=new AudioSystem();await audio.start();audio.setMonitor(true);
+  let cancelled=false;audio.bus.gain.cancelScheduledValues=()=>{cancelled=true;};audio.bus.gain.setValueAtTime=value=>{audio.bus.gain.value=value;};
+  audio.panic();assert.equal(input.track.stopped,true);assert.equal(audio.stream,null);assert.equal(audio.monitor,false);assert.equal(audio.masterLevel,0);assert.equal(audio.bus.gain.value,0);assert.equal(cancelled,true);
+});

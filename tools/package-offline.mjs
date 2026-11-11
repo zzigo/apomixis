@@ -16,6 +16,7 @@ try {
   await cp('tools/HYLON.command', join(folder, 'tools/HYLON.command'));
   await cp('docs/HYLON-FIELD-GUIDE.md', join(folder, 'README.md'));
   await cp('docs/KLAIS-SAMPLER-GUIDE.md', join(folder, 'KLAIS-SAMPLER-GUIDE.md'));
+  await cp('docs/MIDI-OUT-GUIDE.md', join(folder, 'MIDI-OUT-GUIDE.md'));
   await cp('docs/SPORE-GUIDE.md', join(folder, 'SPORE-GUIDE.md'));
   await mkdir(join(folder, 'contracts'), { recursive: true });
   await cp('contracts/spore-score.schema.json', join(folder, 'contracts/spore-score.schema.json'));
