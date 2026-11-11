@@ -1,6 +1,7 @@
 import { createDockview } from 'dockview-core';
 import 'dockview-core/dist/styles/dockview.css';
 import './style.css';
+import './bank.css';
 import { CaptureStore, LIMITS } from './capture.js';
 import { AudioSystem } from './audio.js';
 import { openArchive, readSession, writeSession } from './persistence.js';
@@ -127,7 +128,7 @@ $('#clear-monitor', roots.monitor).onclick = () => { store.session.events = []; 
 function receive(bytes, source) {
   const warning = store.warning;
   const r = store.receive(bytes, source);
-  if (r) { changed(); if (audio.context?.state === 'running') sampler?.midi(bytes); }
+  if (r) { changed(); sampler?.midi(bytes); }
   if (store.warning && warning !== store.warning) { notify(store.warning); renderCapture(); }
 }
 
@@ -214,7 +215,13 @@ function defaultLayout() {
 }
 try { const saved = localStorage.getItem(`hylon-layout-${innerWidth < 760 ? 'mobile' : 'desktop'}`); if (saved) dock.fromJSON(JSON.parse(saved)); else defaultLayout(); } catch { defaultLayout(); }
 dock.onDidLayoutChange(() => { try { localStorage.setItem(`hylon-layout-${innerWidth < 760 ? 'mobile' : 'desktop'}`, JSON.stringify(dock.toJSON())); } catch {} });
-function activate(id) { let panel = dock.getPanel(id); if (!panel) panel = dock.addPanel({ id, component: id, title: titles[id] }); panel.api.setActive(); }
+function activate(id) {
+  if (dock.activePanel?.api.isMaximized()) dock.activePanel.api.exitMaximized();
+  let panel = dock.getPanel(id);
+  if (!panel) panel = dock.addPanel({ id, component: id, title: titles[id] });
+  panel.api.setActive();
+  if (id === 'sampler') panel.api.maximize();
+}
 document.querySelectorAll('[data-panel]').forEach(b => b.onclick = () => { activate(b.dataset.panel); document.querySelectorAll('[data-panel]').forEach(n => n.classList.toggle('active', n === b)); });
 $('#reset-layout').onclick = defaultLayout;
 const dialog = $('#config-dialog');

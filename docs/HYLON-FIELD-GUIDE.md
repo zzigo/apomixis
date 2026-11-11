@@ -1,4 +1,4 @@
-# HYLON 0.1 — offline field guide
+# HYLON 0.2 — offline field guide
 
 Purpose: take the laptop to the hall, identify the organ's incoming stop messages and leave with an independent capture backup. This build prioritizes **capture and MIDI/audio configuration**, followed by **local sampler audition**, then **laser screen preview**.
 
@@ -49,13 +49,13 @@ PROCESS A/B route two processing lanes from the channels the browser reports for
 
 Audio output selection uses `AudioContext.setSinkId` when the browser supports it; otherwise choose the output in system audio settings. Master level applies to this audio context, including the sampler. These settings remain local to this running console; a capture JSON does not restore device authority or audio configuration.
 
-## Local sampler
+## Klais multisampler and file lab
 
-**03 SAMPLER** opens local WAV/OGG/AIFF selection. Browser decoding support varies. It keeps metadata for at most 128 selected files, decodes one at a time, and does not copy or upload originals. Choose **Decode selected**, explicitly set its root MIDI pitch, and hold audition keys 48–72. Loop is opt-in; set valid start/end markers and release. File/root/loop mappings are unverified, not inferred organ registrations.
+**03 SAMPLER** expands the instrument pod. The full Klais ZIP includes 541 stereo OGG samples; the small console-only ZIP does not. The local source checkout reads a prepared `.local/klais` bank, or `HYLON_KLAIS_DIR` if configured.
 
-Limits: 64 MiB encoded per file, 128 MiB decoded buffer, 16 voices including release tails, maximum 30 seconds per note. Selected MIDI input auditions samples only after explicitly checking **Route selected MIDI input to this sampler**. It never forwards MIDI. STOP ALL, panel hiding and focus/visibility changes stop audition voices. Reload requires reselecting files.
+Select up to eight recorded combinations, warm their cache, then play the screen keyboard or explicitly route the selected MIDI input to local audio. The inspector provides original-speed audition for unmapped cuts. The reusable engine has 64 voices and a 128 MiB retained decoded cache. Source roots use provisional filename convention C4=60; sustain loops are not assigned. No MIDI output is sent.
 
-This is a usable audition sampler, not the finished GLIP multi-registration Klais instrument. Automatic root-note mapping, persistent sample library, OGG conversion, validated loops, complete register manifest and remote GLIP integration remain next work.
+Read the [Klais sampler guide](KLAIS-SAMPLER-GUIDE.md) for preparation, controls, mapping limits, verified asset counts and memory/loading behavior. The collapsed Single-file lab retains manual WAV/OGG/AIFF audition; while open, it receives MIDI only if its own routing checkbox is enabled. Files are never uploaded and must be reselected after reload.
 
 ## Laser
 

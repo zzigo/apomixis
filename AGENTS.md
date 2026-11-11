@@ -4,6 +4,8 @@ Consolidated **2026-11-11**. Scope: this repository and coordinated ecosystem wo
 
 Current implementation phase (2026-11-11): the composer prioritizes an offline HYLON field console for the hall visit: **SysEx capture and MIDI/audio configuration → sampler → laser**. The initial interface is in `apps/hylon/`; its operational scope and verification record are in `docs/HYLON-FIELD-GUIDE.md`. This authorizes local implementation and software verification, superseding the original documentation-only task boundary below. Physical MIDI replay and laser emission remain outside the initial capture build. Full score/generator/public-viewer milestones remain future work; the local sampler is an audition adapter pending GLIP integration.
 
+Sampler phase (2026-11-11): HYLON 0.2 adds a reusable `packages/glip-klais/` multisampler and local encoded library, documented in `docs/KLAIS-SAMPLER-GUIDE.md` and `docs/KLAIS-ASSET-AUDIT.md`. The library has 541 verified-decodable stereo OGG assets, 529 filename-derived roots and 12 unmapped cuts; original long takes are inventory-only. Source/profile/encoded-hash URLs and atomic manifest publication preserve previous builds. Samples are excluded from Git and no online GLIP deployment is authorized. Filename roots, actual console division/stop identity and sustain loops remain unverified; do not turn recorded combinations into fabricated isolated registers.
+
 ## 1. Operating rules
 
 - Keep the same `zzigo/apomixis` repository. **SuperCollider is archived reference, not the active runtime**, by the composer's current instruction. Preserve `archive/supercollider/` and Git history; do not load its setup to inspect it or introduce an SC runtime dependency.

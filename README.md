@@ -10,7 +10,7 @@ Read [AGENTS.md](AGENTS.md) for the consolidated requirements, evidence, archite
 
 ## HYLON offline field console
 
-The first local interface is implemented in `apps/hylon/`: passive per-registration SysEx/CC/PC capture, MIDI device selection, audio routing/meters, local sample audition and laser screen preview. It has no physical MIDI transmission or laser emission.
+The local interface is implemented in `apps/hylon/`: passive per-registration SysEx/CC/PC capture, MIDI device selection, audio routing/meters, a layered Klais multisampler, single-file audition and laser screen preview. It has no physical MIDI transmission or laser emission.
 
 Prepare once with Node.js 22+ and Internet access:
 
@@ -23,6 +23,12 @@ npm start
 Open `http://localhost:4173` in Chrome or Edge. After preparation, starting the built console needs only Node and the local files; no Internet or npm installation is required. On macOS, double-click `tools/HYLON.command`. Keep its Terminal open. For development use `npm run dev`; for a prepared offline ZIP use `npm run package:offline`.
 
 Read [the field guide](docs/HYLON-FIELD-GUIDE.md) before the room visit. JSON export is the portable backup; browser storage is tied to this localhost origin and browser profile. This is an initial capture console, not the completed HYLON score runtime or a commissioned organ/laser controller.
+
+## Klais sample library
+
+The reusable engine is in `packages/glip-klais/`. The local bank contains 541 stereo Ogg/Vorbis samples across 23 source buckets: 529 filename-mapped roots and 12 unmapped one-shots. They preserve recorded registration combinations; they do not reconstruct isolated stops. Roots/tuning and sustain loops still need musical review.
+
+Read [the sampler guide](docs/KLAIS-SAMPLER-GUIDE.md) and [asset audit](docs/KLAIS-ASSET-AUDIT.md). `npm run build:klais` generates the local encoded bank; `npm run package:klais` creates a self-contained offline ZIP with the verified referenced recordings. Samples, receipts and generated libraries stay outside Git under `.local/`; no public audio upload is performed. The lean `package:offline` build remains available without the bank.
 
 The nine-piece cycle is:
 

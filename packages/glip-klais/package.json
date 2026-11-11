@@ -1,0 +1,7 @@
+{
+  "name": "@zztt/glip-klais",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./engine.js", "./manifest": "./manifest.js", "./loader": "./loader.js" }
+}

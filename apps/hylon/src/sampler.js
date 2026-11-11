@@ -1,3 +1,4 @@
+import { mountKlaisBank } from './bank.js';
 const MAX_FILE_BYTES = 64 * 1024 * 1024;
 const MAX_DECODED_BYTES = 128 * 1024 * 1024;
 const MAX_VOICES = 16;
@@ -67,7 +68,7 @@ export function createSamplePlayer(context, destination) {
   };
 }
 
-export function mountSampler(container, { getAudioContext, getDestination, notify = () => {} }) {
+export function mountFileSampler(container, { getAudioContext, getDestination, notify = () => {} }) {
   container.innerHTML = `<div class="panel-body"><p class="muted">Local sample audition · root pitches and loops UNVERIFIED. Files stay on this device. WAV / OGG / AIFF support depends on your browser.</p><div class="toolbar"><label class="field">Choose audio files<input data-files type="file" accept=".wav,.ogg,.aif,.aiff,audio/wav,audio/ogg,audio/aiff" multiple></label></div><div class="toolbar"><label class="field">Sample<select data-select aria-label="Selected sample"></select></label><button data-decode>Decode selected</button><button data-clear>Unload files</button></div><div class="toolbar"><label class="field">Root MIDI (explicit)<input data-root type="number" min="0" max="127" step="1" value="60"></label><label class="field">Gain<input data-gain type="number" min="0" max="1" step="0.05" value="0.2"></label><label class="field">Release seconds<input data-release type="number" min="0.01" max="5" step="0.05" value="0.2"></label></div><div class="toolbar"><label class="field"><input data-loop type="checkbox">Loop (unverified)</label><label class="field">Start seconds<input data-start type="number" min="0" step="0.01" value="0"></label><label class="field">End seconds<input data-end type="number" min="0" step="0.01" value="1"></label><button data-stop>Stop all</button></div><p data-status class="status" role="status">No sample decoded. Maximum 64 MiB per file, one decoded sample, 16 voices, 30-second note limit.</p><div data-keys class="toolbar" aria-label="Sample audition keyboard"></div><p class="muted">Hold a note to audition. Selected MIDI input can play this sampler after decoding; it never forwards MIDI to hardware.</p></div>`;
   const q = name => container.querySelector(`[data-${name}]`);
   const midiLabel = document.createElement('label'); midiLabel.className = 'field checkbox';
@@ -160,4 +161,15 @@ export function mountSampler(container, { getAudioContext, getDestination, notif
     },
     dispose() { if (disposed) return; invalidate(); disposed = true; files = []; document.removeEventListener('visibilitychange', visibility); window.removeEventListener('blur', stop); container.replaceChildren(); }
   };
+}
+
+export function mountSampler(container, options) {
+  const libraryRoot = document.createElement('section');
+  const lab = document.createElement('details'); lab.className = 'file-lab';
+  const summary = document.createElement('summary'); summary.textContent = 'SINGLE-FILE LAB · MIDI routes here while open';
+  const filesRoot = document.createElement('section'); lab.append(summary, filesRoot);
+  container.replaceChildren(libraryRoot, lab);
+  const bank = mountKlaisBank(libraryRoot, options), files = mountFileSampler(filesRoot, options);
+  lab.addEventListener('toggle', () => { bank.stop(); files.stop(); });
+  return { stop() { bank.stop(); files.stop(); }, midi(bytes) { if (lab.open) files.midi(bytes); else bank.midi(bytes); }, dispose() { bank.dispose(); files.dispose(); container.replaceChildren(); } };
 }
