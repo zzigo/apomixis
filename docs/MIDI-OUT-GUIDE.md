@@ -48,7 +48,7 @@ The header **SUPER PANIC** button is always reachable, including when the AUDIO/
 - Stops capture, SPORE and sampler voices; cancels pending mic activation and releases the microphone stream.
 - Cancels MIDI software queues and sends owned note-offs, then **CC123 All Notes Off** and **CC120 All Sound Off** on **all 16 channels of the selected output**. This is the composer's explicit operator panic capability, separate from the note-only performance gateway. It does not guess stop reset bytes, send program changes, reset expression or replay SysEx. If no output is selected, no MIDI is sent.
 - Clears shared reverb/delay tails and hard-mutes master to exactly zero. Raise master deliberately to return to local audio.
-- Clears the laser preview; if HELIOS is connected, requests shutter-close and STOP then closes the USB connection. No light frames or shutter-open command is added. USB requests and MIDI sends cannot certify physical silence; delivery errors are reported.
+- Clears the laser preview; if HELIOS is connected, requests shutter-close and STOP then closes the USB connection. SUPER PANIC never opens a shutter or starts a light frame; normal HELIOS output is a separate explicit START OUTPUT action. USB requests and MIDI sends cannot certify physical silence; delivery errors are reported.
 
 SUPER PANIC does not reconnect or re-enable hardware. It can send selected-port panic controllers even when the note gateway is already disarmed, to permit recovery. These controllers intentionally affect all sound on that selected port, including other notes on its channels. Their actual response depends on the connected device. A disconnected port cannot receive recovery commands.
 

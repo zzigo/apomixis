@@ -1,4 +1,4 @@
-# HYLON 0.5 — offline field guide
+# HYLON 0.6 — offline field guide
 
 Purpose: take the laptop to the hall, identify the organ's incoming stop messages and leave with an independent capture backup. This build prioritizes **capture and MIDI/audio configuration**, followed by **local sampler audition**, then **laser screen preview**.
 
@@ -59,9 +59,9 @@ Read the [Klais sampler guide](KLAIS-SAMPLER-GUIDE.md) for preparation, controls
 
 ## Laser
 
-**04 LASER** provides full-frame/high-low, sweep, text and MIDI XY previews. CONNECT HELIOS USB explicitly opens the selected DAC and requests shutter close/STOP; status, stop and disconnect controls are physical USB operations. No light frame or shutter-open operation exists. Blackout clears preview and requests shutdown when connected. See **HELIOS-POD-GUIDE.md**.
+**04 LASER** provides full-frame/high-low, sweep, text and MIDI XY previews. CONNECT HELIOS USB explicitly opens the selected DAC and requests shutter close/STOP; status, stop and disconnect controls are physical USB operations. Explicit START OUTPUT now opens the shutter and sends bounded one-shot pattern frames; connection alone stays stopped. Blackout clears preview and requests shutdown when connected. See **HELIOS-POD-GUIDE.md**.
 
-Helios frame emission and physical acceptance remain a separate commissioning milestone: actual projector limits, venue exclusion zones, independent hardware interlock/shutter/watchdog and shutdown verification are still needed. MIDI/audio do not depend on a laser adapter.
+The composer reports working Helios frame output; physical acceptance still needs rig assessment: actual projector limits, venue exclusion zones, independent hardware interlock/shutter/watchdog and shutdown verification are still needed. MIDI/audio do not depend on a laser adapter.
 
 ## Layout and stop
 

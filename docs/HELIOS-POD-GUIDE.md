@@ -1,64 +1,45 @@
-# HELIOS field-test pod
+# HELIOS — connect, output, blackout
 
-Status: **screen preview complete; physical USB control is implemented; frame emission is not implemented/enabled**.
-Branch: `codex/helios-pod`, based on the Klais multisampler branch. No production deployment.
+HYLON 0.6 implements physical USB frame output. The earlier build only connected the DAC and sent STOP/shutter-close; its preview could never project anything. The composer has now reported that physical projection is working. Optical power, scan angles, protection effectiveness and latency have not been independently measured.
 
-## Operation
+## Normal operation
 
-Launch the local console and choose **04 LASER**. The pod maximizes. Select a mode and press **START PREVIEW**. A mode change stops the current preview; start again deliberately.
+1. Close other software using the DAC (such as TouchDesigner).
+2. **04 LASER → CONNECT HELIOS** and select the device.
+3. Choose FRAME, SWEEP, TEXT or MIDI XY; press **START OUTPUT**.
+4. **Size** and **Intensity signal** update live, including intensity zero and recovery. No second START is needed. **BLACKOUT** stops frame production and requests shutter close/STOP. Header **SUPER PANIC** also disconnects the DAC and stops the rest of HYLON.
 
-- **FULL FRAME:** square at 100% normalized width/height, or the full-width top/bottom edge. Canvas edges have a one-pixel inset to remain visible. This is not a validated projector scan angle.
-- **SWEEP:** a vertical line moves LR then RL; a horizontal line moves TD then DT. Repeat the four-pass sequence or select one direction. Control duration from 0.1 to 10 seconds/pass. Speed changes restart the phase.
-- **TEXT:** editable screen text, up to 24 characters. Canvas text is not vectorized DAC geometry and cannot be transmitted.
-- **MIDI / RANDOM XY:** choose the MIDI input in I/O, enable the pod's route checkbox and choose channel/all. Start preview. Note-on picks a fresh XY; screen alpha equals (velocity/127) × the configured intensity scale. Note-off (including note-on velocity zero) removes the point with the same channel/pitch. Repeated notes replace their point. Maximum 32 held points, oldest evicted. CC120/123 clear the corresponding channel. Demo emits one local C4/96 for 600 ms without MIDI device I/O.
+The standard controls are pattern, size and intensity; scan/alignment and diagnostic controls are collapsed under Advanced/Connection Details. Defaults are 20000 PPS, a centered 20% field and 5% green/intensity control signal. They are software starting values, **not verified projector ratings or an optical power percentage**. Preview remains readable at low signal and does not represent optical brightness. Use a controlled projection area with no people in the beam; software is not an independent projector interlock.
 
-Blackout, STOP ALL, input detach/change, hidden document, inactive/closed pod and USB disconnect clear the preview and held notes. An animation-clock gap exceeding 500 ms stops the preview. These are application controls, not independent laser safeguards.
+Connecting alone never opens the shutter for projection. Startup, reload, score restore, JSON import, reconnection and MIDI notes never auto-start output. **PREVIEW ONLY** displays the same vector geometry without transmitting frames. Pattern/alignment/import/reset changes stop output and require START again; the two main live sliders do not. SWEEP speed is also live. HMR code updates still stop output intentionally.
 
-## Physical USB connection
+## Patterns
 
-The composer explicitly authorized physical connection and revision of the master contract. **CONNECT HELIOS USB** opens the browser chooser filtered to `0x1209:0xe500`, opens the device, selects configuration 1 when necessary, claims interface 0 and selects alternate 1. It verifies interrupt endpoints OUT 6 and IN 3, then requests shutter close `[0x02,0]` and STOP `[0x01,0]`. Close TouchDesigner or other software using the DAC before connecting. No driver changes are made.
+- **FRAME:** square, high edge or low edge, spanning the configured normalized field. Size 100% is the full DAC coordinate range, not a calibrated optical angle.
+- **SWEEP:** vertical line LR/RL, horizontal line TD/DT, or the four-direction sequence; 0.1–10 seconds/pass.
+- **TEXT:** vector strokes for A–Z, 0–9, space and dash. Up to 12 characters, subject to the frame point budget; overly complex text fails visibly and stops output rather than truncating a scan. Default HYLON and APOMIXIS fit at 20000 PPS.
+- **MIDI XY:** selected MIDI input/channel, up to eight held loci; velocity scales signal. Each locus is a small scanned ring rather than a stationary beam. Note-off/zero velocity releases it. No held notes means blank output frames. Demo note is local; it does not send MIDI.
 
-**DAC STATUS** sends `[0x03,0]` and validates response ID `0x83`. Ready/busy refers to the DAC's buffer status, not its optical state. **STOP DAC / CLOSE SHUTTER** sends the non-emitting control commands; **DISCONNECT** stops/closes then releases the browser device. Successful USB writes are transport acceptance, not mechanical/optical acknowledgment. Shutter close and STOP affect existing output from the DAC.
+## Settings
 
-Control transfers have bounded waits and checked status/byte counts; errors close the device and require manual reconnect. No background retry queue, auto-connect, frame-send, shutter-open or firmware command exists. STOP ALL and preview stop request shutdown if the control path is available. Browser/page loss cannot guarantee delivery of a command.
+Advanced offers PPS (8000–40000 software range), center offsets, axis flips and settings import/export. Alignment changes validate before application. The field plus offset must remain inside the normalized bounds. Invalid edits preserve the previous valid settings. RESET DEFAULTS restores the centered starting values with output stopped.
 
-Use Chrome/Edge on localhost. Permission selection remains a local browser gesture. The in-app test reached the chooser but returned no device selected; actual hardware open/claim/control transfers remain unverified. Mock tests exercise connection order, allowed commands, malformed responses, timeout, late open cancellation and disconnect. This control-only connection step does not require known scan ratings and does not enable frame emission.
+New physical settings are stored under `hylon-helios-output-settings-v1`. Old preview-only `hylon-helios-profile-v1` data is retained but not auto-applied to real output: previously saved 100% preview fields and reported-protection checkboxes do not silently authorize emission. Optional settings JSON remains schema version 1 and bounded at 16 KiB; imported settings stop output and cannot arm it. Unknown metadata remains unknown. No operator-reported safety checklist is required in the ordinary UI or treated as a hardware test.
 
-## Projector configuration
+## Frame/control implementation
 
-Expand **PROJECTOR CONFIG / OPERATOR-REPORTED**. The operator reports projection onto a ceiling without public contact and previous TouchDesigner use. This is retained as context, not a tested exclusion zone or projector rating.
+`packages/hylon-laser/frame.js` compiles geometry, and `helios-usb.js` owns physical transport. The point format follows the [official HELIOS SDK](https://github.com/Grix/helios_dac/tree/master/sdk/cpp): packed 12-bit X/Y, 8-bit RGB/intensity, little-endian rate/count trailer. The included MIT notice preserves SDK attribution. No community AGPL code is bundled.
 
-- Model, scan rate (PPS) and X/Y scan angle (degrees) are editable. Unknown ratings default to **blank**, serialized as `null`. PPS and angles are metadata only; they do not change screen timing or communicate with hardware. Form bounds are software input limits, not claimed operating ratings.
-- Width/height, X/Y offsets, flip X/Y and intensity scale apply to screen geometry. Field plus offset must remain within normalized bounds. Full-frame tests fill the configured field. Initial field is 100% centered, intensity scale 10% for preview; these defaults do not constitute a physical operating profile.
-- The target defaults to **Ceiling / operator-reported**. Exclusion zone, physical E-stop, interlock/shutter and independent scan-failure shutdown have unknown / operator reports present / operator reports absent states. A reported state is never promoted to verified.
-- **APPLY / SAVE LOCALLY** validates the complete draft, stops preview and stores the profile at localStorage `hylon-helios-profile-v1`. Reload restores settings only, with preview stopped and USB unselected. Storage failure keeps settings for the current session and recommends JSON export.
-- Export/import JSON uses schema version 1, a 16 KiB import cap and strict field validation. Imported `armed`, `verified` or other unknown fields are rejected. Import stops preview; it cannot grant output authority. Draft exports are validated but are not automatically applied.
+CONNECT selects VID1209/PIDe500, configuration/interface 0 alternate 1, then requests shutter close and STOP. Explicit START checks bulk OUT endpoint 2, waits for the firmware's documented 100 ms delayed-STOP window, polls readiness (interrupt OUT6 / IN3, status 0x83), primes a fully blank frame, then requests shutter open. Only then are lit pattern frames accepted.
 
-## Evidence and remaining physical commissioning
+Every frame uses **SINGLE_MODE (flag 2)**: supported USB firmware plays once and stops on underrun rather than looping the last frame. Frame duration is at most 40 ms, points at most 1600, with blanked travel and dark frame boundaries. Short patterns pad with darkness rather than dwell on lit points. The SDK's problematic USB-length workaround adjusts count/rate and preserves trailing blanking. Invalid/nonfinite coordinates, unsupported rates, out-of-budget geometry and stationary lit traces are rejected. These are software bounds, not a substitute for calibrated projector scan/power limits.
 
-The operator supplied the macOS HELIOS description (Gitle Mikkelsen, 1209:e500, product 0200, 12 Mb/s) and corrected the projector connection to DB-25. The projector is described as a generic Chinese ILDA unit. This confirms the operator's reported DAC identity, not projector scan limits, power, shutter/interlock wiring or a tested shutdown system. Our local `system_profiler SPUSBDataType -json` returned an empty inventory; physical access has not been independently verified.
-
-Before adding/enabling luminous frame output obtain the projector's operating limits and an operator-approved calibrated field, exclusion zone, point/dwell/intensity constraints, independent E-stop/interlock/shutter and protection that stops exposure when scan/browser/USB updates fail. A standard ILDA connector alone does not establish those limits or protections. Full-width frames and stationary MIDI dots must not be treated as safe merely because they fit DAC coordinates. Physical MIDI points require a reviewed moving/blanked scan construction rather than a persistent stationary beam. No audience scanning.
-
-The repository's `AGENTS.md` §9 requires: “Independent physical E-stop/interlock/shutter and watchdog able to stop emission when browser updates cease are required.” The physical control-only adapter is authorized without that evidence; luminous frame transmission and physical acceptance remain pending. A browser timeout, black canvas or zero-intensity frame cannot substitute for independent shutdown.
-
-Primary protocol source for subsequent adapter implementation: [official HELIOS SDK](https://github.com/Grix/helios_dac). Its documentation specifies the ISP-DB25/ILDA interface. No community AGPL implementation was copied or bundled.
+The pump is serial, readiness paced, with at most one transfer operation in progress. No unbounded frame queue or automatic retry/rearm exists. BLACKOUT invalidates an output epoch immediately, preventing a pending readiness reply from producing a late frame or shutter-open. Transfer failure closes/stops the adapter; hidden page, pod hide/close, browser stall and disconnect stop output. SUPER PANIC prioritizes shutter-close/STOP/disconnect. USB acceptance and frame counters do not independently confirm optical shutter position or beam extinction.
 
 ## Verification
 
-- 50 Node tests pass, including normalized field closure, high/low edges, all sweep axes/directions/timing rejection, MIDI channel ownership, velocity scaling, note-off/zero-velocity, malformed input and bounded point count. Profile tests cover unknown ratings, incompatible/imported authority rejection, malformed values and bounded transformed geometry.
-- Production build succeeds.
-- Local browser verified full-square rendering, sweep direction controls, editable APOMIXIS text, demo MIDI point appearing, blackout clearing points and zero console errors. Browser viewport was mobile-sized. USB chooser returned no device selected; physical MIDI/laser emission were not exercised.
-- MIDI device events use the existing selected-input capture path. Hardware timing and scan geometry remain unverified.
+Automated tests use mock USB devices only. Node tests cover packet packing/trailer, blank boundaries, live geometry, SDK length adjustment, invalid/stationary traces, blank priming before shutter-open, readiness/backpressure, transfer failures and cancellation during pending start/frame operations. Existing MIDI, sampler, audio and SPORE checks remain in `npm run check`.
 
-Configuration follow-up browser verification: invalid field+offset was rejected; valid width persisted across reload with PPS/angles still unknown and preview stopped. Test width was restored to 100%; no console errors. USB and physical emission were not exercised.
+Development-only `/helios-check.html` mounts the actual pod with mock USB and isolated settings storage. Five browser checks verify compact defaults and dark connection, preview-only isolation, actual bulk frame calls/shutter sequencing/SINGLE_MODE, live intensity zero/recovery and size changes, and blackout without late transfers. No real projector is started by this test. The harness is excluded from the production build.
 
-## Local updates and fullscreen
-
-Fullscreen uses the custom corner icon in the top bar; Escape exits. Browser policy can deny fullscreen (the in-app test accepted an initial request and denied a later one); a readable fallback message directs the operator to Chrome/browser fullscreen.
-
-For ongoing edits, run **tools/HYLON-dev.command** from the source checkout, or `npm run dev`. Dependencies must be prepared once with `npm ci`. Vite stays at loopback port 4173 with strict port checking; stop the static `npm start` server first. Use the exact origin `http://localhost:4173/` to retain the existing session/profile. Vite HMR applies CSS updates without reload; source changes may trigger automatic full reload. Full reload stops local sources and does not reconnect USB or resume patterns. Avoid editing during an irreplaceable capture or performance; export capture JSON first. The source bank is served through the same checked local asset handler in development (541 samples confirmed).
-
-`npm run check` runs local Node tests, asset-tool tests and a production build. This is local validation plus automatic development rebuilds, not a cloud/production deployment pipeline. The prepared offline ZIP uses the frozen built server and requires rebuilding/repackaging to update.
-
-Verification: Vite client connected and logged `hot updated: /src/style.css` without manual refresh; fullscreen control rendered; the bank manifest loaded through the development middleware. Browser control never sent frame/laser output.
+The composer independently reported working physical output during this implementation. That is operator observation, not a measured scan/power or emergency-shutdown certification. Actual optical behavior should be assessed on the rig. No production service, driver, firmware or online deployment was modified.

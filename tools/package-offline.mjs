@@ -25,6 +25,7 @@ try {
   await cp('scores/apomixis/spore/0.1.0-draft.1/score.json', join(folder, 'scores/SPORE.score.json'));
   await cp('docs/AUDIO-POD-GUIDE.md', join(folder, 'AUDIO-POD-GUIDE.md'));
   await cp('docs/HELIOS-POD-GUIDE.md', join(folder, 'HELIOS-POD-GUIDE.md'));
+  await cp('licenses/HELIOS-SDK-MIT.txt', join(folder, 'HELIOS-SDK-LICENSE'));
   await cp('licenses/DOCKVIEW-MIT.txt', join(folder, 'DOCKVIEW-LICENSE'));
   if (withKlais) {
     const source = await realpath(process.env.HYLON_KLAIS_DIR || resolve('.local/klais'));
