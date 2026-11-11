@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.aif': 'audio/aiff', '.aiff': 'audio/aiff' };
 
-export function createHylonServer({ root = resolve('dist'), instrumentRoot = resolve('.local/klais') } = {}) {
-  return http.createServer(async (req, res) => {
+export function createHylonHandler({ root = resolve('dist'), instrumentRoot = resolve('.local/klais') } = {}) {
+  return async (req, res) => {
     try {
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
       const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
@@ -38,8 +38,10 @@ export function createHylonServer({ root = resolve('dist'), instrumentRoot = res
       const stream = createReadStream(file, { start, end });
       stream.on('error', () => res.destroy()); res.on('close', () => stream.destroy()); stream.pipe(res);
     } catch { if (!res.headersSent) res.writeHead(404).end('Not found'); else res.destroy(); }
-  });
+  };
 }
+
+export function createHylonServer(options = {}) { return http.createServer(createHylonHandler(options)); }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = resolve('dist'), port = Number(process.env.PORT || 4173);

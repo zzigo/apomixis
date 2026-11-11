@@ -16,6 +16,7 @@ try {
   await cp('tools/HYLON.command', join(folder, 'tools/HYLON.command'));
   await cp('docs/HYLON-FIELD-GUIDE.md', join(folder, 'README.md'));
   await cp('docs/KLAIS-SAMPLER-GUIDE.md', join(folder, 'KLAIS-SAMPLER-GUIDE.md'));
+  await cp('docs/HELIOS-POD-GUIDE.md', join(folder, 'HELIOS-POD-GUIDE.md'));
   await cp('licenses/DOCKVIEW-MIT.txt', join(folder, 'DOCKVIEW-LICENSE'));
   if (withKlais) {
     const source = await realpath(process.env.HYLON_KLAIS_DIR || resolve('.local/klais'));

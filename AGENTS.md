@@ -6,6 +6,8 @@ Current implementation phase (2026-11-11): the composer prioritizes an offline H
 
 Sampler phase (2026-11-11): HYLON 0.2 adds a reusable `packages/glip-klais/` multisampler and local encoded library, documented in `docs/KLAIS-SAMPLER-GUIDE.md` and `docs/KLAIS-ASSET-AUDIT.md`. The library has 541 verified-decodable stereo OGG assets, 529 filename-derived roots and 12 unmapped cuts; original long takes are inventory-only. Source/profile/encoded-hash URLs and atomic manifest publication preserve previous builds. Samples are excluded from Git and no online GLIP deployment is authorized. Filename roots, actual console division/stop identity and sustain loops remain unverified; do not turn recorded combinations into fabricated isolated registers.
 
+HELIOS pod phase (2026-11-11): `docs/HELIOS-POD-GUIDE.md` records full-frame/high-low, sweep, text and MIDI XY **screen previews**, plus USB selection for 1209:e500. User reports a connected HELIOS and generic DB-25 ILDA projector. Projector limits and independent shutdown remain unverified; a physical control-only USB adapter is now authorized by the composer and implemented; no frame emission is enabled. The operator reports ceiling projection without public contact and unknown projector ratings; the pod now stores an unverified local profile with blank PPS/angles, preview transforms/intensity, reported protection states and bounded JSON import/export. Configuring/restoring a profile grants no output authority. Composer follow-up explicitly authorizes physical USB connection and revision of this contract: local CONNECT may open/claim the DAC and send only status, STOP and shutter-close, without requiring projector ratings for that control-only step. This exception does not certify hardware or authorize automated emission tests. Local development now uses loopback Vite/HMR at localhost:4173; full reloads stop local sources and never reconnect hardware automatically.
+
 ## 1. Operating rules
 
 - Keep the same `zzigo/apomixis` repository. **SuperCollider is archived reference, not the active runtime**, by the composer's current instruction. Preserve `archive/supercollider/` and Git history; do not load its setup to inspect it or introduce an SC runtime dependency.
@@ -200,6 +202,8 @@ Capture on/off separately, repeat observations and compare. Never assume toggle 
 Commission with software mock then isolated monitor/loopback. Console capture/replay is a separate supervised rehearsal with organ operator, agreed budgets and verified profile. Unknown physical protocol blocks physical output, not sampler/editor/viewer progress.
 
 ## 9. Laser / Helios
+
+**Current composer override (2026-11-11): physical USB connection is authorized.** Do not block opening/claiming HELIOS 1209:e500 or operator-triggered status/STOP/shutter-close controls merely because scan ratings are unknown. Implement this local control-only capability and keep it separate from frame transmission and shutter-open. The operator reports ceiling projection, no public contact, previous TouchDesigner operation and confidence in equipment safety; record these as operator reports, not verified protection or calibration. The safeguards below apply to emitting frames, not to the non-emitting connection step. Configuration may retain unknown values and cannot grant arming authority. Current adapter has no frame-send/open-shutter API. No online deployment is authorized.
 
 First deliver geometry preview and simulated adapter. Browser support does not certify a projector, pattern or venue.
 
