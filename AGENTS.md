@@ -6,6 +6,8 @@ Current implementation phase (2026-11-11): the composer prioritizes an offline H
 
 Sampler phase (2026-11-11): HYLON 0.2 adds a reusable `packages/glip-klais/` multisampler and local encoded library, documented in `docs/KLAIS-SAMPLER-GUIDE.md` and `docs/KLAIS-ASSET-AUDIT.md`. The library has 541 verified-decodable stereo OGG assets, 529 filename-derived roots and 12 unmapped cuts; original long takes are inventory-only. Source/profile/encoded-hash URLs and atomic manifest publication preserve previous builds. Samples are excluded from Git and no online GLIP deployment is authorized. Filename roots, actual console division/stop identity and sustain loops remain unverified; do not turn recorded combinations into fabricated isolated registers.
 
+HELIOS pod phase (2026-11-11): `docs/HELIOS-POD-GUIDE.md` records full-frame/high-low, sweep, text and MIDI XY **screen previews**, plus descriptor-only USB selection for 1209:e500. User reports a connected HELIOS and generic DB-25 ILDA projector. Projector limits and independent shutdown remain unverified; no physical adapter or emission is enabled.
+
 ## 1. Operating rules
 
 - Keep the same `zzigo/apomixis` repository. **SuperCollider is archived reference, not the active runtime**, by the composer's current instruction. Preserve `archive/supercollider/` and Git history; do not load its setup to inspect it or introduce an SC runtime dependency.

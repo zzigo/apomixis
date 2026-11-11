@@ -128,7 +128,7 @@ $('#clear-monitor', roots.monitor).onclick = () => { store.session.events = []; 
 function receive(bytes, source) {
   const warning = store.warning;
   const r = store.receive(bytes, source);
-  if (r) { changed(); sampler?.midi(bytes); }
+  if (r) { changed(); sampler?.midi(bytes); laser?.midi(bytes); }
   if (store.warning && warning !== store.warning) { notify(store.warning); renderCapture(); }
 }
 
@@ -156,7 +156,7 @@ function renderConfig() {
     row.append(label, meter, gainLabel); routes.append(row);
   }
 }
-function detachInput() { inputRevision++; if (inputPort) { inputPort.onmidimessage = null; inputPort.close().catch(() => {}); } inputPort = null; store.cancel(); sampler?.stop(); }
+function detachInput() { inputRevision++; if (inputPort) { inputPort.onmidimessage = null; inputPort.close().catch(() => {}); } inputPort = null; store.cancel(); sampler?.stop(); laser?.stop(); }
 async function selectInput(id) {
   detachInput(); inputId = '';
   const revision = inputRevision;
@@ -194,7 +194,7 @@ navigator.mediaDevices?.addEventListener('devicechange', () => audio.refresh().c
 
 sampler = mountSampler(roots.sampler, { getAudioContext: () => audio.ensure(), getDestination: () => audio.destination(), notify });
 laser = mountLaser(roots.laser, { notify });
-const titles = { capture: 'REGISTRATION CAPTURE', config: 'I/O CONFIGURATION', monitor: 'MIDI MONITOR', sampler: 'KLAIS / LOCAL SAMPLER', laser: 'LASER / SCREEN PREVIEW' };
+const titles = { capture: 'REGISTRATION CAPTURE', config: 'I/O CONFIGURATION', monitor: 'MIDI MONITOR', sampler: 'KLAIS / LOCAL SAMPLER', laser: 'HELIOS / FIELD TESTS' };
 const dock = createDockview($('#workspace'), {
   theme: { name: 'hylon', className: 'dockview-theme-hylon', gap: 5 }, disableFloatingGroups: true,
   createComponent: ({ name }) => {
@@ -220,7 +220,7 @@ function activate(id) {
   let panel = dock.getPanel(id);
   if (!panel) panel = dock.addPanel({ id, component: id, title: titles[id] });
   panel.api.setActive();
-  if (id === 'sampler') panel.api.maximize();
+  if (id === 'sampler' || id === 'laser') panel.api.maximize();
 }
 document.querySelectorAll('[data-panel]').forEach(b => b.onclick = () => { activate(b.dataset.panel); document.querySelectorAll('[data-panel]').forEach(n => n.classList.toggle('active', n === b)); });
 $('#reset-layout').onclick = defaultLayout;
