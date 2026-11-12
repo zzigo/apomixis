@@ -18,13 +18,22 @@ const node = (tag, text, cls) => { const n = document.createElement(tag); if (te
 const notify = text => { $('#feedback').textContent = text; };
 const run = fn => async (...args) => { try { await fn(...args); } catch (e) { notify(e.message || String(e)); } };
 const download = (name, value, type = 'application/json') => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([value], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
-let store = new CaptureStore(), db = null, inputPort = null, access = null, inputId = '', outputId = '', channel = 'all';
+const IO_SETTINGS = 'hylon-io-devices-v1';
+let ioSettings = {};
+try { const saved = JSON.parse(localStorage.getItem(IO_SETTINGS) || '{}'); for (const key of ['midiInput','midiOutput','audioInput','audioOutput']) if (typeof saved[key] === 'string' && saved[key].length <= 512) ioSettings[key] = saved[key]; } catch {}
+function saveDeviceSelection() {
+  ioSettings = {midiInput:inputId,midiOutput:outputId,audioInput:audio.inputId,audioOutput:audio.outputId};
+  try {localStorage.setItem(IO_SETTINGS,JSON.stringify(ioSettings));} catch {}
+}
+let store = new CaptureStore(), db = null, inputPort = null, access = null, inputId = ioSettings.midiInput || '', outputId = ioSettings.midiOutput || '', channel = 'all';
 let selected = store.session.slots[0].id, division = 'all', search = '', saveRevision = 0, saveTimer, renderTimer, inputRevision = 0;
 let sampler, laser, audioPod, spore, midiOut;
 let dirty = false, releaseLease;
 $('#workspace').inert = true;
 $('#config-modal').disabled = true;
+document.querySelectorAll('.command').forEach(button => { button.disabled = true; });
 const audio = new AudioSystem(() => { renderConfig(); audioPod?.sync(); }, { createMixer: createAudioMixer });
+audio.inputId = ioSettings.audioInput || ''; audio.outputId = ioSettings.audioOutput || '';
 const roots = Object.fromEntries(['capture', 'config', 'monitor', 'sampler', 'laser', 'audio', 'spore'].map(id => [id, node('section', undefined, 'pod-root')]));
 const configBody = node('div', undefined, 'panel-body'); roots.config.append(configBody);
 
@@ -93,7 +102,7 @@ $('#slot-notes', roots.capture).oninput = e => { currentSlot().notes = e.target.
 for (const transition of ['on', 'off']) $(`#capture-${transition}`, roots.capture).onclick = run(() => {
   if (!inputId) throw new Error('Select a MIDI input or Demo input in I/O first.');
   if (inputId !== 'demo' && (!inputPort || inputPort.state !== 'connected')) throw new Error('Selected MIDI input is disconnected.');
-  spore?.pause('capture'); midiOut?.disarm('capture');
+  midiRevision++; spore?.pause('capture'); midiOut?.disarm('capture');
   store.arm(selected, transition, inputId, channel); renderCapture();
 });
 $('#cancel-capture', roots.capture).onclick = () => { store.cancel(); renderCapture(); };
@@ -121,42 +130,61 @@ $('#add-slot', roots.capture).onclick = () => {
   store.session.slots.push(slot); selected = slot.id; division = 'all'; changed();
 };
 
-roots.monitor.innerHTML = '<div class="panel-body"><div class="toolbar"><span class="eyebrow">SELECTED INPUT / NO MIDI THRU</span><button id="clear-monitor">CLEAR MONITOR</button></div><p class="muted">SysEx, CC and program changes can be assigned to capture slots. Notes appear only in the monitor and may audition the local sampler. Clock and active sensing are ignored.</p><div id="monitor-log"></div></div>';
+roots.monitor.innerHTML = '<div class="panel-body monitor-pod"><div class="toolbar"><button id="clear-monitor" class="icon-clear" title="Clear monitor" aria-label="Clear monitor"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></button></div><div id="monitor-log"></div></div>';
 function renderMonitor() {
   const log = $('#monitor-log', roots.monitor); log.replaceChildren();
-  if (!store.session.events.length) log.append(node('p', 'Waiting for incoming MIDI. Choose an input in I/O.', 'empty-state'));
   for (const r of store.session.events.slice(-80).reverse()) {
-    const line = node('div', undefined, 'monitor-row');
+    const line = node('div', undefined, 'monitor-row'); line.title = `${new Date(r.time).toLocaleTimeString()} · ${r.kind} · ${r.hex} · ${r.slotId || r.source.name}`;
     line.append(node('time', new Date(r.time).toLocaleTimeString()), node('span', r.kind.toUpperCase(), 'message-kind'), node('code', r.hex), node('span', r.slotId ? `${r.slotId} / ${r.transition}` : r.source.name, 'muted')); log.append(line);
   }
 }
 $('#clear-monitor', roots.monitor).onclick = () => { store.session.events = []; changed(); };
+let midiPulseTimer;
 function receive(bytes, source) {
+  const button = $('#command-midi'), level = (bytes[0] & 0xf0) === 0x90 && bytes[2] > 0 ? bytes[2] / 127 : .25;
+  button.style.setProperty('--midi-rx', String(.15 + level * .85)); button.classList.add('midi-receiving');
+  clearTimeout(midiPulseTimer); midiPulseTimer = setTimeout(() => button.classList.remove('midi-receiving'), 90);
   const warning = store.warning;
   const r = store.receive(bytes, source);
-  if (r) { changed(); sampler?.midi(bytes); laser?.midi(bytes); }
+  if (r) { changed(); if (audio.context?.state === 'running') sampler?.midi(bytes); laser?.midi(bytes); }
   if (store.warning && warning !== store.warning) { notify(store.warning); renderCapture(); }
 }
 
 function option(value, text) { const o = node('option', text); o.value = value; return o; }
 function selectOptions(select, options, value) { select.replaceChildren(...options.map(([v, t]) => option(v, t))); select.value = value; }
-configBody.innerHTML = `<div class="eyebrow">DEVICES / LOCAL PERMISSIONS</div><h2>Signal paths</h2><section class="config-section"><div class="section-number">01 / MIDI</div><div class="toolbar"><label class="field checkbox"><input id="sysex-permission" type="checkbox" checked>Request SysEx permission</label><button id="connect-midi" class="primary">CONNECT MIDI</button></div><p id="midi-status" class="status">No MIDI access requested.</p><label class="field">MIDI input<select id="midi-input"></select></label><label class="field">Capture channel<select id="midi-channel"></select></label><label class="field">MIDI output<select id="midi-output"></select></label><p class="muted">Select an output, then ENABLE NOTE OUT below. Capturing registrations remains input-only; SysEx replay is unavailable.</p><section id="midi-note-out"></section></section><section class="config-section"><div class="section-number">02 / AUDIO</div><div class="toolbar"><button id="refresh-audio">LIST DEVICES</button><button id="enable-audio">ENABLE AUDIO</button></div><label class="field">Audio input device<select id="audio-input"></select></label><div class="toolbar"><button id="start-input">START INPUT</button><button id="stop-input">STOP INPUT</button></div><p id="audio-status" class="status">Input stopped · monitoring muted</p><div id="audio-routes"></div><label class="field checkbox"><input id="audio-monitor" type="checkbox">Monitor input through speakers</label><label class="field">Audio output<select id="audio-output"></select></label><p id="output-help" class="muted"></p><label class="field">Master level<input id="master-gain" type="range" min="0" max="1" step="0.01" value="0.3"></label></section><section class="config-section"><div class="section-number">03 / FIELD NOTES</div><p class="muted">Use Chrome or Edge at localhost. Capture does not require audio input. Permission denial, device loss and capture limits are reported without enabling output. Export JSON before closing the laptop.</p></section>`;
+function deviceChoices(group, options, value) {
+  group.replaceChildren(); group.value = value;
+  const counts = new Map();
+  for (const [id, name] of options) {
+    const words = name.replace(/[^\p{L}\p{N} ]/gu, ' ').trim().split(/\s+/);
+    const base = id === '' ? (name.startsWith('System') ? 'Sy' : '—') : id === 'demo' ? 'De' : ((words[0]?.[0] || '?').toUpperCase() + (words[1]?.[0] || words[0]?.[1] || '').toLowerCase());
+    const count = (counts.get(base) || 0) + 1; counts.set(base, count);
+    const button = node('button', base + (count > 1 ? count : '')); button.type = 'button';
+    button.title = name; button.setAttribute('aria-label', name); button.setAttribute('aria-pressed', String(id === value)); button.classList.toggle('active', id === value);
+    button.onclick = () => { group.value = id; group.dispatchEvent(new Event('change', { bubbles: true })); };
+    group.append(button);
+  }
+}
+configBody.classList.add('io-panel');
+configBody.innerHTML = `<div class="io-columns"><section class="config-section"><div class="io-section-head"><h3>MIDI</h3><button id="connect-midi" class="primary" title="Connect selected MIDI input and output">MIDI ON</button></div><label class="field checkbox" title="Request permission to capture registration SysEx"><input id="sysex-permission" type="checkbox" checked>SysEx</label><p id="midi-status" class="status"></p><label class="field">IN<div id="midi-input" class="device-choices" role="group" aria-label="MIDI input"></div></label><label class="field">Channel<select id="midi-channel" title="Capture channel"></select></label><label class="field">OUT<div id="midi-output" class="device-choices" role="group" aria-label="MIDI output"></div></label><section id="midi-note-out"></section></section><section class="config-section"><div class="io-section-head"><h3>AUDIO</h3><button id="audio-toggle" class="primary" title="Audio engine and mic input on/off; monitoring stays muted">AUDIO ON</button><button id="refresh-audio" title="Refresh audio devices">↻</button></div><p id="audio-status" class="status"></p><label class="field">IN<div id="audio-input" class="device-choices" role="group" aria-label="Audio input device"></div></label><div id="audio-routes"></div><label class="field checkbox" title="Send microphone through the mixer; starts muted"><input id="audio-monitor" type="checkbox">Monitor</label><label class="field">OUT<div id="audio-output" class="device-choices" role="group" aria-label="Audio output device"></div></label><p id="output-help" class="muted"></p><label class="field" title="Master output level">Master<input id="master-gain" type="range" min="0" max="1" step="0.01" value="0.3"></label><button id="audio-test" title="440 Hz · left 0.5 s, then right 0.5 s">TEST L → R</button></section></div>`;
 midiOut = mountMidiOut($('#midi-note-out', configBody), { notify, onRouteChange: () => spore?.pause('MIDI-route-change'), onEnable: () => { spore?.pause('MIDI-enable'); store.cancel(); renderCapture(); } });
 selectOptions($('#midi-channel', configBody), [['all', 'All channels'], ...Array.from({ length: 16 }, (_, i) => [String(i + 1), `Channel ${i + 1}`])], 'all');
 function renderConfig() {
-  selectOptions($('#midi-input', configBody), [['', 'Select an input'], ['demo', 'Demo input · practice only'], ...Array.from(access?.inputs.values() || []).filter(p => p.state === 'connected').map(p => [p.id, p.name || p.id])], inputId);
-  selectOptions($('#midi-output', configBody), [['', 'No output selected'], ...Array.from(access?.outputs.values() || []).filter(p => p.state === 'connected').map(p => [p.id, p.name || p.id])], outputId);
-  $('#midi-status', configBody).textContent = access ? `MIDI connected · SysEx ${access.sysexEnabled ? 'enabled' : 'unavailable'} · note output requires explicit enable` : ('requestMIDIAccess' in navigator ? 'Ready to request MIDI permission.' : 'Web MIDI unavailable here. Use Chrome/Edge on localhost; demo is available.');
-  selectOptions($('#audio-input', configBody), [['', 'System default input'], ...audio.devices.filter(d => d.kind === 'audioinput').map((d, i) => [d.deviceId, d.label || `Input ${i + 1}`])], audio.inputId);
-  selectOptions($('#audio-output', configBody), [['', 'System default output'], ...audio.devices.filter(d => d.kind === 'audiooutput' && d.deviceId !== 'default').map((d, i) => [d.deviceId, d.label || `Output ${i + 1}`])], audio.outputId);
-  $('#audio-output', configBody).disabled = !audio.context?.setSinkId;
-  $('#output-help', configBody).textContent = audio.context?.setSinkId ? 'Output changes apply to this audio context.' : 'Enable audio to check output selection; otherwise use system audio settings.';
+  deviceChoices($('#midi-input', configBody), [['', 'Select an input'], ['demo', 'Demo input · practice only'], ...Array.from(access?.inputs.values() || []).filter(p => p.state === 'connected').map(p => [p.id, p.name || p.id])], inputId);
+  deviceChoices($('#midi-output', configBody), [['', 'No output selected'], ...Array.from(access?.outputs.values() || []).filter(p => p.state === 'connected').map(p => [p.id, p.name || p.id])], outputId);
+  $('#midi-status', configBody).textContent = access ? `MIDI devices · SysEx ${access.sysexEnabled ? 'enabled' : 'unavailable'}` : ('requestMIDIAccess' in navigator ? 'Ready to request MIDI permission.' : 'Web MIDI unavailable here. Use Chrome/Edge on localhost; demo is available.');
+  deviceChoices($('#audio-input', configBody), [['', 'System default input'], ...audio.devices.filter(d => d.kind === 'audioinput' && d.deviceId !== 'default').map((d, i) => [d.deviceId, d.label || `Input ${i + 1}`])], audio.inputId);
+  deviceChoices($('#audio-output', configBody), [['', 'System default output'], ...audio.devices.filter(d => d.kind === 'audiooutput' && d.deviceId !== 'default').map((d, i) => [d.deviceId, d.label || `Output ${i + 1}`])], audio.outputId);
+  $('#connect-midi', configBody).textContent = inputPort || midiOut?.summary().armed ? 'MIDI OFF' : 'MIDI ON';
+  $('#audio-toggle', configBody).textContent = audio.context?.state === 'running' ? 'AUDIO OFF' : 'AUDIO ON';
+  $('#audio-output', configBody).querySelectorAll('button').forEach(button => { button.disabled = !!audio.context && !audio.context.setSinkId; });
+  $('#output-help', configBody).textContent = audio.context?.setSinkId ? 'Output changes apply to this audio context.' : 'Output choice applies when audio starts.' ;
   $('#audio-status', configBody).textContent = audio.stream ? `${audio.channels} input channel(s) reported · ${audio.settings.sampleRate || '?'} Hz · monitoring ${audio.monitor ? 'ON' : 'muted'}` : `Input stopped · audio ${audio.context?.state || 'not started'}`;
   $('#master-gain', configBody).value = audio.masterLevel;
   $('#audio-monitor', configBody).checked = audio.monitor; $('#audio-monitor', configBody).disabled = !audio.stream;
   const routes = $('#audio-routes', configBody); routes.replaceChildren();
   for (let i = 0; i < 2; i++) {
-    const row = node('div', undefined, 'audio-route'); const label = node('label', `PROCESS ${i ? 'B' : 'A'}`, 'field'); const sel = node('select');
+    const row = node('div', undefined, 'audio-route'); const label = node('label', `${i ? 'B' : 'A'}`, 'field'); const sel = node('select');
     selectOptions(sel, Array.from({ length: audio.channels || 2 }, (_, n) => [String(n), `Physical channel ${n + 1}`]), String(audio.routes[i]));
     sel.disabled = !audio.stream; sel.onchange = e => audio.route(i, Number(e.target.value)); label.append(sel);
     const meter = node('meter'); meter.min = 0; meter.max = 1; meter.value = 0; meter.dataset.meter = i; meter.setAttribute('aria-label', `Input ${i ? 'B' : 'A'} level`);
@@ -178,33 +206,72 @@ async function selectInput(id) {
   }
   renderConfig(); renderCapture();
 }
-$('#connect-midi', configBody).onclick = run(async () => {
+let midiPending = false, midiRevision = 0, audioPending = false;
+function watchMidiAccess() {
+  access.onstatechange = () => {
+    if (inputPort?.state === 'disconnected') { detachInput(); notify('MIDI input disconnected. Turn MIDI ON to reconnect.'); }
+    if (outputId && access.outputs.get(outputId)?.state !== 'connected') midiOut.select(null);
+    renderConfig(); renderCapture();
+  };
+}
+async function listMidiDevices() {
+  if(!navigator.requestMIDIAccess)return;
+  // Enumeration only: never attach an input handler or arm notes on reload.
+  const listed = await navigator.requestMIDIAccess({sysex:$('#sysex-permission',configBody).checked});
+  if(midiPending || inputPort || midiOut.summary().armed)return;
+  access=listed;watchMidiAccess();
+  if(!Object.hasOwn(ioSettings,'midiInput'))inputId=Array.from(access.inputs.values()).find(p=>p.state==='connected'&&p.name==='USB MIDI Device')?.id||'';
+  if(!Object.hasOwn(ioSettings,'midiOutput'))outputId=Array.from(access.outputs.values()).find(p=>p.state==='connected'&&p.name==='USB MIDI Device')?.id||'';
+  saveDeviceSelection();renderConfig();
+}
+async function connectMidi() {
   if (!navigator.requestMIDIAccess) throw new Error('Web MIDI is unavailable in this browser.');
-  const button = $('#connect-midi', configBody); button.disabled = true;
-  detachInput(); midiOut.select(null); outputId = ''; inputId = ''; if (access) access.onstatechange = null;
-  try { access = await navigator.requestMIDIAccess({ sysex: $('#sysex-permission', configBody).checked }); }
-  finally { button.disabled = false; }
-  access.onstatechange = () => { if (inputPort?.state === 'disconnected') { detachInput(); inputId = ''; notify('MIDI input disconnected. Capture canceled; select a reconnected input explicitly.'); } if (outputId && access.outputs.get(outputId)?.state !== 'connected') { midiOut.select(null); outputId = ''; } renderConfig(); renderCapture(); };
-  renderConfig(); notify('MIDI permission granted. Select an input explicitly.');
-});
-$('#midi-input', configBody).onchange = run(e => selectInput(e.target.value));
-$('#midi-output', configBody).onchange = e => { outputId = e.target.value; store.cancel(); midiOut.select(access?.outputs.get(outputId) || null); renderCapture(); notify('MIDI output selected. ENABLE NOTE OUT to send notes.'); };
+  const revision = ++midiRevision; midiPending = true;
+  try {
+    access = await navigator.requestMIDIAccess({ sysex: $('#sysex-permission', configBody).checked });
+    if (revision !== midiRevision || document.hidden) return;
+    watchMidiAccess();
+    const connected = ports => Array.from(ports.values()).filter(p => p.state === 'connected');
+    const inputs = connected(access.inputs), outputs = connected(access.outputs);
+    const preferred = (ports, id) => id ? ports.find(p => p.id === id) : ports.find(p => p.name === 'USB MIDI Device');
+    const input = preferred(inputs, inputId), output = preferred(outputs, outputId);
+    if (inputId && inputId !== 'demo' && !input) throw new Error('Selected MIDI input unavailable; choose a device.');
+    if (outputId && !output) throw new Error('Selected MIDI output unavailable; choose a device.');
+    await selectInput(inputId === 'demo' ? 'demo' : input?.id || '');
+    if (revision !== midiRevision || document.hidden) return;
+    outputId = output?.id || ''; midiOut.select(output || null);
+    saveDeviceSelection();
+    if (output) await midiOut.enable();
+    notify(input && output ? 'USB MIDI ready.' : 'USB MIDI Device unavailable in one or both directions; select the missing device.');
+  } finally { midiPending = false; renderConfig(); }
+}
+async function toggleMidi() {
+  if (midiPending || inputPort || midiOut.summary().armed) { midiRevision++; detachInput(); midiOut.disarm('operator-off'); renderConfig(); return; }
+  await connectMidi();
+}
+$('#connect-midi', configBody).onclick = run(toggleMidi);
+$('#midi-input', configBody).onchange = run(async e => { const enabled = midiOut.summary().armed; await selectInput(e.target.value); saveDeviceSelection(); if (enabled && midiOut.summary().portId) await midiOut.enable(); });
+$('#midi-output', configBody).onchange = run(async e => { outputId = e.target.value; saveDeviceSelection(); store.cancel(); midiOut.select(access?.outputs.get(outputId) || null); if (outputId) await midiOut.enable(); renderConfig(); renderCapture(); });
 $('#midi-channel', configBody).onchange = e => { channel = e.target.value; store.cancel(); renderCapture(); };
 $('#refresh-audio', configBody).onclick = run(() => audio.refresh());
-$('#enable-audio', configBody).onclick = run(() => audio.ensure());
-$('#audio-input', configBody).onchange = e => { audio.inputId = e.target.value; if (audio.stream) { audio.stopInput(); notify('Input selection changed; press START INPUT to open it.'); } };
-$('#start-input', configBody).onclick = run(() => audio.start(audio.inputId));
-$('#stop-input', configBody).onclick = () => audio.stopInput();
-$('#audio-output', configBody).onchange = run(e => audio.setOutput(e.target.value));
+async function toggleAudio() {
+  if (audioPending || audio.context?.state === 'running') { audioPending = false; sampler?.stop(); spore?.pause('audio-off'); audioPod?.cancelPendingMic(); await audio.off(); return; }
+  audioPending = true;
+  try { await audio.start(audio.inputId); } finally { audioPending = false; renderConfig(); }
+}
+$('#audio-toggle', configBody).onclick = run(toggleAudio);
+$('#audio-test', configBody).onclick = run(() => audio.testTone());
+$('#audio-input', configBody).onchange = run(async e => { audio.inputId = e.target.value; saveDeviceSelection(); await audio.start(audio.inputId); });
+$('#audio-output', configBody).onchange = run(async e => { const id=e.target.value; if(audio.context?.setSinkId) await audio.setOutput(id); else audio.outputId=id; saveDeviceSelection(); renderConfig(); });
 $('#audio-monitor', configBody).onchange = e => audio.setMonitor(e.target.checked);
 $('#master-gain', configBody).oninput = e => audio.setMasterGain(Number(e.target.value));
 navigator.mediaDevices?.addEventListener('devicechange', () => audio.refresh().catch(e => notify(e.message)));
 
 sampler = mountSampler(roots.sampler, { getAudioContext: () => audio.ensure(), getDestination: () => audio.destination(), notify });
 laser = mountLaser(roots.laser, { notify });
-audioPod = mountMixer(roots.audio, { audio, notify });
+audioPod = mountMixer(roots.audio, { audio, notify, toggleAudio });
 spore = mountSpore(roots.spore, { audio, midiOut, notify, onOutputChange: () => sampler.stop() });
-const titles = { capture: 'REGISTRATION CAPTURE', config: 'I/O CONFIGURATION', monitor: 'MIDI MONITOR', sampler: 'KLAIS / LOCAL SAMPLER', laser: 'HELIOS / FIELD TESTS', audio: 'AUDIO / MIXER & FX', spore: 'SPORE / GENERATOR & SCORE' };
+const titles = { capture: 'CAPTURE', config: 'I/O', monitor: 'MIDI MONITOR', sampler: 'SAMPLER', laser: 'LASER', audio: 'AUDIO', spore: 'SPORE' };
 const dock = createDockview($('#workspace'), {
   defaultTabComponent: 'pod-tab', createTabComponent: createPodTab,
   theme: { name: 'hylon', className: 'dockview-theme-hylon', gap: 5 }, disableFloatingGroups: true,
@@ -225,6 +292,7 @@ function defaultLayout() {
   if (!mobile) requestAnimationFrame(() => dock.getPanel('config')?.api.group.api.setSize({ width: 375 }));
 }
 try { const saved = localStorage.getItem(`hylon-layout-${innerWidth < 760 ? 'mobile' : 'desktop'}`); if (saved) dock.fromJSON(JSON.parse(saved)); else defaultLayout(); } catch { defaultLayout(); }
+for (const panel of dock.panels) if (titles[panel.id]) panel.api.setTitle(titles[panel.id]);
 dock.onDidLayoutChange(() => { try { localStorage.setItem(`hylon-layout-${innerWidth < 760 ? 'mobile' : 'desktop'}`, JSON.stringify(dock.toJSON())); } catch {} });
 function activate(id) {
   if (dock.activePanel?.api.isMaximized()) dock.activePanel.api.exitMaximized();
@@ -240,19 +308,47 @@ $('#config-modal').onclick = () => { $('#modal-config').append(configBody); dial
 $('#close-config').onclick = () => dialog.close();
 dialog.addEventListener('close', () => roots.config.append(configBody));
 $('#super-panic').onclick = async () => {
+  midiRevision++;
   store.cancel(); spore?.pause('SUPER PANIC'); sampler.stop(); audioPod.cancelPendingMic();
   const midiResult = midiOut.panic(); audio.panic(); renderCapture();
   notify(`SUPER PANIC · local audio muted / mic stopped / MIDI disabled${midiResult.failed ? ' · MIDI delivery failed: check device manually' : ''} · requesting HELIOS shutdown`);
   try { await laser.panic(); notify(`SUPER PANIC complete · master 0 / sources stopped / MIDI disabled${midiResult.failed ? ' · check failed MIDI delivery manually' : ''} · HELIOS STOP requested if connected`); }
   catch (error) { notify(`SUPER PANIC · audio muted / MIDI disabled · HELIOS shutdown failed: ${error.message}`); }
 };
-$('#stop-all').onclick = () => { store.cancel(); spore?.pause('global-stop'); midiOut?.disarm('global-stop'); sampler.stop(); laser.stop(); audioPod.cancelPendingMic(); audio.stopInput(); audio.mixer?.panic(); renderCapture(); notify('Capture ended · sampler stopped · input monitoring stopped · FX tails cleared · laser preview blacked out. Owned MIDI notes released; output disabled.'); };
-document.addEventListener('visibilitychange', () => { if (document.hidden) { store.cancel(); spore?.pause('global-stop'); midiOut?.disarm('global-stop'); sampler.stop(); audioPod.cancelPendingMic(); audio.setMonitor(false); renderCapture(); if (dirty) { clearTimeout(saveTimer); saveTimer = null; save(); } } });
-window.addEventListener('pagehide', () => { store.cancel(); spore?.pause('global-stop'); midiOut?.disarm('global-stop'); sampler.stop(); laser.stop(); audioPod.cancelPendingMic(); audio.stopInput(); audio.mixer?.panic(); clearTimeout(saveTimer); save(); });
+$('#stop-all').onclick = () => { midiRevision++; store.cancel(); spore?.pause('global-stop'); midiOut?.disarm('global-stop'); sampler.stop(); laser.stop(); audioPod.cancelPendingMic(); audio.stopTest(); audio.stopInput(); audio.mixer?.panic(); renderCapture(); notify('Capture ended · sampler stopped · input monitoring stopped · FX tails cleared · laser preview blacked out. Owned MIDI notes released; output disabled.'); };
+document.addEventListener('visibilitychange', () => { if (document.hidden) { midiRevision++; store.cancel(); spore?.pause('global-stop'); midiOut?.disarm('global-stop'); sampler.stop(); audioPod.cancelPendingMic(); audio.setMonitor(false); audio.stopTest(); renderCapture(); if (dirty) { clearTimeout(saveTimer); saveTimer = null; save(); } } });
+window.addEventListener('pagehide', () => { midiRevision++; store.cancel(); spore?.pause('global-stop'); midiOut?.disarm('global-stop'); sampler.stop(); laser.stop(); audioPod.cancelPendingMic(); audio.stopTest(); audio.stopInput(); audio.mixer?.panic(); clearTimeout(saveTimer); save(); });
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 setInterval(() => { if (store.target || $('#capture-state', roots.capture).classList.contains('listening')) renderCapture(); }, 500);
-const meterData = new Uint8Array(256);
-setInterval(() => audio.analysers.forEach(({ analyser }, i) => { analyser.getByteTimeDomainData(meterData); const rms = Math.sqrt(meterData.reduce((sum, n) => sum + ((n - 128) / 128) ** 2, 0) / meterData.length); const meter = $(`[data-meter="${i}"]`, configBody); if (meter) meter.value = rms; }), 100);
+// Header duplicates the pod commands; it never arms from score/session state.
+$('#command-audio').onclick = run(event => event.shiftKey ? audio.testTone() : toggleAudio());
+$('#command-midi').onclick = run(async event => {
+  if (!event.shiftKey) return toggleMidi();
+  if (!midiOut.summary().armed) await connectMidi();
+  midiOut.testSequence();
+});
+$('#command-laser').onclick = run(event => event.shiftKey ? laser.test() : laser.toggle());
+const meterData = new Float32Array(256);
+function level(analyser) {
+  if (!analyser || audio.context?.state !== 'running') return 0;
+  analyser.getFloatTimeDomainData(meterData);
+  let peak = 0; for (const sample of meterData) peak = Math.max(peak, Math.abs(sample));
+  return Math.min(1, peak);
+}
+function headerState(id, on, detail) {
+  const button = $('#command-' + id); button.classList.toggle('active', on); button.setAttribute('aria-pressed', String(on)); button.title = detail;
+}
+setInterval(() => {
+  const midi = midiOut.summary(), laserState = laser.status(), audioOn = audio.context?.state === 'running';
+  headerState('audio', audioOn, `Audio ${audioOn ? 'ON' : 'OFF'} · mic ${audio.stream ? audio.monitor ? 'monitored' : 'muted' : 'off'} · ${audio.context?.sampleRate || '—'} Hz · master ${Math.round(audio.masterLevel*100)}% · click: on/off · Shift+click: L/R 0.5 s each`);
+  headerState('midi', !!inputPort || midi.armed, `MIDI IN: ${inputPort?.name || 'OFF'} · OUT: ${midi.armed ? midi.portName : 'OFF'} · TX ${midi.sent} · ${midi.fault || midi.reason} · Shift+click: note 60 / channels 1–5 / 300 ms / duration 100 ms`);
+  headerState('laser', laserState.emitting, `Laser ${laserState.emitting ? 'ON' : laserState.pending ? 'starting' : 'OFF'} · ${laserState.message} · Shift+click: full square / 1 s`);
+  for (const [id, analyser, label] of [['header-mic', audio.inputMeter, 'MIC IN · physical channel 1'], ['header-out', audio.outputMeter, 'AUDIO OUT']]) {
+    const peak = level(analyser), meter = $('#' + id); meter.value = Math.max(0, (20 * Math.log10(Math.max(.001, peak)) + 60) / 60);
+    meter.title = `${label} · ${peak > .001 ? (20 * Math.log10(peak)).toFixed(1) + ' dBFS' : '−∞ dBFS'}`;
+  }
+  audio.analysers.forEach(({ analyser }, i) => { const meter = $(`[data-meter="${i}"]`, configBody); if (meter) meter.value = level(analyser); });
+}, 100);
 renderCapture(); renderMonitor(); renderConfig();
 try {
   const ownsLease = navigator.locks ? await new Promise((resolve, reject) => {
@@ -266,16 +362,22 @@ try {
     notify('This console is locked. Use the existing HYLON tab, or close it and reload here.');
     configBody.inert = true;
   } else if (ownsLease === null) {
-    $('#workspace').inert = false; $('#config-modal').disabled = false;
+    $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command').forEach(button => { button.disabled = false; });
     $('#storage-status').textContent = 'MEMORY ONLY · EXPORT JSON';
     notify('Browser lacks single-writer locking; use JSON export. Persistent archive is disabled.');
   } else {
   db = await openArchive(); const saved = await readSession(db);
   if (saved) { store = new CaptureStore(saved); selected = store.session.slots[0]?.id; renderCapture(); renderMonitor(); }
   $('#storage-status').textContent = 'Local archive ready';
-  $('#workspace').inert = false; $('#config-modal').disabled = false;
+  $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command').forEach(button => { button.disabled = false; });
   }
-} catch (e) { db = null; $('#workspace').inert = false; $('#config-modal').disabled = false; $('#storage-status').textContent = 'MEMORY ONLY · EXPORT JSON'; notify(`Local archive unavailable: ${e.message}. Export JSON before closing.`); }
+} catch (e) { db = null; $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command').forEach(button => { button.disabled = false; }); $('#storage-status').textContent = 'MEMORY ONLY · EXPORT JSON'; notify(`Local archive unavailable: ${e.message}. Export JSON before closing.`); }
+
+// List choices on every load without starting audio, listening to MIDI or enabling output.
+Promise.allSettled([audio.refresh(),listMidiDevices()]).then(results=>{
+  const failed=results.filter(result=>result.status==='rejected');
+  if(failed.length)notify('Device list needs browser permission · use A/M or I/O to retry.');
+});
 
 // Fullscreen is a local display action; hardware authority never follows it.
 const fullscreenButton = $('#fullscreen');
@@ -292,5 +394,5 @@ document.addEventListener('fullscreenchange', () => {
   fullscreenButton.setAttribute('aria-pressed', String(Boolean(document.fullscreenElement)));
 });
 if (import.meta.hot) {
-  import.meta.hot.on('vite:beforeFullReload', () => { spore?.pause('reload'); midiOut?.disarm('reload'); sampler?.stop(); laser?.stop(); audioPod?.cancelPendingMic(); audio.stopInput(); audio.mixer?.panic(); });
+  import.meta.hot.on('vite:beforeFullReload', () => { midiRevision++; spore?.pause('reload'); midiOut?.disarm('reload'); sampler?.stop(); laser?.stop(); audioPod?.cancelPendingMic(); audio.stopTest(); audio.stopInput(); audio.mixer?.panic(); });
 }

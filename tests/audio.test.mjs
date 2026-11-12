@@ -5,9 +5,9 @@ import { AudioSystem } from '../apps/hylon/src/audio.js';
 class FakeNode {
   constructor() {
     this.connections = []; this.disconnected = false;
-    this.gain = { value: 1, setTargetAtTime(value) { this.value = value; } };
+    this.gain = { value: 1, setTargetAtTime(value) { this.value = value; }, setValueAtTime(value) { this.value = value; }, linearRampToValueAtTime(value) { this.value = value; } };
   }
-  connect(destination, output = 0) { this.connections.push({ destination, output }); }
+  connect(destination, output = 0, input = 0) { this.connections.push({ destination, output, input }); }
   disconnect(destination) {
     if (destination) this.connections = this.connections.filter(c => c.destination !== destination);
     else { this.connections = []; this.disconnected = true; }
@@ -16,8 +16,11 @@ class FakeNode {
 class FakeContext {
   constructor() { this.state = 'running'; this.currentTime = 0; this.destination = new FakeNode(); }
   async resume() { this.state = 'running'; }
+  async suspend() { this.state = 'suspended'; }
   createGain() { return new FakeNode(); }
   createAnalyser() { return new FakeNode(); }
+  createChannelMerger() { return new FakeNode(); }
+  createOscillator() { const n = new FakeNode(); n.frequency = {value:0}; n.start = time => { n.startAt = time; }; n.stop = time => { n.stopAt = time; }; return n; }
   createMediaStreamSource() { return new FakeNode(); }
   createChannelSplitter(channels) { const n = new FakeNode(); n.channels = channels; return n; }
   async setSinkId(id) { if (id === 'denied') throw new Error('Sink permission denied'); this.sinkId = id; }
@@ -46,7 +49,8 @@ test('two explicit channels, independent gains and initially muted monitoring', 
   assert.deepEqual(requests[0].audio.deviceId, { exact: 'microphone' });
   assert.equal(requests[0].audio.echoCancellation, false);
   assert.deepEqual(audio.routes, [0, 1]); assert.equal(audio.analysers.length, 2);
-  assert.deepEqual(audio.splitter.connections.map(c => c.output), [0, 1]);
+  assert.deepEqual(audio.splitter.connections.filter(c => c.destination !== audio.inputMeter).map(c => c.output), [0, 1]);
+  assert.equal(audio.splitter.connections.find(c => c.destination === audio.inputMeter).output, 0);
   assert.equal(audio.monitor, false); assert.ok(audio.analysers.every(a => a.monitor.gain.value === 0));
   audio.route(0, 1); assert.equal(audio.routes[0], 1);
   audio.gain(0, 0.4); assert.equal(audio.analysers[0].gain.gain.value, 0.4);
@@ -119,4 +123,34 @@ test('SUPER PANIC releases microphone and forces master to exact zero',async t=>
   const input=stream();environment(t,async()=>input);const audio=new AudioSystem();await audio.start();audio.setMonitor(true);
   let cancelled=false;audio.bus.gain.cancelScheduledValues=()=>{cancelled=true;};audio.bus.gain.setValueAtTime=value=>{audio.bus.gain.value=value;};
   audio.panic();assert.equal(input.track.stopped,true);assert.equal(audio.stream,null);assert.equal(audio.monitor,false);assert.equal(audio.masterLevel,0);assert.equal(audio.bus.gain.value,0);assert.equal(cancelled,true);
+});
+
+test('header tone is finite, left then right, and off releases mic/test nodes without resetting master', async t => {
+  environment(t); const audio = new AudioSystem();
+  await audio.start(); const mic = audio.stream;
+  await audio.testTone();
+  const [merger, left, leftGain, right, rightGain] = audio.testNodes;
+  assert.equal(left.frequency.value, 440); assert.equal(right.frequency.value, 440);
+  assert.equal(left.stopAt - left.startAt, .5); assert.equal(right.stopAt - right.startAt, .5);
+  assert.equal(right.startAt, left.stopAt);
+  assert.equal(leftGain.connections[0].input, 0); assert.equal(rightGain.connections[0].input, 1);
+  assert.equal(merger.connections[0].destination, audio.bus);
+  assert.equal(audio.bus.connections[0].destination, audio.outputMeter);
+  await audio.off();
+  assert.equal(audio.context.state, 'suspended'); assert.equal(mic.track.stopped, true);
+  assert.equal(audio.testNodes.length, 0); assert.equal(audio.masterLevel, .3);
+});
+test('off during pending tone startup prevents late test creation', async t => {
+  environment(t); const audio = new AudioSystem();
+  const pending = audio.testTone(); await audio.off(); await pending;
+  assert.equal(audio.testNodes.length, 0); assert.equal(audio.context.state, 'suspended');
+});
+test('remembered output is applied at start; OFF cancels a delayed output restore', async t => {
+  environment(t); const audio = new AudioSystem(); audio.outputId='remembered-output';
+  await audio.ensure(); assert.equal(audio.context.sinkId,'remembered-output');
+  audio.context=null;
+  const pending=audio.ensure();
+  // The initial setSinkId is asynchronous even on this fake context.
+  const rejected=assert.rejects(pending,/cancelled/); await audio.off(); await rejected;
+  assert.equal(audio.context.state,'suspended');
 });

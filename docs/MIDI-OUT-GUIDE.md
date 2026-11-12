@@ -1,13 +1,13 @@
-# HYLON 0.5 — MIDI notes, SPORE routing and SUPER PANIC
+# HYLON 0.7 — MIDI notes, SPORE routing and SUPER PANIC
 
 ## I/O note tester
 
-1. Open **02 I/O** (or I/O MODAL), **CONNECT MIDI** and select the intended **MIDI output**. SysEx permission remains optional for note testing; it is needed only for SysEx capture. Selecting a port does not enable output.
-2. Press **ENABLE NOTE OUT**. This opens the selected port for this session. No notes are sent by enabling alone.
-3. Set **Test channel** (1–16), **Test note** (0–127, C4=60), velocity (1–127) and duration (10–2000 ms). **TEST NOTE** sends the finite note to the selected output, without invoking the local sampler. Initial values: channel 1, note 60, velocity 64, 250 ms.
-4. **STOP TEST NOTES** releases only tester ownership. **STOP / DISABLE MIDI OUT** cancels all queued notes, releases owned pitches and disables output.
+1. Open **02 I/O** (or I/O MODAL) and press **MIDI ON**, or click header **M**. Exact **USB MIDI Device** is preferred for IN and OUT; if missing, select the intended port explicitly. SysEx permission is needed only for SysEx capture. No arbitrary first-device fallback is used.
+2. MIDI ON opens the selected output for this session. Selecting an output explicitly also opens it; the separate ENABLE NOTE OUT step has been removed. Opening alone sends no notes.
+3. Set **Ch** (1–16), **Note** (0–127, C4=60), velocity (1–127) and **ms** (10–2000). **TEST NOTE** sends the finite note without local sampler audition. Initial values: channel 1, note 60, velocity 64, 250 ms.
+4. **TEST 1 → 5**, or **Shift+M**, sends note 60 / velocity 64 on channels 1–5, every 300 ms for 100 ms each. **STOP TEST NOTES** cancels the sequence and releases tester ownership. **MIDI OFF** cancels pending notes, releases owned pitches and detaches input.
 
-TX counts actual note-on calls accepted by Web MIDI, not audible hardware confirmation. HELD/QUEUE/DROPPED/SHARED are gateway state. Delivery failure is visible; a disconnected device may need manual note release. No MIDI device is selected or enabled at startup, import or reload.
+TX counts actual note-on calls accepted by Web MIDI, not audible hardware confirmation. HELD/QUEUE/DROPPED/SHARED are gateway state. Delivery failure is visible; a disconnected device may need manual note release. Device choices are enumerated and the last selections restored at startup/reload; input listeners and note output stay OFF. Import never enables devices. Buttons show short abbreviations with full names on hover. The M header border pulses on incoming messages with note-on brightness proportional to velocity.
 
 ## Fixed Klais mapping
 

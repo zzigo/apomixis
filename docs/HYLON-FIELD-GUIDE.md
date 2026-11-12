@@ -21,7 +21,7 @@ Use the **same URL, port, browser and browser profile** throughout the visit: In
 
 ## Capture a registration
 
-1. Open **02 I/O**. Leave **Request SysEx permission** checked and press **CONNECT MIDI** yourself. If SysEx access is denied, inspect browser/OS permissions; uncheck it and reconnect only if you want CC/PC-only observation. The status must say whether SysEx is enabled.
+1. Open **02 I/O**. Leave **SysEx** checked and press **MIDI ON** (or header **M**). This selects the exact **USB MIDI Device** name in both directions when available, opens input and enables notes on the selected output; there is no second note-enable button. If SysEx access is denied, inspect browser/OS permissions; uncheck it and reconnect only if you want CC/PC-only observation. The status must say whether SysEx is enabled.
 2. Choose the exact **MIDI input**. Nothing selects a device automatically. Capture channel defaults to all; SysEx has no channel and is always eligible from the selected port. Physical note output is separately enabled in I/O; starting capture disables it and releases owned notes. Captured SysEx/registration replay remains unavailable.
 3. In **01 CAPTURE**, search or filter a division, then choose a registration. The 74 initial stop/tremulant/coupler labels come from the archived provisional catalog. They are not a verified console map. Use **ADD CUSTOM SLOT** for missing controls, scene messages or different console labels, and record details in Session notes.
 4. Start with the registration OFF on the console. Press **CAPTURE ON**, activate only that registration, then **END CAPTURE**. The window accepts multiple SysEx/CC/PC messages, including repeated observations, for at most 15 seconds. It never echoes them.
@@ -43,7 +43,7 @@ Bounds: 4 KiB per MIDI frame/packet; two-second incomplete-SysEx timeout; 15-sec
 
 ## Audio I/O
 
-Audio is optional for capturing MIDI. **ENABLE AUDIO** starts the shared local audio context; **START INPUT** separately requests microphone access. Choose a device, then explicitly start it. Stop cancels late permission results and tears down old tracks when switching.
+Audio is optional for capturing MIDI. **AUDIO ON/OFF** in I/O, AUDIO or header **A** controls the same audio engine and microphone input. ON requests the selected mic with monitoring muted; OFF cancels pending mic/test work, stops local sources and input, clears FX and suspends audio without changing the master fader. Changing an active input reopens the chosen device. No duplicate START INPUT step is required.
 
 PROCESS A/B route two processing lanes from the channels the browser reports for the **same selected input device**. A mono source can feed both lanes; this is not a promise of two independent USB interfaces or arbitrary multichannel hardware access. Channel selection/gain/meters are available per lane. Monitoring is muted by default and must be explicitly enabled. No recording or pitch follower is included yet.
 
@@ -88,4 +88,26 @@ Choose **05 AUDIO** for fixed stereo sampler/mic mixing, shared reverb/delay and
 
 ## Note tester / MIDI output / SUPER PANIC
 
-Select a MIDI output in I/O and ENABLE NOTE OUT to use TEST NOTE. SPORE has exclusive SIMULATION / LOCAL AUDIO / MIDI OUT output buttons. The fixed console mapping is Manual I–IV→channels 1–4, pedal→5. Header SUPER PANIC hard-mutes local audio and requests MIDI CC123/120 on all channels of the selected output plus HELIOS shutdown if connected. Ordinary capture/Stop All disables note output and releases owned notes. See **MIDI-OUT-GUIDE.md** in the prepared package.
+Use MIDI ON in I/O (or header M), then TEST NOTE. An explicit output selection also opens note output. SPORE has exclusive SIMULATION / LOCAL AUDIO / MIDI OUT output buttons. The fixed console mapping is Manual I–IV→channels 1–4, pedal→5. Header SUPER PANIC hard-mutes local audio and requests MIDI CC123/120 on all channels of the selected output plus HELIOS shutdown if connected. Ordinary capture/Stop All disables note output and releases owned notes. See **MIDI-OUT-GUIDE.md** in the prepared package.
+
+## Compact header / HYLON 0.7
+
+A/M/L mirror pod commands; green means audio running, MIDI input/output active (hover lists each direction), or laser emitting. Tooltips expose device/status details. The two thin green lines show physical mic channel 1 and final audio output peak, mapped from −60 to 0 dBFS; hover for values. They are software sample peaks, not calibrated acoustic/optical measurements.
+
+Shift-click tests are also available in the pods:
+
+- **A / TEST L → R:** 440 Hz sine, L for 0.5 s then R for 0.5 s, through the existing master at 0.1 signal amplitude with fades. No microphone permission is needed for the tone alone.
+- **M / TEST 1 → 5:** note 60 / velocity 64, channels 1–5, attacks every 300 ms, duration 100 ms. MIDI ON is requested first if needed.
+- **L / TEST □ / 1s:** centered full-field square, current PPS and intensity, then BLACKOUT. Temporary field size is not saved and prior output does not resume. USB selection is requested if needed.
+
+STOP ALL, SUPER PANIC, page hide/reload and process OFF cancel pending tests. I/O uses two columns above 400 px of content width, otherwise one; TEST fields stay in a compact grid. Settings are available in pods as well as the header.
+
+### Compact mixer, monitor and device memory
+
+Device IN/OUT choices are short buttons (for example De / Um) with full names on hover; one click selects/opens the chosen path. Duplicate abbreviations receive numeric suffixes. MIDI channel selectors remain numeric. On reload, MIDI and audio enumeration runs without starting streams, attaching MIDI listeners or arming output. Browser permission may be needed on first use; microphone labels depend on browser permissions. The four selected IDs are kept in `hylon-io-devices-v1`; unavailable remembered devices are not silently replaced by a different available device. The MIDI header border pulses on received messages, with note-on brightness scaled by velocity.
+
+AUDIO uses closely packed vertical faders with short level/send labels and hover descriptions. MIDI MONITOR is a compact single-line log with no row rules or introductory text; the trash icon clears it. Pod titles now match their workspace navigation names, including LASER.
+
+LASER preview is 80% of its previous width/height cap, with a smaller original-generator preview. Drag the four mapping handles (or use arrow keys; Shift for fine adjustments) to fit a convex projection zone. Mapping is projective, shared by the preview and emitted frames, and retained/exported in the local profile as `warpQuad`. Legacy profiles default to the identity map. Size/alignment/flips still apply around the mapped shape. Crossed, concave, tiny or out-of-field quads are rejected. RESET MAP restores the four original corners. The one-second maximum-size test fills the configured mapping zone and does not overwrite saved size/alignment.
+
+Verification for 0.7: 86 Node tests, 7 asset tests, deterministic score check and production build; 7 whole-console mock browser checks plus a separate reload/restored-selection check. Tests cover one-step device buttons, velocity pulse scaling, finite tests and stop cancellation, remembered output applied at audio start, and reload with devices selected but processes OFF. Four-corner projection mathematics and DAC step bounds are tested. Actual optical mapping, MIDI response, audio routing/perceptual quality and meter calibration still require operator rehearsal.
