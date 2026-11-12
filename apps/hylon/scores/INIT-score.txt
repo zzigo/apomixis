@@ -1,0 +1,143 @@
+SPORE-SCORE 1
+# INIT: start here. Lines beginning with # are comments.
+# This first SPORE grammar currently uses five sections and 300 seconds.
+# Seconds are musical time; MIDI note 60 is C4. Outputs are selected in the UI.
+id apomixis.spore.init
+version 0.1.0-learning
+title "INIT / basic SPORE commands"
+number esporo
+duration 300
+seed 1931
+audition-transpose 0
+source-sha256 b9fd61ecc755e34e837bb6adbcf7948d202616a347fd51646c9c8a75485c2e2f
+
+# Musical roles -> organ divisions. The device is never named in the score.
+voice $GO = go range 36 72
+voice $PO = po range 36 72
+voice $RE = re range 36 72
+voice $SO = so range 36 72
+voice $PE = pe range 24 55
+
+# Declare a named coupling. Activate it in a section with: couplings ii_i
+coupling ii_i = $PO -> $GO transpose 0
+
+# Voice availability: open at 0, close at the end.
+fertility $GO 0 end
+fertility $PO 0 end
+fertility $RE 0 end
+fertility $SO 0 end
+fertility $PE 0 end
+
+# Harmonicity follows a time curve. SHIFT+1..9 overrides it during playback.
+harmonicity 0 "P5" "Simple fifth"
+harmonicity 300 "P5" "Keep the same harmonic field"
+
+# 1..5 jumps to these sections. Each section ends with the command: end
+# rule: cell birth/survival; cap: note density; field: pitch classes, C=0.
+# mutation / dispersion / polyembryony / tuber / swell / crescendo: 0..1.
+# Logical registers color LOCAL AUDIO; KLAIS uses the layers selected in SAMPLER.
+
+section A "Seed" 0 to 60 bpm 48
+relation "Basic pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 7
+cap 2
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.4
+crescendo 0.2
+registers $GO bourdon8
+registers $PO bourdon8
+registers $RE -
+registers $SO -
+registers $PE -
+couplings -
+bio "Seed: change one command and APPLY SCORE TXT"
+end
+
+section B "Grow" 60 to 120 bpm 60
+relation "Basic pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 4 7
+cap 3
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.4
+crescendo 0.2
+registers $GO bourdon8
+registers $PO bourdon8
+registers $RE -
+registers $SO -
+registers $PE -
+couplings -
+bio "Grow: change one command and APPLY SCORE TXT"
+end
+
+section C "Mutate" 120 to 180 bpm 72
+relation "Basic pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0.02
+field 0 2 4 7 9
+cap 4
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.4
+crescendo 0.2
+registers $GO bourdon8
+registers $PO bourdon8
+registers $RE -
+registers $SO -
+registers $PE -
+couplings -
+bio "Mutate: change one command and APPLY SCORE TXT"
+end
+
+section D "Thin" 180 to 240 bpm 60
+relation "Basic pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 4 7
+cap 2
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.4
+crescendo 0.2
+registers $GO bourdon8
+registers $PO bourdon8
+registers $RE -
+registers $SO -
+registers $PE -
+couplings -
+bio "Thin: change one command and APPLY SCORE TXT"
+end
+
+section E "Rest" 240 to 300 bpm 48
+relation "Basic pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 7
+cap 1
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.4
+crescendo 0.2
+registers $GO bourdon8
+registers $PO bourdon8
+registers $RE -
+registers $SO -
+registers $PE -
+couplings -
+bio "Rest: change one command and APPLY SCORE TXT"
+end

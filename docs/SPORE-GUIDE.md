@@ -100,3 +100,13 @@ TXT is authoritative. `npm run build:spore` compiles the source TXT into JSON; `
 The offline ZIP includes built application, `scores/SPORE.score.txt`, compiled JSON and this guide. It requires no remote script/font/audio dependency for SPORE. No production deployment or automatic publication is authorized.
 
 HYLON 0.5 MIDI follow-up: output state shows the chosen port, TX/held/dropped counts and fixed channels. Stop/seek/route changes cancel owned SPORE notes. Startup/reload/score apply disable physical output. SUPER PANIC also sends operator-requested CC123/120 and forces master zero; raise master manually before returning to local audio.
+
+## App TXT files and shared transport
+
+Real editable source files now live in `apps/hylon/scores/`: `SPORE-score.txt` is SPORE's default, copied from the existing candidate, and `INIT-score.txt` teaches the closed grammar with comments and five simple sections. The current SPORE engine still requires five sections totaling 300 seconds. The header/pod file selectors load these actual app files; editor changes remain local drafts until APPLY, with TXT export available. Editing a draft does not write into the repository. Future generator defaults follow `GENERATOR-score.txt`. The offline packager includes app score files in `scores/app`.
+
+All score editors use a shared minimal highlighted textarea layer: comments, directives, strings, voice variables, numbers and operators. Keyboard editing/selection remains native.
+
+The header mirrors PLAY/STOP (STOP resets), HOLD (preserves position), RESET and Speed. SPORE is the current active scene; the selector also identifies the current file. Keys 1–9 select available macro sections (currently 1–5); Shift+1–9 selects harmonicity bank 1. Text fields, score editing and modifier shortcuts are excluded.
+
+KLAIS, LOCAL AUDIO and MIDI OUT are independent output toggles. SIMULATION silences all three while retaining visual playback. Changes to these routes do not pause/reset the transport; newly enabled adapters join subsequent events. A single performance clock is translated into audio-context scheduling when dispatching local synthesis. MIDI must be enabled separately using M; while disabled, the form continues without physical notes. Mixer buses/velocity scaling are shared across scores. This iteration is intentionally unverified; no tests, builds or UI checks were run.

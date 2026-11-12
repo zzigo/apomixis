@@ -4,6 +4,7 @@ export class AudioSystem {
     this.devices = []; this.inputId = ''; this.outputId = ''; this.routes = [0, 1];
     this.gains = [1, 1]; this.monitor = false; this.bus = null; this.nodes = []; this.analysers = [];
     this.inputRevision = 0; this.createMixer = createMixer; this.mixer = null; this.micLane = 0; this.masterLevel = .3;
+    this.midiLevel = 1; this.pitchListeners = new Set();
     this.testNodes = []; this.testRevision = 0; this.engineRevision = 0; this.inputMeter = null; this.outputMeter = null;
   }
   async ensure() {
@@ -13,14 +14,17 @@ export class AudioSystem {
       this.bus = this.context.createGain(); this.bus.gain.value = this.masterLevel;
       this.outputMeter = this.context.createAnalyser(); this.outputMeter.fftSize = 256;
       this.bus.connect(this.outputMeter); this.outputMeter.connect(this.context.destination);
-      if (this.createMixer) this.mixer = this.createMixer(this.context, this.bus);
+      if (this.createMixer) { this.mixer = this.createMixer(this.context, this.bus); this.mixer.onPitch?.(pitch=>{for(const listener of this.pitchListeners)listener(pitch);}); }
       if (this.outputId && this.context.setSinkId) await this.context.setSinkId(this.outputId);
     }
+    await this.mixer?.ready;
     if (revision !== this.engineRevision) throw new Error('Audio start cancelled');
     if (this.context.state !== 'running') await this.context.resume();
     if (revision !== this.engineRevision) throw new Error('Audio start cancelled');
     this.onChange(); return this.context;
   }
+  onPitch(listener) { this.pitchListeners.add(listener); return () => this.pitchListeners.delete(listener); }
+  localDestination() { return this.mixer?.localInput || this.bus; }
   destination() { return this.mixer?.samplerInput || this.bus; }
   setMasterGain(value) {
     if (!Number.isFinite(value) || value < 0 || value > 1) return;
@@ -99,7 +103,7 @@ export class AudioSystem {
     this.onChange();
   }
   stopInput() {
-    this.inputRevision++; this.mixer?.enableMic(false);
+    this.inputRevision++; this.mixer?.enableMic(false); this.mixer?.resetMic();
     this.stream?.getTracks().forEach(t => t.stop()); this.stream = null; this.monitor = false;
     this.nodes.forEach(n => { try { n.disconnect(); } catch {} });
     this.nodes = []; this.analysers = []; this.inputMeter = null; this.settings = null; this.onChange();

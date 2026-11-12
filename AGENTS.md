@@ -24,6 +24,8 @@ LASER live-control correction (2026-11-12, 0.7.1): composer reports unexpected m
 
 Rapid-session instruction (2026-11-12): composer explicitly requests no tests or verification unless they explicitly ask for test/TEST. Respect this for the current session. Experimental ADVANCED scan controls (blanking/settling, RGB/XY timing, moving corner/trace speed and route optimization) are implemented with neutral defaults and existing frame bounds; this iteration is intentionally unverified.
 
+Mic/score follow-up (2026-11-12): composer requests raw mic-to-master, monophonic autotune instead of vocoder, an independently enabled pitch→MIDI follower with repeat/confidence/gate/range filters, and adjustable reverb time/damping/pre-delay. Implemented in shared audio worklet/mixer and existing MIDI gateway with short renewable follower leases. Composer also requests minimal shared score highlighting, app-local `GENERATOR-score.txt` / instructional INIT files, header transport, 1–9 macro / Shift+1–9 harmonicity shortcuts, parallel KLAIS/local/MIDI routes and newest-first monitor. Current active generator is SPORE; its engine still requires five sections and 300 seconds. Klais uses selected bank layers, not an inferred register mapping. This iteration intentionally has no tests/builds/UI checks under the rapid-session instruction; DSP, pitch tracking and device response remain unverified.
+
 ## 1. Operating rules
 
 - Keep the same `zzigo/apomixis` repository. **SuperCollider is archived reference, not the active runtime**, by the composer's current instruction. Preserve `archive/supercollider/` and Git history; do not load its setup to inspect it or introduce an SC runtime dependency.

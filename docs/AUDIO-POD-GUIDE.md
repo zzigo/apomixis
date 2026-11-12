@@ -52,3 +52,13 @@ Development-only `http://localhost:4173/audio-check.html` runs synthetic signal 
 9. Live sampler meter detects a synthetic signal while the post-master meter remains silent with master gain zero.
 
 Eight checks use OfflineAudioContext; the last uses a live context with the master hard-muted before connection. No audible playback, microphone permission, MIDI device or USB transfer was used. The actual microphone, room feedback, subjective vocoder sound, CPU headroom under a full performance and physical output device routing remain unverified. No online deployment or production service was changed.
+
+## Mic correction, follower and parallel score outputs
+
+The former carrier vocoder is replaced by a monophonic mic pitch-correction AudioWorklet. DRY bypasses correction/chopper; TUNE uses corrected mic through chopper; both feed the MIC fader → master and shared aux sends. Monitoring stays muted until MIC TO MASTER. Correction supports amount, retune ms, root/scale and transpose. The two-head time-domain shifter is experimental and does not provide formant preservation; pitch confidence and frequency appear in MIC. No raw audio leaves the audio thread.
+
+The MIC MIDI FOLLOWER checkbox is independent from audible monitoring and starts OFF. Selected MIDI OUT must already be ON. Controls: channel, RMS gate, confidence, stable/release times, repeated-note cooldown/filter, pitch range and transpose. Sustained notes renew a short owned lease; silence/lost input, hidden page, disabled MIDI and panic release follower notes. It shares the MIDI attack budget and fixed note gateway, without raw MIDI thru.
+
+REVERB now provides decay time, damping and pre-delay. Decay regeneration is debounced and crossfaded. Separate KLAIS and LOCAL AUDIO strips have independent levels/aux sends. MIDI OUT has a velocity-scale fader, not an audio gain. Score routing can enable KLAIS, local synthesis and physical note MIDI simultaneously; SIMULATION selects no outputs. Klais uses the recorded layers explicitly selected in SAMPLER; score logical register names are not fabricated sample mappings.
+
+This session's implementation was not tested, built or auditioned, as requested. Perceptual tuning quality, pitch accuracy, latency, mic/device behavior and physical MIDI response remain unverified.

@@ -1,3 +1,4 @@
+import { installScoreHighlights } from './score-editor.js';
 import { createDockview } from 'dockview-core';
 import 'dockview-core/dist/styles/dockview.css';
 import './style.css';
@@ -31,7 +32,7 @@ let sampler, laser, audioPod, spore, midiOut;
 let dirty = false, releaseLease;
 $('#workspace').inert = true;
 $('#config-modal').disabled = true;
-document.querySelectorAll('.command').forEach(button => { button.disabled = true; });
+document.querySelectorAll('.command,.scene-transport button,.scene-transport select').forEach(button => { button.disabled = true; });
 const audio = new AudioSystem(() => { renderConfig(); audioPod?.sync(); }, { createMixer: createAudioMixer });
 audio.inputId = ioSettings.audioInput || ''; audio.outputId = ioSettings.audioOutput || '';
 const roots = Object.fromEntries(['capture', 'config', 'monitor', 'sampler', 'laser', 'audio', 'spore'].map(id => [id, node('section', undefined, 'pod-root')]));
@@ -133,7 +134,7 @@ $('#add-slot', roots.capture).onclick = () => {
 roots.monitor.innerHTML = '<div class="panel-body monitor-pod"><div class="toolbar"><button id="clear-monitor" class="icon-clear" title="Clear monitor" aria-label="Clear monitor"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></button></div><div id="monitor-log"></div></div>';
 function renderMonitor() {
   const log = $('#monitor-log', roots.monitor); log.replaceChildren();
-  for (const r of store.session.events.slice(-80).reverse()) {
+  for (const {record:r} of store.session.events.map((record,index)=>({record,index})).sort((a,b)=>new Date(b.record.time)-new Date(a.record.time)||b.index-a.index).slice(0,80)) {
     const line = node('div', undefined, 'monitor-row'); line.title = `${new Date(r.time).toLocaleTimeString()} · ${r.kind} · ${r.hex} · ${r.slotId || r.source.name}`;
     line.append(node('time', new Date(r.time).toLocaleTimeString()), node('span', r.kind.toUpperCase(), 'message-kind'), node('code', r.hex), node('span', r.slotId ? `${r.slotId} / ${r.transition}` : r.source.name, 'muted')); log.append(line);
   }
@@ -167,7 +168,7 @@ function deviceChoices(group, options, value) {
 }
 configBody.classList.add('io-panel');
 configBody.innerHTML = `<div class="io-columns"><section class="config-section"><div class="io-section-head"><h3>MIDI</h3><button id="connect-midi" class="primary" title="Connect selected MIDI input and output">MIDI ON</button></div><label class="field checkbox" title="Request permission to capture registration SysEx"><input id="sysex-permission" type="checkbox" checked>SysEx</label><p id="midi-status" class="status"></p><label class="field">IN<div id="midi-input" class="device-choices" role="group" aria-label="MIDI input"></div></label><label class="field">Channel<select id="midi-channel" title="Capture channel"></select></label><label class="field">OUT<div id="midi-output" class="device-choices" role="group" aria-label="MIDI output"></div></label><section id="midi-note-out"></section></section><section class="config-section"><div class="io-section-head"><h3>AUDIO</h3><button id="audio-toggle" class="primary" title="Audio engine and mic input on/off; monitoring stays muted">AUDIO ON</button><button id="refresh-audio" title="Refresh audio devices">↻</button></div><p id="audio-status" class="status"></p><label class="field">IN<div id="audio-input" class="device-choices" role="group" aria-label="Audio input device"></div></label><div id="audio-routes"></div><label class="field checkbox" title="Send microphone through the mixer; starts muted"><input id="audio-monitor" type="checkbox">Monitor</label><label class="field">OUT<div id="audio-output" class="device-choices" role="group" aria-label="Audio output device"></div></label><p id="output-help" class="muted"></p><label class="field" title="Master output level">Master<input id="master-gain" type="range" min="0" max="1" step="0.01" value="0.3"></label><button id="audio-test" title="440 Hz · left 0.5 s, then right 0.5 s">TEST L → R</button></section></div>`;
-midiOut = mountMidiOut($('#midi-note-out', configBody), { notify, onRouteChange: () => spore?.pause('MIDI-route-change'), onEnable: () => { spore?.pause('MIDI-enable'); store.cancel(); renderCapture(); } });
+midiOut = mountMidiOut($('#midi-note-out', configBody), { notify, getLevel:()=>audio.midiLevel, onRouteChange: () => midiOut?.stop(), onEnable: () => { store.cancel(); renderCapture(); } });
 selectOptions($('#midi-channel', configBody), [['all', 'All channels'], ...Array.from({ length: 16 }, (_, i) => [String(i + 1), `Channel ${i + 1}`])], 'all');
 function renderConfig() {
   deviceChoices($('#midi-input', configBody), [['', 'Select an input'], ['demo', 'Demo input · practice only'], ...Array.from(access?.inputs.values() || []).filter(p => p.state === 'connected').map(p => [p.id, p.name || p.id])], inputId);
@@ -192,7 +193,7 @@ function renderConfig() {
     row.append(label, meter, gainLabel); routes.append(row);
   }
 }
-function detachInput() { inputRevision++; if (inputPort) { inputPort.onmidimessage = null; inputPort.close().catch(() => {}); } inputPort = null; store.cancel(); midiOut?.disarm('midi-input-change'); spore?.pause('midi-input-change'); sampler?.stop(); laser?.stop(); }
+function detachInput() { inputRevision++; if (inputPort) { inputPort.onmidimessage = null; inputPort.close().catch(() => {}); } inputPort = null; store.cancel(); midiOut?.disarm('midi-input-change'); sampler?.stop(); laser?.stop(); }
 async function selectInput(id) {
   detachInput(); inputId = '';
   const revision = inputRevision;
@@ -255,7 +256,7 @@ $('#midi-output', configBody).onchange = run(async e => { outputId = e.target.va
 $('#midi-channel', configBody).onchange = e => { channel = e.target.value; store.cancel(); renderCapture(); };
 $('#refresh-audio', configBody).onclick = run(() => audio.refresh());
 async function toggleAudio() {
-  if (audioPending || audio.context?.state === 'running') { audioPending = false; sampler?.stop(); spore?.pause('audio-off'); audioPod?.cancelPendingMic(); await audio.off(); return; }
+  if (audioPending || audio.context?.state === 'running') { audioPending = false; sampler?.stop(); spore?.stopAudioOutputs(); audioPod?.cancelPendingMic(); await audio.off(); return; }
   audioPending = true;
   try { await audio.start(audio.inputId); } finally { audioPending = false; renderConfig(); }
 }
@@ -269,8 +270,9 @@ navigator.mediaDevices?.addEventListener('devicechange', () => audio.refresh().c
 
 sampler = mountSampler(roots.sampler, { getAudioContext: () => audio.ensure(), getDestination: () => audio.destination(), notify });
 laser = mountLaser(roots.laser, { notify });
-audioPod = mountMixer(roots.audio, { audio, notify, toggleAudio });
-spore = mountSpore(roots.spore, { audio, midiOut, notify, onOutputChange: () => sampler.stop() });
+audioPod = mountMixer(roots.audio, { audio, midiOut, notify, toggleAudio });
+installScoreHighlights(document);
+spore = mountSpore(roots.spore, { audio, midiOut, sampler, notify });
 const titles = { capture: 'CAPTURE', config: 'I/O', monitor: 'MIDI MONITOR', sampler: 'SAMPLER', laser: 'LASER', audio: 'AUDIO', spore: 'SPORE' };
 const dock = createDockview($('#workspace'), {
   defaultTabComponent: 'pod-tab', createTabComponent: createPodTab,
@@ -321,6 +323,13 @@ window.addEventListener('pagehide', () => { midiRevision++; store.cancel(); spor
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 setInterval(() => { if (store.target || $('#capture-state', roots.capture).classList.contains('listening')) renderCapture(); }, 500);
 // Header duplicates the pod commands; it never arms from score/session state.
+const sceneScore=$('#scene-score');
+for(const name of spore.scoreFiles()){const option=node('option',name);option.value=name;sceneScore.append(option);}
+$('#scene-play').onclick=run(()=>spore.toggle());
+$('#scene-hold').onclick=()=>spore.hold();
+$('#scene-reset').onclick=()=>spore.reset();
+$('#scene-speed').onchange=run(event=>spore.setSpeed(Number(event.target.value)));
+sceneScore.onchange=run(event=>spore.loadScoreFile(event.target.value));
 $('#command-audio').onclick = run(event => event.shiftKey ? audio.testTone() : toggleAudio());
 $('#command-midi').onclick = run(async event => {
   if (!event.shiftKey) return toggleMidi();
@@ -339,6 +348,9 @@ function headerState(id, on, detail) {
   const button = $('#command-' + id); button.classList.toggle('active', on); button.setAttribute('aria-pressed', String(on)); button.title = detail;
 }
 setInterval(() => {
+  const scene=spore.state(),canControl=!$('#workspace').inert&&scene.ready;
+  document.querySelectorAll('.scene-transport button,.scene-transport select').forEach(control=>{control.disabled=!canControl;});
+  $('#scene-play').textContent=scene.running?'STOP':'PLAY';$('#scene-speed').value=String(scene.speed||1);sceneScore.value=scene.file;$('#scene-label').title=`Active generator: ${scene.scene} · ${scene.file}`;
   const midi = midiOut.summary(), laserState = laser.status(), audioOn = audio.context?.state === 'running';
   headerState('audio', audioOn, `Audio ${audioOn ? 'ON' : 'OFF'} · mic ${audio.stream ? audio.monitor ? 'monitored' : 'muted' : 'off'} · ${audio.context?.sampleRate || '—'} Hz · master ${Math.round(audio.masterLevel*100)}% · click: on/off · Shift+click: L/R 0.5 s each`);
   headerState('midi', !!inputPort || midi.armed, `MIDI IN: ${inputPort?.name || 'OFF'} · OUT: ${midi.armed ? midi.portName : 'OFF'} · TX ${midi.sent} · ${midi.fault || midi.reason} · Shift+click: note 60 / channels 1–5 / 300 ms / duration 100 ms`);
@@ -362,16 +374,16 @@ try {
     notify('This console is locked. Use the existing HYLON tab, or close it and reload here.');
     configBody.inert = true;
   } else if (ownsLease === null) {
-    $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command').forEach(button => { button.disabled = false; });
+    $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command,.scene-transport button,.scene-transport select').forEach(button => { button.disabled = false; });
     $('#storage-status').textContent = 'MEMORY ONLY · EXPORT JSON';
     notify('Browser lacks single-writer locking; use JSON export. Persistent archive is disabled.');
   } else {
   db = await openArchive(); const saved = await readSession(db);
   if (saved) { store = new CaptureStore(saved); selected = store.session.slots[0]?.id; renderCapture(); renderMonitor(); }
   $('#storage-status').textContent = 'Local archive ready';
-  $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command').forEach(button => { button.disabled = false; });
+  $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command,.scene-transport button,.scene-transport select').forEach(button => { button.disabled = false; });
   }
-} catch (e) { db = null; $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command').forEach(button => { button.disabled = false; }); $('#storage-status').textContent = 'MEMORY ONLY · EXPORT JSON'; notify(`Local archive unavailable: ${e.message}. Export JSON before closing.`); }
+} catch (e) { db = null; $('#workspace').inert = false; $('#config-modal').disabled = false; document.querySelectorAll('.command,.scene-transport button,.scene-transport select').forEach(button => { button.disabled = false; }); $('#storage-status').textContent = 'MEMORY ONLY · EXPORT JSON'; notify(`Local archive unavailable: ${e.message}. Export JSON before closing.`); }
 
 // List choices on every load without starting audio, listening to MIDI or enabling output.
 Promise.allSettled([audio.refresh(),listMidiDevices()]).then(results=>{

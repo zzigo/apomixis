@@ -11,10 +11,18 @@ export function mountKlaisBank(container,{getAudioContext,getDestination,notify=
   mapLayout.querySelector('.bank-inspector').prepend(container.querySelector('.bank-controls'),q('midi').closest('label'),q('range').closest('.toolbar'),q('keyboard'),q('note-status'));
   let manifest=null, sampleMap=new Map(), active=[], inspected='', engine=null, initialization=null, sourceLoader=null, audioContext=null;
   let disposed=false, revision=0, loadRevision=0, warmBusy=false, statsTimer, chordTimer;
-  const held=new Map(), cleanups=[];
+  const held=new Map(), cleanups=[],scoreJobs=new Map();
+  function stopScore(){for(const [owner,job]of scoreJobs){clearTimeout(job.start);clearTimeout(job.end);noteOff(owner);}scoreJobs.clear();}
+  function dispatchScore(event,{when,durationSeconds,epoch}){
+    if(disposed||document.hidden||event.kind!=='note'||!manifest||!active.length||audioContext?.state!=='running'||scoreJobs.size>=128)return;
+    const wait=(when-performance.now()/1000)*1000;if(wait < -100)return;
+    const owner=`score:${epoch}:${event.eventId}`,job={};scoreJobs.set(owner,job);
+    job.start=setTimeout(()=>{if(scoreJobs.get(owner)===job)noteOn(owner,event.payload.note,event.payload.velocity,({go:1,po:2,re:3,so:4,pe:5})[event.division]||1);},Math.max(0,wait));
+    job.end=setTimeout(()=>{noteOff(owner);scoreJobs.delete(owner);},Math.max(0,wait)+Math.max(10,Math.min(30000,durationSeconds*1000)));
+  }
   const status=text=>{if(!disposed)q('note-status').textContent=text;};
   const handle=fn=>async(...args)=>{try{await fn(...args);}catch(error){status(error.message);notify(`Klais: ${error.message}`);}};
-  function stop() {revision++;held.clear();clearTimeout(chordTimer);engine?.stop();container.querySelectorAll('.bank-key.held').forEach(k=>k.classList.remove('held'));}
+  function stop() {stopScore();revision++;held.clear();clearTimeout(chordTimer);engine?.stop();container.querySelectorAll('.bank-key.held').forEach(k=>k.classList.remove('held'));}
   function options() {return {gain:Number(q('gain').value),release:Number(q('release').value),transpose:Number(q('transpose').value),maxStretch:Number(q('stretch').value),loopEnabled:false};}
   function report() {
     if(disposed)return;const s=engine?.getStats();
@@ -138,5 +146,5 @@ export function mountKlaisBank(container,{getAudioContext,getDestination,notify=
   const visibility=()=>{if(document.hidden)stop();};document.addEventListener('visibilitychange',visibility);window.addEventListener('blur',stop);
   cleanups.push(()=>document.removeEventListener('visibilitychange',visibility),()=>window.removeEventListener('blur',stop));
   keyboard();loadLibrary();
-  return {stop,midi(bytes){if(disposed||!q('midi').checked||!bytes||bytes.length!==3)return;const [s,n,v]=bytes;if(![s,n,v].every(Number.isInteger)||s<128||s>239||n<0||n>127||v<0||v>127)return;const owner=`midi:${s&15}:${n}`;if((s&240)===144&&v)noteOn(owner,n,v,(s&15)+1);else if((s&240)===128||((s&240)===144&&!v))noteOff(owner);else if((s&240)===176&&[120,123].includes(n))stop();},dispose(){if(disposed)return;stop();disposed=true;loadRevision++;clearTimeout(statsTimer);sourceLoader?.dispose();engine?.dispose();cleanups.forEach(fn=>fn());container.replaceChildren();}};
+  return {stop,stopScore,dispatchScore,async prepareScore(){if(!active.length)throw new Error('KLAIS: select a recorded layer in SAMPLER.');await ensureEngine();},midi(bytes){if(disposed||!q('midi').checked||!bytes||bytes.length!==3)return;const [s,n,v]=bytes;if(![s,n,v].every(Number.isInteger)||s<128||s>239||n<0||n>127||v<0||v>127)return;const owner=`midi:${s&15}:${n}`;if((s&240)===144&&v)noteOn(owner,n,v,(s&15)+1);else if((s&240)===128||((s&240)===144&&!v))noteOff(owner);else if((s&240)===176&&[120,123].includes(n))stop();},dispose(){if(disposed)return;stop();disposed=true;loadRevision++;clearTimeout(statsTimer);sourceLoader?.dispose();engine?.dispose();cleanups.forEach(fn=>fn());container.replaceChildren();}};
 }

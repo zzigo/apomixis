@@ -1,6 +1,6 @@
 import { KLAIS_CHANNELS, KLAIS_ROUTING_VERSION } from '../../../packages/hylon-midi/klais-routing.js';
 import { createMidiNoteOutput } from '../../../packages/hylon-midi/note-output.js';
-export function mountMidiOut(container, { notify = () => {}, onRouteChange = () => {}, onEnable = () => {} } = {}) {
+export function mountMidiOut(container, { notify = () => {}, onRouteChange = () => {}, onEnable = () => {}, getLevel = () => 1 } = {}) {
   container.innerHTML = `<p data-state class="status" role="status">DISABLED</p><p data-alert class="status" role="status"></p>
     <div class="note-test-grid"><label class="field">Ch<select data-test-channel>${Array.from({length:16},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select></label><label class="field">Note<input data-test-note type="number" min="0" max="127" value="60"></label><label class="field">Velocity<input data-test-velocity type="number" min="1" max="127" value="64"></label><label class="field">ms<input data-test-duration type="number" min="10" max="2000" value="250"></label><button data-test title="Send one note using these settings">TEST NOTE</button><button data-sequence title="Note 60 · channels 1–5 · every 300 ms · duration 100 ms">TEST 1 → 5</button><button data-test-stop>STOP TEST NOTES</button></div>
     <p class="muted" title="SPORE fixed Klais routing: manuals I–IV on channels 1–4; pedal on channel 5">I 1 · II 2 · III 3 · IV 4 · P 5</p>
@@ -39,7 +39,9 @@ export function mountMidiOut(container, { notify = () => {}, onRouteChange = () 
   render();
   return { enable, testSequence, select(port){cancelTest();onRouteChange();gateway.select(port);render();}, disarm(reason){cancelTest();gateway.disarm(reason);render();}, stop(){gateway.stopSource('spore');render();}, panic(){cancelTest();const result=gateway.panic();render();return result;},
     assertReady(){gateway.assertReady();},
-    dispatch(event,{when,durationSeconds,epoch}){if(event.kind!=='note')return;const channel=mapping[event.division];if(!channel){unmapped++;return;}gateway.schedule({owner:`spore:${epoch}:${event.eventId}`,source:'spore',channel,note:event.payload.note,velocity:event.payload.velocity,durationMs:Math.max(10,Math.min(10000,durationSeconds*1000)),whenMs:when*1000});},
+    startFollower({channel,note,velocity}){const owner=`mic-follower:${++serial}`,level=getLevel();if(level<=0)return null;gateway.schedule({owner,source:'follower',channel,note,velocity:Math.max(1,Math.round(velocity*level)),durationMs:350});gateway.tick();return gateway.renew(owner)?owner:null;},
+    renewFollower(owner){return gateway.renew(owner);},stopFollower(){gateway.stopSource('follower');render();},
+    dispatch(event,{when,durationSeconds,epoch}){if(event.kind!=='note'||getLevel()<=0)return;const channel=mapping[event.division];if(!channel){unmapped++;return;}gateway.schedule({owner:`spore:${epoch}:${event.eventId}`,source:'spore',channel,note:event.payload.note,velocity:Math.max(1,Math.round(event.payload.velocity*getLevel())),durationMs:Math.max(10,Math.min(10000,durationSeconds*1000)),whenMs:when*1000});},
     summary(){const s=gateway.status();return { ...s,routingVersion:KLAIS_ROUTING_VERSION,mapping:{...mapping},unmapped };},
     dispose(){if(disposed)return;cancelTest();gateway.dispose();disposed=true;clearInterval(timer);container.replaceChildren();}
   };

@@ -31,7 +31,7 @@ export function createMidiNoteOutput({ now = () => performance.now(), onChange =
   function schedule({ owner, source, channel, note, velocity, durationMs, whenMs = now() }) {
     if (disposed || !armed) throw new Error('MIDI NOTE OUT is disabled');
     const time = now();
-    if (!['spore', 'tester'].includes(source) || typeof owner !== 'string' || !owner.length || owner.length > 256 || !integer(channel, 1, 16) || !integer(note, 0, 127) || !integer(velocity, 1, 127) || !Number.isFinite(durationMs) || durationMs < 10 || durationMs > 10000 || !Number.isFinite(whenMs) || whenMs < time - 80 || whenMs > time + 250) throw new Error('Invalid bounded MIDI note');
+    if (!['spore', 'tester', 'follower'].includes(source) || typeof owner !== 'string' || !owner.length || owner.length > 256 || !integer(channel, 1, 16) || !integer(note, 0, 127) || !integer(velocity, 1, 127) || !Number.isFinite(durationMs) || durationMs < 10 || durationMs > 10000 || !Number.isFinite(whenMs) || whenMs < time - 80 || whenMs > time + 250) throw new Error('Invalid bounded MIDI note');
     if (queue.length >= 512 || owners.size >= 64) { dropped++; changed(); return false; }
     if (owners.has(owner) || queue.some(item => item.owner === owner)) throw new Error('Duplicate MIDI note owner');
     queue.push({ owner, source, channel, note, velocity, whenMs, offMs: whenMs + durationMs, key: `${channel}:${note}`, epoch });
@@ -73,6 +73,7 @@ export function createMidiNoteOutput({ now = () => performance.now(), onChange =
     changed(); return { failed, selected: !!port };
   }
   return { select, arm, disarm, schedule, tick, stopSource, panic,
+    renew(owner,durationMs=350){if(!armed||!Number.isFinite(durationMs)||durationMs<10||durationMs>1000)return false;const item=owners.get(owner);if(!item)return false;item.offMs=now()+durationMs;return true;},
     setBudget(value) { if (!integer(value, 1, 50)) throw new Error('Attack cap must be 1–50 per second'); disarm('budget-change'); budget = value; changed(); },
     assertReady() { if (!armed || port?.state !== 'connected') throw new Error('Turn MIDI ON in I/O or the header'); },
     status: () => ({ armed, portId: port?.id || '', portName: port?.name || '', epoch, reason, fault, budget, queued: queue.length, active: owners.size, heldPitches: pitches.size, sent, dropped, coalesced }),
