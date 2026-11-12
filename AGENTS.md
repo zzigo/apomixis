@@ -22,6 +22,8 @@ Composer follow-ups (2026-11-12): compact AUDIO faders, consistent navigation/po
 
 LASER live-control correction (2026-11-12, 0.7.1): composer reports unexpected mapping deviation and asks for default OFF, explicit square W toggle, dashed screen-only guide, handles over full W/H, continuous parameter edits, MIDI XY minimum point size, and global RGB. Warp enable is runtime-only and always OFF on reload; loading/importing quad coordinates never turns it ON. Stored quad coordinates are bypassed until locally enabled. Size/offset/flips now precede the full-viewport quad mapping. Valid geometry/profile/color edits update ongoing output; rejected edits retain the prior values. MIDI minimum is visually a point but retains a tiny scanned trace to satisfy the existing moving-frame validator. Composer follow-up removes APPLY ALIGNMENT: valid PPS, center and flip changes apply automatically. WARP OFF/ON is explicit beside the preview. This does not authorize stationary beams or automated physical output tests.
 
+Rapid-session instruction (2026-11-12): composer explicitly requests no tests or verification unless they explicitly ask for test/TEST. Respect this for the current session. Experimental ADVANCED scan controls (blanking/settling, RGB/XY timing, moving corner/trace speed and route optimization) are implemented with neutral defaults and existing frame bounds; this iteration is intentionally unverified.
+
 ## 1. Operating rules
 
 - Keep the same `zzigo/apomixis` repository. **SuperCollider is archived reference, not the active runtime**, by the composer's current instruction. Preserve `archive/supercollider/` and Git history; do not load its setup to inspect it or introduce an SC runtime dependency.

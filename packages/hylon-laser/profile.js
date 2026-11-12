@@ -1,10 +1,11 @@
 // Operator-entered settings. A profile is not physical commissioning or output authority.
 import { identityQuad, validateQuad, createQuadMapper } from './quad.js';
+import { defaultScanTuning, validateScanTuning } from './scan-tuning.js';
 const finite = (n, min, max) => typeof n === 'number' && Number.isFinite(n) && n >= min && n <= max;
 export function defaultLaserProfile() {
   return { schemaVersion: 1, model: '', scanRatePps: null, angleXDeg: null, angleYDeg: null,
     widthPercent: 100, heightPercent: 100, offsetXPercent: 0, offsetYPercent: 0,
-    flipX: false, flipY: false, intensityPercent: 10, target: 'ceiling', warpQuad: identityQuad(), colorRgb: [0,1,0],
+    flipX: false, flipY: false, intensityPercent: 10, target: 'ceiling', warpQuad: identityQuad(), colorRgb: [0,1,0], scanTuning: defaultScanTuning(),
     exclusionZone: 'unknown', emergencyStop: 'unknown', interlock: 'unknown', scanFailureShutdown: 'unknown' };
 }
 export function validateLaserProfile(raw) {
@@ -22,7 +23,7 @@ export function validateLaserProfile(raw) {
   if (!Array.isArray(color) || color.length !== 3 || color.some(v => !finite(v,0,1))) throw new Error('Invalid RGB color');
   if (!['ceiling', 'wall', 'other', 'unknown'].includes(raw.target)) throw new Error('Invalid projection target');
   for (const key of ['exclusionZone', 'emergencyStop', 'interlock', 'scanFailureShutdown']) if (!['unknown', 'reported-present', 'reported-absent'].includes(raw[key])) throw new Error('Invalid operator-reported protection state');
-  return Object.fromEntries(Object.keys(template).map(key => [key, key === 'warpQuad' ? validateQuad(raw.warpQuad ?? identityQuad()) : key === 'colorRgb' ? [...color] : raw[key]]));
+  return Object.fromEntries(Object.keys(template).map(key => [key, key === 'warpQuad' ? validateQuad(raw.warpQuad ?? identityQuad()) : key === 'colorRgb' ? [...color] : key === 'scanTuning' ? validateScanTuning(raw.scanTuning) : raw[key]]));
 }
 export function parseLaserProfile(text) {
   if (typeof text !== 'string' || text.length > 16384) throw new Error('Laser profile exceeds 16 KiB');

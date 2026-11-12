@@ -1,5 +1,13 @@
 import { defaultLaserProfile, parseLaserProfile, validateLaserProfile } from '../../../packages/hylon-laser/profile.js';
 import { defaultOutputProfile } from '../../../packages/hylon-laser/frame.js';
+import { defaultScanTuning } from '../../../packages/hylon-laser/scan-tuning.js';
+const scanSlider=(key,label,min,max,step,unit,help)=>`<label class="field scan-control" title="${help}"><span>${label}<output data-scan-value="${key}"></output></span><input data-scan="${key}" aria-label="${label}" type="range" min="${min}" max="${max}" step="${step}" data-unit="${unit}"></label>`;
+const scanControls=`<div class="scan-tuning-grid">
+  <section><h3>01 / BLANKING</h3>${scanSlider('settleUs','Settle',0,1500,25,'µs','Dark settling time after reaching each stroke start; never a lit dwell.')}${scanSlider('blankLeadUs','Blank lead',0,1000,25,'µs','Keep the beginning of each stroke dark before turning color on.')}${scanSlider('blankTailUs','Blank tail',0,1000,25,'µs','Turn color off before the end of each stroke.')}</section>
+  <section><h3>02 / RGB ↔ XY</h3>${scanSlider('colorDelayUs','Color offset',-1000,1000,25,'µs','Positive delays color relative to XY; negative advances it. Compensation stays inside its stroke and never illuminates blank travel.')}</section>
+  <section><h3>03 / TRACE & CORNERS</h3>${scanSlider('traceStep','Trace step',8,64,1,'DAC','Smaller spacing adds moving samples and slows the trace at fixed PPS.')}${scanSlider('cornerSlowdown','Corner slow',0,100,1,'%','Ease into/out of corners and open ends using moving samples, without holding a lit point.')}</section>
+  <section><h3>04 / ROUTE</h3><label class="field" title="Reorder strokes to shorten blank travel; reverse also allows open strokes to run backwards.">Order<select data-scan="route"><option value="original">Original</option><option value="nearest">Nearest</option><option value="nearest-reverse">Nearest + reverse</option></select></label><label class="field checkbox" title="ON closes each frame via center. OFF closes directly back to the first stroke and pads there."><input data-scan="returnToCenter" type="checkbox">Return center</label><button data-scan-reset title="Reset only these scan controls to neutral values">RESET SCAN</button></section>
+</div>`;
 // Old preview-only profiles are deliberately not auto-promoted to physical settings.
 const STORAGE_KEY = 'hylon-helios-output-settings-v1';
 export function mountLaserProfile(container, { onApply = () => {}, onChange = () => {}, notify = () => {}, storage = localStorage } = {}) {
@@ -7,6 +15,7 @@ export function mountLaserProfile(container, { onApply = () => {}, onChange = ()
     <div class="laser-rgb" role="group" aria-label="Laser RGB"><label title="Red">R<input data-color-r aria-label="Laser red" type="range" min="0" max="100" step="1" value="0"></label><label title="Green">G<input data-color-g aria-label="Laser green" type="range" min="0" max="100" step="1" value="100"></label><label title="Blue">B<input data-color-b aria-label="Laser blue" type="range" min="0" max="100" step="1" value="0"></label></div>
     <details><summary>ADVANCED / SCAN & ALIGNMENT</summary><p class="muted">Software defaults, not verified projector ratings. Intensity is the DAC control signal, not a measured optical power percentage.</p>
     <div class="toolbar"><label class="field">Scan rate / PPS<input data-pps type="number" min="8000" max="40000" step="1000" value="20000"></label><label class="field">Center X / %<input data-x type="range" aria-label="Laser center X" min="-95" max="95" value="0"></label><label class="field">Center Y / %<input data-y type="range" aria-label="Laser center Y" min="-95" max="95" value="0"></label><label class="field checkbox"><input data-flip-x type="checkbox">Flip X</label><label class="field checkbox"><input data-flip-y type="checkbox">Flip Y</label></div>
+    ${scanControls}
     <div class="toolbar"><button data-export>EXPORT SETTINGS</button><label class="file-button">IMPORT SETTINGS<input data-import type="file" accept="application/json,.json"></label></div><p data-settings-status class="status" role="status"></p></details>`;
   const q = key => container.querySelector(`[data-${key}]`);
   const defaults = () => defaultOutputProfile(defaultLaserProfile());
@@ -23,6 +32,7 @@ export function mountLaserProfile(container, { onApply = () => {}, onChange = ()
     q('x').min=-(100-current.widthPercent);q('x').max=100-current.widthPercent;
     q('y').min=-(100-current.heightPercent);q('y').max=100-current.heightPercent;
     q('pps').value = current.scanRatePps; q('x').value = current.offsetXPercent; q('y').value = current.offsetYPercent; q('flip-x').checked = current.flipX; q('flip-y').checked = current.flipY;
+    container.querySelectorAll('[data-scan]').forEach(input=>{const key=input.dataset.scan;if(input.type==='checkbox')input.checked=current.scanTuning[key];else input.value=current.scanTuning[key];const output=container.querySelector(`[data-scan-value="${key}"]`);if(output)output.value=`${current.scanTuning[key]} ${input.dataset.unit}`;});
     ['r','g','b'].forEach((ch,i)=>{q('color-'+ch).value=current.colorRgb[i]*100;});
   }
   function apply(next, live = true) {
@@ -42,6 +52,13 @@ export function mountLaserProfile(container, { onApply = () => {}, onChange = ()
   q('y').oninput=handle(()=>apply({...current,offsetYPercent:Number(q('y').value)}));
   q('flip-x').onchange=handle(()=>apply({...current,flipX:q('flip-x').checked}));
   q('flip-y').onchange=handle(()=>apply({...current,flipY:q('flip-y').checked}));
+  container.querySelectorAll('[data-scan]').forEach(input=>{
+    input.addEventListener(input.type==='range'?'input':'change',handle(()=>{
+      const key=input.dataset.scan,value=input.type==='checkbox'?input.checked:input.type==='range'?Number(input.value):input.value;
+      apply({...current,scanTuning:{...current.scanTuning,[key]:value}});
+    }));
+  });
+  q('scan-reset').onclick=handle(()=>apply({...current,scanTuning:defaultScanTuning()}));
   q('export').onclick = () => { const url = URL.createObjectURL(new Blob([JSON.stringify(current,null,2)], { type: 'application/json' })); const link = document.createElement('a'); link.href = url; link.download = 'HYLON-helios-settings.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url),1000); };
   q('import').onchange = async event => {
     const file = event.target.files?.[0]; if (!file) return;
