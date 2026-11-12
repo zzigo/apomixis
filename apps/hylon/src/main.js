@@ -11,6 +11,7 @@ import { mountSampler } from './sampler.js';
 import { createAudioMixer } from '../../../packages/hylon-audio/mixer.js';
 import { mountMixer } from './mixer-pod.js';
 import { mountLaser } from './laser.js';
+import { createPodTab } from './pod-tab.js';
 
 const $ = (s, root = document) => root.querySelector(s);
 const node = (tag, text, cls) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; };
@@ -205,11 +206,12 @@ audioPod = mountMixer(roots.audio, { audio, notify });
 spore = mountSpore(roots.spore, { audio, midiOut, notify, onOutputChange: () => sampler.stop() });
 const titles = { capture: 'REGISTRATION CAPTURE', config: 'I/O CONFIGURATION', monitor: 'MIDI MONITOR', sampler: 'KLAIS / LOCAL SAMPLER', laser: 'HELIOS / FIELD TESTS', audio: 'AUDIO / MIXER & FX', spore: 'SPORE / GENERATOR & SCORE' };
 const dock = createDockview($('#workspace'), {
+  defaultTabComponent: 'pod-tab', createTabComponent: createPodTab,
   theme: { name: 'hylon', className: 'dockview-theme-hylon', gap: 5 }, disableFloatingGroups: true,
   createComponent: ({ name }) => {
     let visibility;
     const stop = () => { if (name === 'sampler') sampler.stop(); if (name === 'laser') laser.stop(); if (name === 'capture') store.cancel(); };
-    return { element: roots[name], init({ api }) { if (name === 'audio') audioPod.setVisible(api.isVisible); if (name === 'spore') spore.setVisible(api.isVisible); visibility = api.onDidVisibilityChange(() => { if (name === 'audio') audioPod.setVisible(api.isVisible); if (name === 'spore') spore.setVisible(api.isVisible); if (!api.isVisible) stop(); }); }, dispose() { visibility?.dispose(); if (name === 'audio') audioPod.setVisible(false); if (name === 'spore') { spore.pause('pod-closed'); spore.setVisible(false); } stop(); } };
+    return { element: roots[name], init({ api }) { if (name === 'audio') audioPod.setVisible(api.isVisible); if (name === 'spore') spore.setVisible(api.isVisible); visibility = api.onDidVisibilityChange(() => { if (name === 'audio') audioPod.setVisible(api.isVisible); if (name === 'spore') spore.setVisible(api.isVisible); if (!api.isVisible) stop(); }); }, dispose() { visibility?.dispose(); if (name === 'audio') { audioPod.setVisible(false); audioPod.cancelPendingMic(); audio.stopInput(); } if (name === 'spore') { spore.pause('pod-closed'); spore.setVisible(false); } stop(); } };
   }
 });
 dock.layout($('#workspace').clientWidth, $('#workspace').clientHeight);

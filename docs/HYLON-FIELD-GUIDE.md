@@ -65,7 +65,7 @@ The composer reports working Helios frame output; physical acceptance still need
 
 ## Layout and stop
 
-Drag Dockview tabs/splits to arrange the workspace. Layout is remembered locally with separate narrow/wide profiles. **I/O MODAL** moves the same configuration controls into a dialog; close it to return to the dock. **RESET LAYOUT** restores capture-first arrangement. On narrow screens the pods are tabs.
+Drag Dockview tabs/splits to arrange the workspace. Each pod tab has a subtle **×** button (also keyboard accessible) to close it; reopen it from the top navigation. Closing sampler, HELIOS or SPORE stops its activity; closing AUDIO cancels pending mic monitoring and stops microphone input while leaving the shared sampler bus available. Layout is remembered locally with separate narrow/wide profiles. **I/O MODAL** moves the same configuration controls into a dialog; close it to return to the dock. **RESET LAYOUT** restores capture-first arrangement. On narrow screens the pods are tabs.
 
 **STOP ALL** ends capture, stops SPORE/sampler voices and audio input, clears FX tails, releases owned MIDI notes, disables output and blacks out laser preview/requesting connected HELIOS shutdown. It sends no guessed registration reset or captured SysEx. **SUPER PANIC** additionally hard-mutes master, sends CC123/120 on all 16 selected-output channels and requests HELIOS close/STOP/disconnect. Physical response is not guaranteed; see **MIDI-OUT-GUIDE.md**.
 
