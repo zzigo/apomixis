@@ -40,7 +40,7 @@ export function mountMidiOut(container, { notify = () => {}, onRouteChange = () 
   return { enable, testSequence, select(port){cancelTest();onRouteChange();gateway.select(port);render();}, disarm(reason){cancelTest();gateway.disarm(reason);render();}, stop(){gateway.stopSource('spore');render();}, panic(){cancelTest();const result=gateway.panic();render();return result;},
     assertReady(){gateway.assertReady();},
     startFollower({channel,note,velocity}){const owner=`mic-follower:${++serial}`,level=getLevel();if(level<=0)return null;gateway.schedule({owner,source:'follower',channel,note,velocity:Math.max(1,Math.round(velocity*level)),durationMs:350});gateway.tick();return gateway.renew(owner)?owner:null;},
-    renewFollower(owner){return gateway.renew(owner);},stopFollower(){gateway.stopSource('follower');render();},
+    renewFollower(owner){return gateway.renew(owner);},stopFollower(owner){if(owner)gateway.stopOwner(owner);else gateway.stopSource('follower');render();},
     dispatch(event,{when,durationSeconds,epoch}){if(event.kind!=='note'||getLevel()<=0)return;const channel=mapping[event.division];if(!channel){unmapped++;return;}gateway.schedule({owner:`spore:${epoch}:${event.eventId}`,source:'spore',channel,note:event.payload.note,velocity:Math.max(1,Math.round(event.payload.velocity*getLevel())),durationMs:Math.max(10,Math.min(10000,durationSeconds*1000)),whenMs:when*1000});},
     summary(){const s=gateway.status();return { ...s,routingVersion:KLAIS_ROUTING_VERSION,mapping:{...mapping},unmapped };},
     dispose(){if(disposed)return;cancelTest();gateway.dispose();disposed=true;clearInterval(timer);container.replaceChildren();}

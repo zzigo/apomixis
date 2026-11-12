@@ -270,7 +270,7 @@ navigator.mediaDevices?.addEventListener('devicechange', () => audio.refresh().c
 
 sampler = mountSampler(roots.sampler, { getAudioContext: () => audio.ensure(), getDestination: () => audio.destination(), notify });
 laser = mountLaser(roots.laser, { notify });
-audioPod = mountMixer(roots.audio, { audio, midiOut, sampler, notify, toggleAudio, onFollowerMessage:bytes=>{if((bytes[0]&0xf0)===0x90&&bytes[2]>0)audio.followerNote=bytes[1];else if((bytes[0]&0xf0)===0x80||((bytes[0]&0xf0)===0x90&&!bytes[2])){if(audio.followerNote===bytes[1])audio.followerNote=null;}const record=store.receive(bytes,{id:'hylon:mic-follower',name:'FOLLOWER · generated',manufacturer:'HYLON'});if(record)changed();} });
+audioPod = mountMixer(roots.audio, { audio, midiOut, sampler, notify, toggleAudio, onFollowerMessage:bytes=>{const record=store.receive(bytes,{id:'hylon:mic-follower',name:'FOLLOWER · generated',manufacturer:'HYLON'});if(record)changed();} });
 installScoreHighlights(document);
 spore = mountSpore(roots.spore, { audio, midiOut, sampler, notify });
 const titles = { capture: 'CAPTURE', config: 'I/O', monitor: 'MIDI MONITOR', sampler: 'SAMPLER', laser: 'LASER', audio: 'AUDIO', spore: 'SPORE' };

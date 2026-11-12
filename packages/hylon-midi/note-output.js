@@ -73,6 +73,7 @@ export function createMidiNoteOutput({ now = () => performance.now(), onChange =
     changed(); return { failed, selected: !!port };
   }
   return { select, arm, disarm, schedule, tick, stopSource, panic,
+    stopOwner(owner){queue=queue.filter(item=>item.owner!==owner);try{release(owner);}catch(error){fail(error);}changed();},
     renew(owner,durationMs=350){if(!armed||!Number.isFinite(durationMs)||durationMs<10||durationMs>1000)return false;const item=owners.get(owner);if(!item)return false;item.offMs=now()+durationMs;return true;},
     setBudget(value) { if (!integer(value, 1, 50)) throw new Error('Attack cap must be 1–50 per second'); disarm('budget-change'); budget = value; changed(); },
     assertReady() { if (!armed || port?.state !== 'connected') throw new Error('Turn MIDI ON in I/O or the header'); },

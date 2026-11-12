@@ -2,7 +2,7 @@ export const FOLLOWER_DEFAULTS=Object.freeze({channel:1,gateDb:-45,confidence:.8
 export function createPitchFollower(midiOut,{now=()=>performance.now(),onState=()=>{}}={}){
   const params={...FOLLOWER_DEFAULTS};let enabled=false,active=null,candidate=null,candidateAt=0,lastVoiced=-Infinity,lastMessage=-Infinity;
   const recent=new Map();
-  function release(){midiOut?.stopFollower();active=null;}
+  function release(){midiOut?.stopFollower();active=null;onState({enabled,active:null});}
   function stop(){enabled=false;release();candidate=null;recent.clear();onState({enabled,active:null});}
   function configure(next){
     for(const [key,value]of Object.entries(next)){
