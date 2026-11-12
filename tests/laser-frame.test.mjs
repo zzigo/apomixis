@@ -26,3 +26,21 @@ test('SDK USB-length workaround adjusts point count/rate and preserves final bla
  const data=encodeHeliosFrame(f.points,20000);assert.equal(data.length,428*7+5);assert.equal(data.at(-3)|(data.at(-2)<<8),428);assert.equal(data.at(-5)|(data.at(-4)<<8),Math.round(20000*428/429));assert.equal(data.at(-1),2);
  f.points[427].g=5;f.points[427].i=5;assert.throws(()=>encodeHeliosFrame(f.points,20000),/trailing blank/);
 });
+test('RGB mixes preserve global/velocity intensity and zero color stays dark',()=>{
+ const p={...config(),colorRgb:[1,.5,.25]},f=compileLaserFrame(testFrame(),p);encodeHeliosFrame(f.points,f.pps);
+ const lit=f.points.find(p=>p.i);assert.equal(lit.r,lit.i);assert.equal(lit.g,Math.round(lit.i*.5));assert.equal(lit.b,Math.round(lit.i*.25));
+ const dark=compileLaserFrame(testFrame(),{...p,colorRgb:[0,0,0]});assert(dark.points.every(p=>!(p.r||p.g||p.b||p.i)));encodeHeliosFrame(dark.points,dark.pps);
+ assert.throws(()=>compileLaserFrame(testFrame(),{...p,colorRgb:[NaN,0,0]}));
+});
+test('minimum MIDI loci remain small moving traces after size and zone mapping',()=>{
+ for(const width of [5,20,100])for(const warpQuad of [[[0,0],[1,0],[1,1],[0,1]],[[.1,.1],[.9,.2],[.8,.9],[.2,.8]]]){
+  const p={...config(),widthPercent:width,heightPercent:width,warpQuad};
+  for(const [x,y] of [[.5,.5],[0,0],[1,1]]){
+   const f=compileLaserFrame(midiStrokes([{x,y,intensity:1}],0,p),p);encodeHeliosFrame(f.points,f.pps);
+   const lit=f.points.filter(v=>v.i);const range=axis=>Math.max(...lit.map(v=>v[axis]))-Math.min(...lit.map(v=>v[axis]));
+   assert(Math.max(range('x'),range('y'))<40,'Minimum visually remains a tiny locus');
+  }
+ }
+ const p=config(),note=[{x:.5,y:.5,intensity:1}],small=midiStrokes(note,0,p)[0].points,large=midiStrokes(note,100,p)[0].points;
+ assert(Math.max(...large.map(p=>p[0]))>Math.max(...small.map(p=>p[0])));
+});
