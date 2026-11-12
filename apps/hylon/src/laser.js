@@ -14,20 +14,20 @@ export function mountLaser(container, { notify = () => {}, usbApi = navigator.us
     <div class="laser-mapping"><div class="map-toolbar"><button data-warp class="warp-toggle" title="Warp OFF · bypass stored mapping" aria-label="Warp" aria-pressed="false">W</button><span data-warp-state class="muted">WARP OFF</span><button data-map-reset class="map-reset" title="Reset four mapping corners">RESET MAP</button></div><div class="laser-map-stage"><canvas data-canvas width="720" height="720" role="img" aria-label="LASER mapped preview"></canvas><svg data-map-outline viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,0 100,0 100,100 0,100"/></svg><div data-map-handles></div></div><canvas data-original width="180" height="180" role="img" aria-label="Original generator preview" title="Original generator · before mapping"></canvas></div>
     <details><summary>CONNECTION DETAILS</summary><div class="toolbar"><button data-usb-status-button>DAC STATUS</button><button data-usb-disconnect>DISCONNECT</button></div><p class="muted">RGB vector output; text A–Z / 0–9 / dash, up to 12 characters within the frame budget. MIDI loci are scanned rings, not stationary beams. Close TouchDesigner before connecting. One-shot frames stop repeating when updates cease on supported firmware; this is not an independent projector interlock. Use a controlled projection area without people in the beam.</p></details></div>`;
   const q = key => container.querySelector(`[data-${key}]`), canvas = q('canvas'), ctx = canvas.getContext('2d'), points = new MidiPoints({limit:8});
-  let mapping, warpEnabled=false;
+  let mapping, warpEnabled=false, frameSequence=null, framePart=0, frameParts=1;
   let params={mode:'frame',shape:'square',direction:'sequence',text:'HYLON',pointSize:0};
   const outputConfig=(base=profile.get())=>({...base,warpQuad:warpEnabled?base.warpQuad:identityQuad()});
   let running = false, emitting = false, outputPending = false, connecting = false, disposed = false, animation = 0, timer = 0, origin = 0, lastDraw = 0, demoTimer, testTimer, testConfig = null, lease = 0;
   const usb = new HeliosUsb({usb:usbApi,onState:message=>{if(!disposed)q('usb-status').textContent=message;}});
   function clear(){if(ctx){ctx.globalAlpha=1;ctx.fillStyle='#000';ctx.fillRect(0,0,720,720);}}
   function stop({hardware=true}={}) {
-    const wasOutput=emitting||usb.outputEnabled;lease++;running=false;emitting=false;outputPending=false;q('output').disabled=false;cancelAnimationFrame(animation);clearTimeout(timer);clearTimeout(demoTimer);clearTimeout(testTimer);testConfig=null;points.clear();clear();
+    const wasOutput=emitting||usb.outputEnabled;frameSequence=null;framePart=0;frameParts=1;lease++;running=false;emitting=false;outputPending=false;q('output').disabled=false;cancelAnimationFrame(animation);clearTimeout(timer);clearTimeout(demoTimer);clearTimeout(testTimer);testConfig=null;points.clear();clear();
     mapping?.sync();q('status').textContent='STOPPED · no new frames';q('count').textContent='0 / 8 loci';
     if(hardware&&(wasOutput||usb.device))return usb.stop().catch(error=>notify(error.message));
   }
   const profile = mountLaserProfile(q('profile-root'), {onApply:({next}={})=>{
     if(running||outputPending)compileLaserFrame(geometry((performance.now()-origin)/1000,params,outputConfig(next)),outputConfig(next));
-  },onChange:()=>{mapping?.sync();if(mapping&&!running){try{renderPreview(geometry(0),outputConfig());}catch{clear();}}},notify,storage:settingsStorage});
+  },onChange:()=>{frameSequence=null;mapping?.sync();if(mapping&&!running){try{renderPreview(geometry(0),outputConfig());}catch{clear();}}},notify,storage:settingsStorage});
   const original=q('original'), originalCtx=original.getContext('2d');
   mapping=mountQuadMapper(container.querySelector('.laser-mapping'),{getProfile:profile.get,isEnabled:()=>warpEnabled,setQuad:quad=>profile.setQuad(quad),onChange:()=>{if(!running)renderPreview(geometry(0),outputConfig());},notify});
   q('profile-root').addEventListener('input',()=>{mapping.sync();if(!running)renderPreview(geometry(0),outputConfig());});
@@ -52,7 +52,7 @@ export function mountLaser(container, { notify = () => {}, usbApi = navigator.us
       const config=testConfig||outputConfig(),strokes=geometry((now-origin)/1000);
       renderPreview(strokes,config);
       q('count').textContent=`${points.notes.size} / 8 loci`;
-      if(emitting)q('status').textContent=`OUTPUT RUNNING · ${usb.sentFrames} frames transferred · ${config.scanRatePps} PPS · ${config.widthPercent}% field · ${config.intensityPercent}% signal`;
+      if(emitting)q('status').textContent=`OUTPUT RUNNING · ${usb.sentFrames} frames transferred · ${config.scanRatePps} PPS · ${config.widthPercent}% field · ${config.intensityPercent}% signal${frameParts>1?` · scan ${frameParts} packets`:""}`;
       animation=requestAnimationFrame(draw);
     }catch(error){stop();notify(error.message);}
   }
@@ -60,7 +60,10 @@ export function mountLaser(container, { notify = () => {}, usbApi = navigator.us
     if(!running||!emitting||disposed||token!==lease||document.hidden)return;
     if(!usb.outputEnabled||!usb.device){stop({hardware:false});q('status').textContent='OUTPUT STOPPED · reconnect / start explicitly';return;}
     try{
-      const frame=compileLaserFrame(geometry((performance.now()-origin)/1000),testConfig||outputConfig());await usb.sendFrame(frame.points,frame.pps);
+      if(!frameSequence){const scan=compileLaserFrame(geometry((performance.now()-origin)/1000),testConfig||outputConfig());frameSequence=scan.frames;framePart=0;frameParts=frameSequence.length;}
+      const sequence=frameSequence,frame=sequence[framePart];
+      const accepted=await usb.sendFrame(frame.points,frame.pps);
+      if(token===lease&&accepted&&frameSequence===sequence){framePart++;if(framePart>=sequence.length)frameSequence=null;}
       if(token===lease&&running)timer=setTimeout(()=>pump(token),8);
     }catch(error){stop();q('status').textContent=`OUTPUT FAULT · ${error.message}`;notify(error.message);}
   }
@@ -93,7 +96,7 @@ export function mountLaser(container, { notify = () => {}, usbApi = navigator.us
   function updateParameter(key,control) {
     const next={...params,[key]:key==='pointSize'?Number(control.value):control.value};
     try {
-      compileLaserFrame(geometry((performance.now()-origin)/1000,next),outputConfig());params=next;
+      compileLaserFrame(geometry((performance.now()-origin)/1000,next),outputConfig());params=next;frameSequence=null;
       if(key==='mode')points.clear();
       for(const name of ['frame','sweep','text','midi'])q(`${name}-controls`).hidden=params.mode!==name;
       q('sweep-controls-extra').hidden=params.mode!=='sweep';
@@ -105,16 +108,16 @@ export function mountLaser(container, { notify = () => {}, usbApi = navigator.us
     const next=!warpEnabled;
     try{
       compileLaserFrame(geometry(0,params,{...profile.get(),warpQuad:next?profile.get().warpQuad:identityQuad()}),{...profile.get(),warpQuad:next?profile.get().warpQuad:identityQuad()});
-      warpEnabled=next;q('warp-state').textContent=`WARP ${next?'ON':'OFF'}`;q('warp').classList.toggle('active',next);q('warp').setAttribute('aria-pressed',String(next));q('warp').title=`Warp ${next?'ON':'OFF'} · ${next?'mapping active':'stored mapping bypassed'}`;mapping.sync();
+      warpEnabled=next;frameSequence=null;q('warp-state').textContent=`WARP ${next?'ON':'OFF'}`;q('warp').classList.toggle('active',next);q('warp').setAttribute('aria-pressed',String(next));q('warp').title=`Warp ${next?'ON':'OFF'} · ${next?'mapping active':'stored mapping bypassed'}`;mapping.sync();
       if(!running)renderPreview(geometry(0),outputConfig());
     }catch(error){notify(error.message);}
   };
-  q('speed').oninput=()=>{q('speed-label').value=`${Number(q('speed').value).toFixed(1)} s`;};
-  for(const name of ['route','channel'])q(name).onchange=()=>points.clear();
-  q('demo').onclick=()=>{if(!running)preview();points.receive([0x90,60,96]);clearTimeout(demoTimer);demoTimer=setTimeout(()=>points.receive([0x80,60,0]),600);};
+  q('speed').oninput=()=>{frameSequence=null;q('speed-label').value=`${Number(q('speed').value).toFixed(1)} s`;};
+  for(const name of ['route','channel'])q(name).onchange=()=>{points.clear();frameSequence=null;};
+  q('demo').onclick=()=>{if(!running)preview();points.receive([0x90,60,96]);frameSequence=null;clearTimeout(demoTimer);demoTimer=setTimeout(()=>{points.receive([0x80,60,0]);frameSequence=null;},600);};
   const action=fn=>async()=>{try{await fn();}catch(error){notify(error.message);q('status').textContent=error.message;}};
   q('usb').onclick=action(()=>usb.connect());q('usb-status-button').onclick=action(()=>usb.status());q('usb-disconnect').onclick=action(async()=>{stop({hardware:false});await usb.emergencyStop();});
   const visibility=()=>{if(document.hidden)stop();},disconnect=event=>{if(!usb.device){stop({hardware:false});q('status').textContent='USB disconnected · output stopped';}};
   document.addEventListener('visibilitychange',visibility);usbApi?.addEventListener('disconnect',disconnect);renderPreview(geometry(0),outputConfig());
-  return {stop,toggle,test:testOutput,status:()=>({connected:!!usb.device,emitting, pending:outputPending||connecting,preview:running&&!emitting,message:q('usb-status').textContent}),midi(bytes){if(running&&params.mode==='midi'&&q('route').checked)points.receive(bytes,q('channel').value==='all'?'all':Number(q('channel').value));},async panic(){stop({hardware:false});await usb.emergencyStop();},dispose(){stop();disposed=true;mapping.dispose();profile.dispose();usb.dispose().catch(()=>{});document.removeEventListener('visibilitychange',visibility);usbApi?.removeEventListener('disconnect',disconnect);container.replaceChildren();}};
+  return {stop,toggle,test:testOutput,status:()=>({connected:!!usb.device,emitting, pending:outputPending||connecting,preview:running&&!emitting,message:q('usb-status').textContent}),midi(bytes){if(running&&params.mode==='midi'&&q('route').checked){points.receive(bytes,q('channel').value==='all'?'all':Number(q('channel').value));frameSequence=null;}},async panic(){stop({hardware:false});await usb.emergencyStop();},dispose(){stop();disposed=true;mapping.dispose();profile.dispose();usb.dispose().catch(()=>{});document.removeEventListener('visibilitychange',visibility);usbApi?.removeEventListener('disconnect',disconnect);container.replaceChildren();}};
 }

@@ -76,7 +76,7 @@ export function compileLaserFrame(strokes, profile) {
     const previous=points.at(-1);
     if(point.i>0&&previous?.i>0&&previous.x===point.x&&previous.y===point.y)return;
     points.push(point);lanes.push(lane);
-    if(points.length>maxPoints)throw new Error('40 ms frame budget exceeded; reduce scan tuning / text / MIDI loci');
+    if(points.length>32768)throw new Error('Scan sequence exceeds 32768 points; shorten text / reduce tuning');
   }
   function move(target,intensity=0,lane=0,startSlow=0,endSlow=0){
     const length=distance(cursor,target);
@@ -123,7 +123,27 @@ export function compileLaserFrame(strokes, profile) {
       }else dark(point);
     });
   }
-  return {points,pps};
+  if(points.length<=maxPoints)return {points,pps,frames:[{points,pps}],totalPoints:points.length};
+  // Keep the operator's spacing, settling and PPS. Partition a long scan instead
+  // of asking the DAC to repeat an oversized frame or dropping text strokes.
+  const frames=[],isDark=p=>!(p.r||p.g||p.b||p.i),blank=p=>({...p,r:0,g:0,b:0,i:0});
+  let offset=0;
+  while(offset<points.length){
+    const previous=points[Math.max(0,offset-1)],prefix=[blank(previous)];
+    if(!isDark(points[offset]))for(let i=0;i<samples(tuning.settleUs);i++)prefix.push(blank(previous));
+    const available=maxPoints-prefix.length-2;
+    let end=Math.min(points.length,offset+available);
+    if(end<points.length){
+      // Prefer a stroke boundary so letters and their blank settling stay intact.
+      for(let i=end-1;i>offset;i--)if(!lanes[i]&&lanes[i-1]){end=i+1;break;}
+    }
+    const packet=[...prefix,...points.slice(offset,end)];
+    const last=packet.at(-1);
+    packet.push(blank(last),blank(last));
+    while(packet.length<128)packet.push(blank(last));
+    frames.push({points:packet,pps});offset=end;
+  }
+  return {...frames[0],frames,totalPoints:points.length};
 }
 export function encodeHeliosFrame(input, pps) {
   if (!Array.isArray(input) || input.length < 128 || input.length > 1600 || !Number.isInteger(pps) || pps < 8000 || pps > 40000 || input.length / pps > .04) throw new Error('Invalid HELIOS frame bounds');
