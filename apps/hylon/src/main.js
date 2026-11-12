@@ -270,7 +270,7 @@ navigator.mediaDevices?.addEventListener('devicechange', () => audio.refresh().c
 
 sampler = mountSampler(roots.sampler, { getAudioContext: () => audio.ensure(), getDestination: () => audio.destination(), notify });
 laser = mountLaser(roots.laser, { notify });
-audioPod = mountMixer(roots.audio, { audio, midiOut, sampler, notify, toggleAudio, onFollowerMessage:bytes=>{const record=store.receive(bytes,{id:'hylon:mic-follower',name:'FOLLOWER · generated',manufacturer:'HYLON'});if(record)changed();} });
+audioPod = mountMixer(roots.audio, { audio, midiOut, sampler, notify, toggleAudio, onFollowerMessage:bytes=>{if((bytes[0]&0xf0)===0x90&&bytes[2]>0)audio.followerNote=bytes[1];else if((bytes[0]&0xf0)===0x80||((bytes[0]&0xf0)===0x90&&!bytes[2])){if(audio.followerNote===bytes[1])audio.followerNote=null;}const record=store.receive(bytes,{id:'hylon:mic-follower',name:'FOLLOWER · generated',manufacturer:'HYLON'});if(record)changed();} });
 installScoreHighlights(document);
 spore = mountSpore(roots.spore, { audio, midiOut, sampler, notify });
 const titles = { capture: 'CAPTURE', config: 'I/O', monitor: 'MIDI MONITOR', sampler: 'SAMPLER', laser: 'LASER', audio: 'AUDIO', spore: 'SPORE' };
@@ -352,8 +352,9 @@ setInterval(() => {
   document.querySelectorAll('.scene-transport button,.scene-transport select').forEach(control=>{control.disabled=!canControl;});
   $('#scene-play').textContent=scene.running?'STOP':'PLAY';$('#scene-speed').value=String(scene.speed||1);sceneScore.value=scene.file;$('#scene-label').title=`Active generator: ${scene.scene} · ${scene.file}`;
   const pitch=audio.mixer?.pitch,frequency=pitch?.frequency||0,correction=pitch?.correctionCents;
-  $('#mic-pitch').textContent=frequency>0?`${frequency.toFixed(1)} Hz · ${Number.isFinite(correction)?(correction>=0?'+':'')+Math.round(correction)+'¢':'—¢'}`:'— Hz · —¢';
-  $('#mic-pitch').title=frequency>0?`Mic input · autotune correction ${Number.isFinite(correction)?correction.toFixed(1)+' cents':'unvoiced'} · confidence ${Math.round((pitch.confidence||0)*100)}% · residual estimate ${Number.isFinite(pitch.residualCents)?pitch.residualCents.toFixed(1)+' cents':'—'}`:'Mic pitch / autotune correction';
+  const followerLabel=`M ${audio.followerNote??'—'}`;
+  $('#mic-pitch').textContent=frequency>0?`${frequency.toFixed(1)} Hz · ${Number.isFinite(correction)?(correction>=0?'+':'')+Math.round(correction)+'¢':'—¢'} · ${followerLabel}`:`— Hz · —¢ · ${followerLabel}`;
+  $('#mic-pitch').title=frequency>0?`Follower MIDI note ${audio.followerNote??'—'} · mic input · autotune correction ${Number.isFinite(correction)?correction.toFixed(1)+' cents':'unvoiced'} · confidence ${Math.round((pitch.confidence||0)*100)}% · residual estimate ${Number.isFinite(pitch.residualCents)?pitch.residualCents.toFixed(1)+' cents':'—'}`:`Mic pitch / autotune correction · follower MIDI note ${audio.followerNote??'—'}`;
   const midi = midiOut.summary(), laserState = laser.status(), audioOn = audio.context?.state === 'running';
   headerState('audio', audioOn, `Audio ${audioOn ? 'ON' : 'OFF'} · mic ${audio.stream ? audio.monitor ? 'monitored' : 'muted' : 'off'} · ${audio.context?.sampleRate || '—'} Hz · master ${Math.round(audio.masterLevel*100)}% · click: on/off · Shift+click: L/R 0.5 s each`);
   headerState('midi', !!inputPort || midi.armed, `MIDI IN: ${inputPort?.name || 'OFF'} · OUT: ${midi.armed ? midi.portName : 'OFF'} · TX ${midi.sent} · ${midi.fault || midi.reason} · Shift+click: note 60 / channels 1–5 / 300 ms / duration 100 ms`);

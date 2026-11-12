@@ -4,7 +4,7 @@ export class AudioSystem {
     this.devices = []; this.inputId = ''; this.outputId = ''; this.routes = [0, 1];
     this.gains = [1, 1]; this.monitor = false; this.bus = null; this.nodes = []; this.analysers = [];
     this.inputRevision = 0; this.createMixer = createMixer; this.mixer = null; this.micLane = 0; this.masterLevel = .3;
-    this.midiLevel = 1; this.pitchListeners = new Set();
+    this.midiLevel = 1; this.followerNote = null; this.pitchListeners = new Set();
     this.testNodes = []; this.testRevision = 0; this.engineRevision = 0; this.inputMeter = null; this.outputMeter = null;
   }
   async ensure() {
