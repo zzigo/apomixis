@@ -24,3 +24,8 @@ test('legacy profiles default to identity and mapped output uses the same transf
  for(let i=1;i<frame.points.length;i++){const a=frame.points[i-1],b=frame.points[i];if(a.i&&b.i)assert(Math.hypot(a.x-b.x,a.y-b.y)<=66);}
  assert(frame.points.length/frame.pps<=.04);
 });
+test('zone mapping acts on the full viewport independently of pattern size',()=>{
+ const quad=[[.2,.1],[.8,.1],[.8,.9],[.2,.9]],p={...defaultOutputProfile(defaultLaserProfile()),warpQuad:quad};
+ const center=projectLaserPoint(p,.5,.5);close(center[0],.5);close(center[1],.5);
+ const corner=projectLaserPoint(p,0,0);close(corner[0],.44);close(corner[1],.42);
+});

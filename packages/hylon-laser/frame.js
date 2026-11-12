@@ -4,11 +4,23 @@ import { createQuadMapper } from './quad.js';
 export const OUTPUT_DEFAULTS = Object.freeze({ scanRatePps: 20000, widthPercent: 20, heightPercent: 20, intensityPercent: 5 });
 export function defaultOutputProfile(base) { return { ...base, ...OUTPUT_DEFAULTS, model: '', target: 'unknown', angleXDeg: null, angleYDeg: null, offsetXPercent: 0, offsetYPercent: 0, flipX: false, flipY: false }; }
 // No stationary lit points: even MIDI loci become small scanned rings.
-export function midiStrokes(points) {
-  return points.slice(0, 8).map(p => ({ intensity: p.intensity, points: Array.from({ length: 25 }, (_, i) => {
-    const a = i / 24 * Math.PI * 2, radius = .035;
-    return [Math.max(0, Math.min(1, p.x + radius * Math.cos(a))), Math.max(0, Math.min(1, p.y + radius * Math.sin(a)))];
-  }) }));
+export function midiStrokes(points, size = 0, profile = null) {
+  if (!Number.isFinite(size) || size < 0 || size > 100) throw new Error('Point size must be 0–100');
+  const mapper = profile?.warpQuad ? createQuadMapper(profile.warpQuad) : null;
+  return points.slice(0, 8).map(p => {
+    const ring = radius => Array.from({length:25},(_,i)=>{
+      const a=i/24*Math.PI*2;
+      return [Math.max(0,Math.min(1,p.x+radius*Math.cos(a))),Math.max(0,Math.min(1,p.y+radius*Math.sin(a)))];
+    });
+    let radius = profile ? .001 : .01, trace = ring(radius);
+    // A visually point-sized locus retains scanner motion after size/warp transforms.
+    while(profile && radius < .25) {
+      const mapped=trace.map(([x,y])=>projectLaserPoint(profile,x,y,mapper)),first=mapped[0];
+      if(mapped.some(([x,y])=>Math.hypot(x-first[0],y-first[1])*4095>=12))break;
+      radius=Math.min(.25,radius*1.5);trace=ring(radius);
+    }
+    return {intensity:p.intensity,points:ring(Math.min(.25,radius+size/100*.08))};
+  });
 }
 // Compact single-stroke glyphs. Unsupported characters are rejected for output.
 const GLYPHS = {
@@ -21,6 +33,8 @@ export function textStrokes(input) {
   return [...text].flatMap((c, i) => (GLYPHS[c] || []).map(path => ({ intensity: 1, points: path.map(([x, y]) => [.05 + cell * (i + x * .75), .3 + y * .4]) })));
 }
 export function compileLaserFrame(strokes, profile) {
+  const color=profile.colorRgb ?? [0,1,0];
+  if(!Array.isArray(color)||color.length!==3||color.some(v=>!Number.isFinite(v)||v<0||v>1))throw new Error('Invalid RGB color');
   const pps = profile.scanRatePps;
   if (!Number.isInteger(pps) || pps < 8000 || pps > 40000) throw new Error('Output PPS must be 8000–40000');
   if (!Array.isArray(strokes) || strokes.length > 64) throw new Error('Too many laser strokes');
@@ -36,7 +50,7 @@ export function compileLaserFrame(strokes, profile) {
     for (let i = 1; i <= steps; i++) {
       const xy = projected.map((v, axis) => v + (mapped[axis] - v) * i / steps);
       const level = Math.round(255 * profile.intensityPercent / 100 * intensity);
-      const point = { x: Math.round(xy[0] * 4095), y: Math.round((1 - xy[1]) * 4095), r: 0, g: level, b: 0, i: level };
+      const point = { x: Math.round(xy[0] * 4095), y: Math.round((1 - xy[1]) * 4095), r: Math.round(level*color[0]), g: Math.round(level*color[1]), b: Math.round(level*color[2]), i: color.some(v=>v>0)?level:0 };
       const previous = points.at(-1);
       if (!(level > 0 && previous?.i > 0 && previous.x === point.x && previous.y === point.y)) points.push(point);
       if (points.length > maxPoints) throw new Error('Pattern exceeds 40 ms frame budget; shorten text / reduce MIDI notes');

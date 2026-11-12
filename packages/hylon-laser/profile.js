@@ -4,7 +4,7 @@ const finite = (n, min, max) => typeof n === 'number' && Number.isFinite(n) && n
 export function defaultLaserProfile() {
   return { schemaVersion: 1, model: '', scanRatePps: null, angleXDeg: null, angleYDeg: null,
     widthPercent: 100, heightPercent: 100, offsetXPercent: 0, offsetYPercent: 0,
-    flipX: false, flipY: false, intensityPercent: 10, target: 'ceiling', warpQuad: identityQuad(),
+    flipX: false, flipY: false, intensityPercent: 10, target: 'ceiling', warpQuad: identityQuad(), colorRgb: [0,1,0],
     exclusionZone: 'unknown', emergencyStop: 'unknown', interlock: 'unknown', scanFailureShutdown: 'unknown' };
 }
 export function validateLaserProfile(raw) {
@@ -18,9 +18,11 @@ export function validateLaserProfile(raw) {
   for (const key of ['offsetXPercent', 'offsetYPercent']) if (!finite(raw[key], -99, 99)) throw new Error('Field offset must be -99–99%');
   if (Math.abs(raw.offsetXPercent) + raw.widthPercent > 100 || Math.abs(raw.offsetYPercent) + raw.heightPercent > 100) throw new Error('Field plus offset must stay inside the normalized preview');
   if (typeof raw.flipX !== 'boolean' || typeof raw.flipY !== 'boolean' || !finite(raw.intensityPercent, 0, 100)) throw new Error('Invalid orientation or intensity');
+  const color = raw.colorRgb ?? [0,1,0];
+  if (!Array.isArray(color) || color.length !== 3 || color.some(v => !finite(v,0,1))) throw new Error('Invalid RGB color');
   if (!['ceiling', 'wall', 'other', 'unknown'].includes(raw.target)) throw new Error('Invalid projection target');
   for (const key of ['exclusionZone', 'emergencyStop', 'interlock', 'scanFailureShutdown']) if (!['unknown', 'reported-present', 'reported-absent'].includes(raw[key])) throw new Error('Invalid operator-reported protection state');
-  return Object.fromEntries(Object.keys(template).map(key => [key, key === 'warpQuad' ? validateQuad(raw.warpQuad ?? identityQuad()) : raw[key]]));
+  return Object.fromEntries(Object.keys(template).map(key => [key, key === 'warpQuad' ? validateQuad(raw.warpQuad ?? identityQuad()) : key === 'colorRgb' ? [...color] : raw[key]]));
 }
 export function parseLaserProfile(text) {
   if (typeof text !== 'string' || text.length > 16384) throw new Error('Laser profile exceeds 16 KiB');
@@ -28,9 +30,9 @@ export function parseLaserProfile(text) {
 }
 export function projectLaserPoint(profile, x, y, mapper = profile.warpQuad ? createQuadMapper(profile.warpQuad) : null) {
   if (!finite(x, 0, 1) || !finite(y, 0, 1)) throw new Error('Invalid normalized point');
-  if (mapper) [x,y] = mapper(x,y);
-  return [
+  const linear = [
     .5 + profile.offsetXPercent / 200 + ((profile.flipX ? 1 - x : x) - .5) * profile.widthPercent / 100,
     .5 + profile.offsetYPercent / 200 + ((profile.flipY ? 1 - y : y) - .5) * profile.heightPercent / 100
   ].map(value => Math.min(1, Math.max(0, value)));
+  return mapper ? mapper(...linear) : linear;
 }
