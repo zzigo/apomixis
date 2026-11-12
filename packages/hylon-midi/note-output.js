@@ -74,7 +74,7 @@ export function createMidiNoteOutput({ now = () => performance.now(), onChange =
   }
   return { select, arm, disarm, schedule, tick, stopSource, panic,
     setBudget(value) { if (!integer(value, 1, 50)) throw new Error('Attack cap must be 1–50 per second'); disarm('budget-change'); budget = value; changed(); },
-    assertReady() { if (!armed || port?.state !== 'connected') throw new Error('Select MIDI output and ENABLE NOTE OUT in I/O'); },
+    assertReady() { if (!armed || port?.state !== 'connected') throw new Error('Turn MIDI ON in I/O or the header'); },
     status: () => ({ armed, portId: port?.id || '', portName: port?.name || '', epoch, reason, fault, budget, queued: queue.length, active: owners.size, heldPitches: pitches.size, sent, dropped, coalesced }),
     dispose() { if (disposed) return; disarm('disposed'); disposed = true; }
   };

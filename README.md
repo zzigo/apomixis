@@ -66,8 +66,10 @@ Choose **06 SPORE** in HYLON 0.5. The seeded generator, five-minute draft TXT sc
 
 ## MIDI note output and SUPER PANIC
 
-HYLON 0.5 adds a MIDI I/O note tester, fixed Klais channels I–IV/pedal = 1–5, exclusive SPORE SIMULATION / LOCAL AUDIO / MIDI OUT buttons and a fixed header SUPER PANIC. [MIDI operation and verification](docs/MIDI-OUT-GUIDE.md). Select an output and ENABLE NOTE OUT before physical notes.
+HYLON 0.5 adds a MIDI I/O note tester, fixed Klais channels I–IV/pedal = 1–5, exclusive SPORE SIMULATION / LOCAL AUDIO / MIDI OUT buttons and a fixed header SUPER PANIC. [MIDI operation and verification](docs/MIDI-OUT-GUIDE.md). Use MIDI ON (or header M) to open the selected note output.
 
 ## HELIOS physical output
 
 HYLON 0.6 simplifies **04 LASER** to CONNECT HELIOS → START OUTPUT / BLACKOUT, with live Size/Intensity sliders and collapsed Advanced settings. Actual one-shot frame transmission replaces the former preview-only implementation. Software defaults are not projector ratings. The composer reports working projection; see [HELIOS operation and verification](docs/HELIOS-POD-GUIDE.md).
+
+HYLON 0.7 compacts the header with A/M/L process toggles, hover state and mic/output peak lines. Shift-click runs finite L/R audio, channel 1–5 MIDI, or one-second laser square tests; the same tests remain in pods. I/O uses compact MIDI/AUDIO columns above 400 px and one shared AUDIO ON/OFF toggle. See the field guide for exact sequences and default USB MIDI selection.

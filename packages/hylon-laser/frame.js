@@ -1,5 +1,6 @@
 // Wire packing follows Gitle Mikkelsen's HELIOS SDK (MIT); see licenses/HELIOS-SDK-MIT.txt.
 import { projectLaserPoint } from './profile.js';
+import { createQuadMapper } from './quad.js';
 export const OUTPUT_DEFAULTS = Object.freeze({ scanRatePps: 20000, widthPercent: 20, heightPercent: 20, intensityPercent: 5 });
 export function defaultOutputProfile(base) { return { ...base, ...OUTPUT_DEFAULTS, model: '', target: 'unknown', angleXDeg: null, angleYDeg: null, offsetXPercent: 0, offsetYPercent: 0, flipX: false, flipY: false }; }
 // No stationary lit points: even MIDI loci become small scanned rings.
@@ -24,21 +25,23 @@ export function compileLaserFrame(strokes, profile) {
   if (!Number.isInteger(pps) || pps < 8000 || pps > 40000) throw new Error('Output PPS must be 8000–40000');
   if (!Array.isArray(strokes) || strokes.length > 64) throw new Error('Too many laser strokes');
   const maxPoints = Math.min(1600, Math.floor(pps * .04)), points = [];
-  let cursor = [.5, .5];
+  const mapper = profile.warpQuad ? createQuadMapper(profile.warpQuad) : null;
+  let cursor = [.5, .5], projected = projectLaserPoint(profile, .5, .5, mapper);
   function move(target, intensity) {
-    const distance = Math.hypot(target[0] - cursor[0], target[1] - cursor[1]);
+    const mapped = projectLaserPoint(profile, ...target, mapper);
+    const distance = Math.hypot(mapped[0] - projected[0], mapped[1] - projected[1]);
     if (distance < 1e-8 && intensity > 0) return;
     // Geometric interpolation before DAC quantization; no unblanked jumps.
     const steps = Math.max(1, Math.ceil(distance * 64));
     for (let i = 1; i <= steps; i++) {
-      const xy = projectLaserPoint(profile, cursor[0] + (target[0] - cursor[0]) * i / steps, cursor[1] + (target[1] - cursor[1]) * i / steps);
+      const xy = projected.map((v, axis) => v + (mapped[axis] - v) * i / steps);
       const level = Math.round(255 * profile.intensityPercent / 100 * intensity);
       const point = { x: Math.round(xy[0] * 4095), y: Math.round((1 - xy[1]) * 4095), r: 0, g: level, b: 0, i: level };
       const previous = points.at(-1);
       if (!(level > 0 && previous?.i > 0 && previous.x === point.x && previous.y === point.y)) points.push(point);
       if (points.length > maxPoints) throw new Error('Pattern exceeds 40 ms frame budget; shorten text / reduce MIDI notes');
     }
-    cursor = target;
+    cursor = target; projected = mapped;
   }
   move(cursor, 0);
   for (const stroke of strokes) {

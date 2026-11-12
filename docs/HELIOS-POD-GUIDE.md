@@ -43,3 +43,11 @@ Automated tests use mock USB devices only. Node tests cover packet packing/trail
 Development-only `/helios-check.html` mounts the actual pod with mock USB and isolated settings storage. Five browser checks verify compact defaults and dark connection, preview-only isolation, actual bulk frame calls/shutter sequencing/SINGLE_MODE, live intensity zero/recovery and size changes, and blackout without late transfers. No real projector is started by this test. The harness is excluded from the production build.
 
 The composer independently reported working physical output during this implementation. That is operator observation, not a measured scan/power or emergency-shutdown certification. Actual optical behavior should be assessed on the rig. No production service, driver, firmware or online deployment was modified.
+
+## Header shortcut / 0.7
+
+Header **L** duplicates connection/start/blackout. **Shift+L** or pod **TEST □ / 1s** explicitly starts a centered full-field square for one second at the current PPS and intensity, then stops. Size/offset overrides are transient; saved alignment and normal pattern remain unchanged. Tests never resume prior output. Selecting USB alone in the pod still stays dark. Automated command checks use mock USB only.
+
+## Four-corner mapping
+
+The pod is named LASER consistently with the navigation. Main preview uses an 80% width / 48vh height cap; the small original preview shows generator geometry before mapping. Drag or keyboard-adjust TL/TR/BR/BL handles. A convex normalized projective transform is applied before size, offset and flips in both preview and frame compilation. DAC interpolation is bounded after transformation. Mapping persists as optional `warpQuad` in schema-1 profiles (absent in older profiles means identity); invalid/folded/tiny quads are rejected. RESET MAP restores identity. Full-size timed tests use the current mapped zone. Geometric validation does not measure the projector or calibrate optical power.
