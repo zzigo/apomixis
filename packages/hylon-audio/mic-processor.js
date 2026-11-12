@@ -32,14 +32,15 @@ class HylonMicProcessor extends AudioWorkletProcessor {
       }
     }
     const midi=frequency?69+12*Math.log2(frequency/440):null;
+    let targetMidi=null,correctionCents=null;
     if(midi!==null&&confidence>=.78){
       const scales={chromatic:[0,1,2,3,4,5,6,7,8,9,10,11],major:[0,2,4,5,7,9,11],minor:[0,2,3,5,7,8,10],pentatonic:[0,2,4,7,9]};
       const scale=scales[this.params.tuneScale]||scales.chromatic;let target=Math.round(midi),best=Infinity;
       for(let note=Math.floor(midi)-12;note<=Math.ceil(midi)+12;note++)if(scale.includes(((note-this.params.tuneRoot)%12+12)%12)&&Math.abs(note-midi)<best){target=note;best=Math.abs(note-midi);}
       const semitones=Math.max(-12,Math.min(12,(target-midi)*this.params.tuneAmount+this.params.tuneTranspose));
-      this.targetRatio=2**(semitones/12);
+      targetMidi=target+this.params.tuneTranspose;correctionCents=semitones*100;this.targetRatio=2**(semitones/12);
     }else this.targetRatio=1;
-    this.port.postMessage({type:'pitch',frequency,confidence,rms,midi});
+    this.port.postMessage({type:'pitch',frequency,confidence,rms,midi,targetMidi,correctionCents,residualCents:targetMidi===null?null:100*(midi+12*Math.log2(this.ratio)-targetMidi)});
   }
   process(inputs,outputs){
     const input=inputs[0]?.[0],output=outputs[0];if(!output?.length)return true;

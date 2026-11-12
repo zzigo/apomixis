@@ -171,5 +171,5 @@ export function mountSampler(container, options) {
   container.replaceChildren(libraryRoot, lab);
   const bank = mountKlaisBank(libraryRoot, options), files = mountFileSampler(filesRoot, options);
   lab.addEventListener('toggle', () => { bank.stop(); files.stop(); });
-  return { prepareScore:()=>bank.prepareScore(),dispatchScore:(event,timing)=>bank.dispatchScore(event,timing),stopScore:()=>bank.stopScore(),stop() { bank.stop(); files.stop(); }, midi(bytes) { if (lab.open) files.midi(bytes); else bank.midi(bytes); }, dispose() { bank.dispose(); files.dispose(); container.replaceChildren(); } };
+  return { startFollower:(owner,note,velocity,channel)=>bank.startFollower(owner,note,velocity,channel),stopFollower:owner=>bank.stopFollower(owner),prepareScore:()=>bank.prepareScore(),dispatchScore:(event,timing)=>bank.dispatchScore(event,timing),stopScore:()=>bank.stopScore(),stop() { bank.stop(); files.stop(); }, midi(bytes) { if (lab.open) files.midi(bytes); else bank.midi(bytes); }, dispose() { bank.dispose(); files.dispose(); container.replaceChildren(); } };
 }
