@@ -1,0 +1,140 @@
+HYLON-SCORE 1
+# Apomixis 03 / MEIOSIS — The flower. Candidate, not an approved release.
+# Melody derives from archived 03_Meiosis.scd: C–D–F–A. C4 = MIDI 60.
+# Infinite phrase procedure within a finite 330-second rehearsal form.
+# Independent melody / cluster algorithms; native SPORE notes remain silent.
+# Logical registrations colour LOCAL AUDIO; they do not operate physical stops.
+id apomixis.meiosis
+version 0.1.0-draft.1
+title "MEIOSIS"
+number meiosis
+duration 330
+seed 2028
+audition-transpose 0
+
+voice $SO = so range 24 84
+voice $RE = re range 24 84
+voice $PO = po range 24 84
+voice $GO = go range 24 84
+voice $PE = pe range 24 53
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+
+# Harmonicity is a shared display curve here; literal melody pitches take priority.
+harmonicity 0 "P5" "C-D-F-A · flower / light"
+harmonicity 108 "P5" "parental lines cross"
+harmonicity 246 "P5" "chromatic cluster → exact thematic residue"
+harmonicity 330 "P5" ""
+
+section I "Flower" 0 to 36 bpm 60
+native off
+registers $GO diapason8
+registers $PO -
+registers $RE -
+registers $SO -
+registers $PE -
+laser off
+melody C4 D4 F4 A4 G4 F4 E4 D4 C4 E4 G4 Bb4 A4 G4 E4 C4 dur 2 1 1 4 2 1 1 2 2 1 1 4 2 1 1 4 anti A4 Ab4 G4 F#4 F4 E4 Eb4 D4 C#4 E4 G4 Bb4 A4 Ab4 F#4 E4 rate 1/4 div go shadow 0 cross 0 drift 0 hocket 0 legato 1.02 breath 2 vel 72
+bio "the flower opens · the theme is heard before any fragmentation"
+end
+
+section A "Shadow" 36 to 72 bpm 60
+native off
+registers $GO -
+registers $PO -
+registers $RE corDeNuit8
+registers $SO -
+registers $PE -
+laser off
+melody C4 D4 F4 A4 G4 F4 E4 D4 C4 E4 G4 Bb4 A4 G4 E4 C4 dur 2 1 1 4 2 1 1 2 2 1 1 4 2 1 1 4 anti A4 Ab4 G4 F#4 F4 E4 Eb4 D4 C#4 E4 G4 Bb4 A4 Ab4 F#4 E4 rate 1/4 div re shadow 1 cross 0 drift 0 hocket 0 legato 1.06 breath 2 vel 68
+bio "the other parent · a chromatic shadow answers the original contour"
+end
+
+section S "Synapsis" 72 to 108 bpm 66
+native off
+registers $GO dulciane8
+registers $PO -
+registers $RE corDeNuit8
+registers $SO -
+registers $PE -
+laser off
+melody C4 D4 F4 A4 G4 F4 E4 D4 C4 E4 G4 Bb4 A4 G4 E4 C4 dur 2 1 1 4 2 1 1 2 2 1 1 4 2 1 1 4 anti A4 Ab4 G4 F#4 F4 E4 Eb4 D4 C#4 E4 G4 Bb4 A4 Ab4 F#4 E4 rate 1/4 div go shadow 0 cross 0 drift 0 hocket 0 legato 1.02 breath 2 vel 68
+melody C4 D4 F4 A4 G4 F4 E4 D4 C4 E4 G4 Bb4 A4 G4 E4 C4 dur 2 1 1 4 2 1 1 2 2 1 1 4 2 1 1 4 anti A4 Ab4 G4 F#4 F4 E4 Eb4 D4 C#4 E4 G4 Bb4 A4 Ab4 F#4 E4 rate 1/4 div re shadow 1 cross 0 drift 0 hocket 0 legato 1.06 breath 4 vel 60
+bio "two parental strands remain audible · their breathing diverges"
+end
+
+section X "Crossover" 108 to 156 bpm 72
+native off
+registers $GO diapason8
+registers $PO bourdon8
+registers $RE corDeNuit8
+registers $SO seraphon8
+registers $PE -
+laser off
+melody C4 D4 F4 A4 G4 F4 E4 D4 C4 E4 G4 Bb4 A4 G4 E4 C4 dur 2 1 1 4 2 1 1 2 2 1 1 4 2 1 1 4 anti A4 Ab4 G4 F#4 F4 E4 Eb4 D4 C#4 E4 G4 Bb4 A4 Ab4 F#4 E4 rate 1/4 div manuals shadow 0->1 cross 0.2->0.8 drift 0->2 hocket 0.1->0.7 pulse 1/64 rest 0.65 gate 0.14 legato 1.02 breath 2 vel 70->80
+bio "contiguous fragments pass between parents · holes open inside the line"
+end
+
+section H "Hocket" 156 to 204 bpm 132
+native off
+registers $GO diapason8
+registers $PO bourdon8
+registers $RE corDeNuit8
+registers $SO seraphon8
+registers $PE -
+laser off
+melody C4 D4 F4 A4 G4 F4 E4 D4 C4 E4 G4 Bb4 A4 G4 E4 C4 dur 2 1 1 4 2 1 1 2 2 1 1 4 2 1 1 4 anti A4 Ab4 G4 F#4 F4 E4 Eb4 D4 C#4 E4 G4 Bb4 A4 Ab4 F#4 E4 rate 1/4 div manuals shadow 0.5 cross 0.8 drift 2->5 hocket 1 pulse 1/128 rest 0.65->0.8 gate 0.12 breath 2 vel 78->64
+bio "a single broken thread migrates between four manuals · most slots are silence"
+end
+
+section R "Long return" 204 to 246 bpm 54
+native off
+registers $GO dulciane8
+registers $PO -
+registers $RE corDeNuit8
+registers $SO -
+registers $PE -
+laser off
+melody C4 D4 F4 A4 G4 F4 E4 D4 C4 E4 G4 Bb4 A4 G4 E4 C4 dur 2 1 1 4 2 1 1 2 2 1 1 4 2 1 1 4 anti A4 Ab4 G4 F#4 F4 E4 Eb4 D4 C#4 E4 G4 Bb4 A4 Ab4 F#4 E4 rate 1/4 div re shadow 0 cross 0.2->0 drift 0 hocket 0.45->0 pulse 1/64 rest 0.7 gate 0.14 legato 1.08 breath 2 vel 72
+bio "the singing line returns · its identity survives the discontinuities"
+end
+
+section C "Cluster" 246 to 276 bpm 48
+native off
+registers $GO -
+registers $PO -
+registers $RE corDeNuit8
+registers $SO -
+registers $PE -
+laser off
+cluster C4 D5 keep C4 D4 E4 F4 G4 A4 Bb4 pcs C,D,E,F,G,A,Bb origin 246 holes-from 276 holes-to 312 until 330 div re vel 64
+bio "all chromatic notes C4–D5 held together · fixed registration begins"
+end
+
+section P "Perforation" 276 to 312 bpm 48
+native off
+registers $GO -
+registers $PO -
+registers $RE corDeNuit8
+registers $SO -
+registers $PE -
+laser off
+cluster C4 D5 keep C4 D4 E4 F4 G4 A4 Bb4 pcs C,D,E,F,G,A,Bb origin 246 holes-from 276 holes-to 312 until 330 div re vel 64
+bio "subtraction only · chromatic outsiders leave before extra diatonic notes"
+end
+
+section O "Residue" 312 to 330 bpm 48
+native off
+registers $GO -
+registers $PO -
+registers $RE corDeNuit8
+registers $SO -
+registers $PE -
+laser off
+cluster C4 D5 keep C4 D4 E4 F4 G4 A4 Bb4 pcs C,D,E,F,G,A,Bb origin 246 holes-from 276 holes-to 312 until 330 div re vel 64
+bio "only the original theme pitches remain · fixed register, no new attacks"
+end
+

@@ -1,0 +1,19 @@
+[Unit]
+Description=APOMIXIS public morphology relay
+After=network.target
+
+[Service]
+Type=simple
+User=apomixis
+WorkingDirectory=/opt/apomixis/current
+EnvironmentFile=/etc/apomixis/viewer.env
+ExecStart=/usr/bin/node tools/apomixis-relay.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

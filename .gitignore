@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.local/
+
+__pycache__/
+*.py[cod]
+
+# Private local relay publishing credentials
+.env.local
+.env.*.local

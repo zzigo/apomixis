@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture-passive-v1",
+  "createdAt": "2026-11-11T10:30:21.036Z",
+  "updatedAt": "2026-11-11T10:30:21.039Z",
+  "slots": [
+    {
+      "id": "go.montre16",
+      "division": "go",
+      "label": "Montre 16'",
+      "kind": "stop",
+      "notes": "",
+      "on": [
+        {
+          "id": "81b8b5d7-aeb2-4e0a-8902-2235aa1a5129",
+          "time": 1794393021039,
+          "source": {
+            "id": "demo",
+            "name": "DEMO · NOT ORGAN DATA",
+            "manufacturer": "HYLON simulator"
+          },
+          "bytes": [
+            240,
+            125,
+            1,
+            127,
+            247
+          ],
+          "length": 5,
+          "checksum": "fnv1a32:1ac3ed6b",
+          "hex": "F0 7D 01 7F F7",
+          "kind": "sysex",
+          "channel": null,
+          "slotId": "go.montre16",
+          "transition": "on",
+          "verified": false
+        }
+      ],
+      "off": []
+    }
+  ],
+  "events": [
+    {
+      "id": "81b8b5d7-aeb2-4e0a-8902-2235aa1a5129",
+      "time": 1794393021039,
+      "source": {
+        "id": "demo",
+        "name": "DEMO · NOT ORGAN DATA",
+        "manufacturer": "HYLON simulator"
+      },
+      "bytes": [
+        240,
+        125,
+        1,
+        127,
+        247
+      ],
+      "length": 5,
+      "checksum": "fnv1a32:1ac3ed6b",
+      "hex": "F0 7D 01 7F F7",
+      "kind": "sysex",
+      "channel": null,
+      "slotId": "go.montre16",
+      "transition": "on",
+      "verified": false
+    }
+  ]
+}

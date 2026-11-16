@@ -1,0 +1,314 @@
+SPORE-SCORE 1
+# Apomixis 01 / candidate score. Durations in seconds; notes use MIDI C4=60.
+# Voice variables bind musical roles to logical divisions, never to a MIDI port.
+id apomixis.spore
+version 0.4.0-draft.1
+title "SPORE"
+number esporo
+duration 300
+seed 1931
+audition-transpose 12
+source-sha256 b9fd61ecc755e34e837bb6adbcf7948d202616a347fd51646c9c8a75485c2e2f
+
+voice $SO = so range 24 84
+voice $RE = re range 24 84
+voice $PO = po range 24 84
+voice $GO = go range 24 84
+voice $PE = pe range 24 53
+
+# FROM stops sound when TO is played; coupling is one-hop, not recursive.
+coupling ii_i = $PO -> $GO transpose 0
+coupling iii_i = $RE -> $GO transpose 0
+coupling iv_i = $SO -> $GO transpose 0
+coupling iii_ii = $RE -> $PO transpose 0
+coupling iv_ii = $SO -> $PO transpose 0
+coupling iv_iii = $SO -> $RE transpose 0
+coupling iii16_i = $RE -> $GO transpose -12
+coupling ii16_ii = $PO -> $PO transpose -12
+coupling ii4_ii = $PO -> $PO transpose 12
+coupling iii16_iii = $RE -> $RE transpose -12
+coupling iii4_iii = $RE -> $RE transpose 12
+coupling i_p = $GO -> $PE transpose 0
+coupling ii_p = $PO -> $PE transpose 0
+coupling iii_p = $RE -> $PE transpose 0
+coupling iii4_p = $RE -> $PE transpose 12
+coupling iv_p = $SO -> $PE transpose 0
+
+fertility $SO 178 262
+fertility $RE 95 272
+fertility $PO 0 283
+fertility $GO 0 end
+fertility $PE 29 end
+
+# Repeated times are deliberate discontinuities in the harmonicity curve.
+harmonicity 0 "m2" "I · semitone seed: capsule pressure, beating"
+harmonicity 44 "m2" ""
+harmonicity 48 "m2" "R · replication opens the interval"
+harmonicity 80 "m3" ""
+harmonicity 110 "M3" ""
+harmonicity 135 "P4" ""
+harmonicity 150 "P5" "B · drift through unstable intervals"
+harmonicity 165 "TT 4+" ""
+harmonicity 180 "m7" ""
+harmonicity 192 "M7" ""
+harmonicity 192 "petrushka" "C · host captured: polytonal hyper-harmony"
+harmonicity 215 "petrushka" ""
+harmonicity 230 "augurs" ""
+harmonicity 245 "axis" ""
+harmonicity 258 "mode2" ""
+harmonicity 258 "resonance" "O · résonance folds to the octave, then dissolves to the seed"
+harmonicity 266 "resonance" ""
+harmonicity 266 "P8" ""
+harmonicity 272 "P8" ""
+harmonicity 292 "m2" ""
+harmonicity 300 "m2" ""
+
+# Macroform calibres (biological reading, see docs/SPORE-GUIDE.md):
+# AMBITUS 0 = apex octave of each voice … 1 = full voice range. The spore leaves the capsule
+# through the apical operculum, so sound starts at the top; germination sends the rhizoid
+# downward into the substrate, so the range opens towards the bass.
+ambitus 0 0 "apex · spore released through the operculum: top octave only"
+ambitus 60 0.1 "imbibition · the wall swells, the germ tube points down"
+ambitus 150 0.5 "rhizoid · first cell anchors into the substrate"
+ambitus 192 0.85 ""
+ambitus 258 1 "rooted · canopy to substrate"
+ambitus 300 1 ""
+# Opening: sustained apex in I/II, gradually resolving into an open cellular cloud.
+# Native SPORE phrasing disperses opening onsets and integrates pedal spores until 2:32.
+# Cellular accelerando29–48:48→72BPM, continuous cloud→striated morph29–60.
+# Replication pedal48–150: one octave lower (MIDI floor24), double note lengths.
+# At 3:54 the process reverses: cellular attacks expand into overlapping legato.
+elongation 0 4 "imperceptible high legato · I / II"
+elongation 6 4 ""
+elongation 11 2.6 ""
+elongation 16 1.5 ""
+elongation 21 0.8 ""
+elongation 25 0.4 ""
+elongation 29 0.25 "open cellular cloud"
+elongation 38 0.14 ""
+elongation 48 0.09 ""
+elongation 60 0.08 "rehydration complete · the wall breaks"
+elongation 150 0.45 "protonema · filament cells elongate"
+elongation 234 0.8 "Climas · cells begin to lengthen"
+elongation 246 1.8 ""
+elongation 258 3 "sustained tissue"
+elongation 280 4 "dissolving legato"
+elongation 300 4 ""
+
+# Laser: one green point at a time, random and intermittent (8 % of the generated notes, 0.15 × their length).
+section I "Suspended seed" 0 to 6 bpm 48
+relation "seed pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 2 5 7 9
+cap 2
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.3
+crescendo 0.06
+pgm 27 43
+bio "apical I/II filament · almost imperceptible, contracting gradually into a cell"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section I2 "Membrane I" 6 to 11 bpm 48
+relation "seed pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 2 5 7 9
+cap 2
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.3
+crescendo 0.06
+pgm +32
+bio "apical I/II filament · almost imperceptible, contracting gradually into a cell"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section I3 "Membrane II" 11 to 16 bpm 48
+relation "seed pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 2 5 7 9
+cap 2
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.3
+crescendo 0.06
+pgm +47
+bio "apical I/II filament · almost imperceptible, contracting gradually into a cell"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section I4 "Condensation" 16 to 21 bpm 48
+relation "seed pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 2 5 7 9
+cap 3
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.3
+crescendo 0.06
+pgm +42
+bio "apical I/II filament · almost imperceptible, contracting gradually into a cell"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section I5 "Proto-cell" 21 to 25 bpm 48
+relation "seed pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 2 5 7 9
+cap 3
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.3
+crescendo 0.06
+pgm +31
+bio "apical I/II filament · almost imperceptible, contracting gradually into a cell"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section I6 "Cell emergence" 25 to 29 bpm 48
+relation "seed pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 2 5 7 9
+cap 4
+dispersion 0.1
+polyembryony 0
+tuber 0
+swell 0.3
+crescendo 0.06
+pgm +26
+bio "apical I/II filament · almost imperceptible, contracting gradually into a cell"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section I7 "Introduction" 29 to 48 bpm 48
+relation "seed pulse"
+rule B3/S23 "LIFE"
+texture tutti
+mutation 0
+field 0 2 5 7 9
+cap 4
+dispersion 0.55
+polyembryony 0.3
+tuber 0
+swell 0.3
+crescendo 0.15
+pgm 27 43 32 47 42 31 26
+bio "open cellular cloud · dispersed spores, overlapping lengths, no bass ostinato"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section R "Replication" 48 to 150 bpm 72
+relation "3:2 expansion"
+rule B1357/S1357 "REPLICATOR"
+texture striated
+mutation 0.01
+field 0 2 4 5 7 9 11
+cap 10
+dispersion 0.3
+polyembryony 0.35
+tuber 0.18
+swell 0.6
+crescendo 0.35
+pgm 2 5 6 15 21 23 24 40 42 46 48 55 56 60 73
+bio "continuous cellular accelerando into replication · pedal spores one octave lower, twice as long"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section B "Bridge" 150 to 192 bpm 54
+relation "3:4 contraction"
+rule B3678/S34678 "DAY&NIGHT"
+texture hocket
+mutation 0.02
+field 0 2 3 5 7 9 10
+cap 7
+dispersion 0.2
+polyembryony 0.5
+tuber 0.35
+swell 0.45
+crescendo 0.25
+pgm 1 4 16 22 37 39 50 52 67 70 73
+bio "aerial drift without destination · Equisetum elaters walk"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section C "Climax" 192 to 234 bpm 81
+relation "3:2 expansion"
+rule B2/S "SEEDS"
+texture granulation
+mutation 0.06
+field 0 1 2 3 4 5 6 7 8 9 10 11
+cap 12
+dispersion 0.4
+polyembryony 0.45
+tuber 0.4
+swell 1
+crescendo 0.85
+pgm 3 5 9 14 15 19 20 24 26 27 33 34 36 38 43 44 53 62 63 72 75
+hack true
+hack-registers $GO trompette8 bombarde16
+hack-registers $PO clarinette8
+hack-registers $RE basson16 bassonHautbois8
+hack-registers $SO tubaMagna16
+hack-registers $PE bombarde16 contrebombarde32
+bio "mass release · the host is captured (fern catapult ≈10⁵ g)"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section C2 "Climas" 234 to 258 bpm 81
+relation "3:2 expansion"
+rule B2/S "SEEDS"
+texture tutti
+mutation 0.06
+field 0 1 2 3 4 5 6 7 8 9 10 11
+cap 12
+dispersion 0.4
+polyembryony 0.45
+tuber 0.4
+swell 1
+crescendo 0.85
+pgm 3 5 9 14 15 19 20 24 26 27 33 34 36 38 43 44 53 62 63 72 75
+hack true
+hack-registers $GO trompette8 bombarde16
+hack-registers $PO clarinette8
+hack-registers $RE basson16 bassonHautbois8
+hack-registers $SO tubaMagna16
+hack-registers $PE bombarde16 contrebombarde32
+bio "reverse germination · cells lengthen progressively into overlapping legato"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end
+
+section O "Coda" 258 to 300 bpm 54
+relation "2:3 settling"
+rule B3/S23 "LIFE → 1"
+texture tutti
+mutation 0
+field 0 5 7
+cap 4
+dispersion 0
+polyembryony 0.25
+tuber 0.45
+swell 0.2
+crescendo 0.08
+pgm 2 16 23 39 56
+extinction true
+bio "apomixis · a single clone survives and passes to 02 GAMETO"
+laser midixy src all size 0 prob 8 max 1 dur 0.15 color 0,1,0
+end

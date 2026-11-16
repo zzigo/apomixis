@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:hylon:capture-session:1",
+  "title": "HYLON passive capture session v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "id", "createdAt", "updatedAt", "slots", "events"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "maxLength": 256 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "slots": { "type": "array", "minItems": 1, "maxItems": 256, "items": { "$ref": "#/$defs/slot" } },
+    "events": { "type": "array", "maxItems": 2000, "items": { "$ref": "#/$defs/record" } }
+  },
+  "$defs": {
+    "text": { "type": "string", "maxLength": 256 },
+    "source": { "type": "object", "additionalProperties": false, "required": ["id", "name", "manufacturer"], "properties": { "id": { "$ref": "#/$defs/text" }, "name": { "$ref": "#/$defs/text" }, "manufacturer": { "$ref": "#/$defs/text" } } },
+    "record": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "time", "source", "bytes", "length", "checksum", "hex", "kind", "channel", "slotId", "transition", "verified"],
+      "properties": {
+        "id": { "$ref": "#/$defs/text" }, "time": { "type": "number" }, "source": { "$ref": "#/$defs/source" },
+        "bytes": { "type": "array", "minItems": 2, "maxItems": 4096, "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+        "length": { "type": "integer", "minimum": 2, "maximum": 4096 },
+        "checksum": { "type": "string", "pattern": "^fnv1a32:[0-9a-f]{8}$" },
+        "hex": { "type": "string", "maxLength": 12287 },
+        "kind": { "enum": ["sysex", "cc", "pc", "noteon", "noteoff", "polypressure", "pressure", "pitchbend"] },
+        "channel": { "type": ["integer", "null"], "minimum": 1, "maximum": 16 },
+        "slotId": { "type": ["string", "null"], "maxLength": 256 },
+        "transition": { "enum": ["on", "off", null] }, "verified": { "const": false }
+      }
+    },
+    "slot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "division", "label", "kind", "notes", "on", "off"],
+      "properties": {
+        "id": { "$ref": "#/$defs/text" }, "division": { "$ref": "#/$defs/text" }, "label": { "$ref": "#/$defs/text" }, "kind": { "$ref": "#/$defs/text" },
+        "notes": { "type": "string", "maxLength": 4096 },
+        "on": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/record" } },
+        "off": { "type": "array", "maxItems": 64, "items": { "$ref": "#/$defs/record" } }
+      }
+    }
+  },
+  "$comment": "Runtime validation in capture.js additionally checks unique slot IDs; exact MIDI lengths/framing; channel/kind/hex/checksum consistency; slot/transition references; aggregate byte budgets. FNV is a comparison checksum, not authenticity. Imports cannot restore capture targets or verified hardware mappings."
+}

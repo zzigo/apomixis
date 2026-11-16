@@ -1,0 +1,12 @@
+:root{--route-k:#6edbff;--route-la:#ffd27a;--route-mo:#ff5f9e}
+[data-route-color="klais"]{--route-color:var(--route-k);--route-rgb:110,219,255}[data-route-color="audio"]{--route-color:var(--route-la);--route-rgb:255,210,122}[data-route-color="midi"]{--route-color:var(--route-mo);--route-rgb:255,95,158}
+button.route-button{box-sizing:border-box;width:30px;height:30px;min-width:30px;min-height:30px;padding:0;flex:0 0 30px;display:inline-grid;place-items:center;border:1px solid var(--route-color);color:var(--route-color);background:transparent;font-size:10px;letter-spacing:0;font-weight:500}
+button.route-button[data-route-color="midi"]{border-width:2px;font-weight:800}
+button.route-button:hover{border-color:var(--route-color);color:var(--route-color);background:rgba(var(--route-rgb),.1)}
+button.route-button.active{border-color:var(--route-color);color:var(--route-color);background:rgba(var(--route-rgb),.2);box-shadow:inset 0 0 7px rgba(var(--route-rgb),.12)}
+button.route-button[data-route-color="midi"].active{box-shadow:0 0 6px rgba(var(--route-rgb),.25),inset 0 0 7px rgba(var(--route-rgb),.12)}
+.mix-strip[data-route-color] h3{color:var(--route-color)}.mix-strip[data-route-color] input[type="range"]{accent-color:var(--route-color)}
+.follower-routes button.route-button,.spore-output-buttons button.route-button,button.lib-out.route-button{width:30px;height:30px;min-height:30px;min-width:30px;padding:0;font-size:10px;letter-spacing:0}
+
+/* Performance legibility: an output that is ON is a filled block with black text; OFF keeps the outline. */
+button.route-button.active,button.route-button.active:hover{background:var(--route-color)!important;border-color:var(--route-color)!important;color:#000!important;font-weight:800;box-shadow:0 0 8px rgba(var(--route-rgb),.55)}

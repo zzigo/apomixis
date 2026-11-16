@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:glip:instrument:klais:1",
+  "title": "Klais recorded-combination instrument manifest v1",
+  "type": "object",
+  "required": ["schemaVersion", "instrumentId", "version", "rootConvention", "contentHash", "registrations", "samples", "encoding", "provenance"],
+  "properties": {
+    "schemaVersion": {"const": 1}, "instrumentId": {"const": "klais"}, "version": {"type": "string", "maxLength": 64},
+    "rootConvention": {"const": "C4=60"}, "contentHash": {"$ref": "#/$defs/hash"},
+    "encoding": {"type": "object"}, "provenance": {"type": "object"},
+    "registrations": {"type": "array", "minItems": 1, "maxItems": 128, "items": {
+      "type": "object", "required": ["id", "label", "division", "kind", "samples"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "label": {"type": "string", "minLength": 1, "maxLength": 256},
+        "division": {"enum": ["go", "po", "re", "so", "pe", "unknown"]},
+        "kind": {"enum": ["recorded-combination", "unclassified"]},
+        "samples": {"type": "array", "maxItems": 4096, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}
+      }
+    }},
+    "samples": {"type": "array", "minItems": 1, "maxItems": 4096, "items": {
+      "type": "object", "required": ["id", "registrationId", "sourcePath", "sourceHash", "url", "hash", "bytes", "codec", "channels", "sampleRate", "frames", "duration", "rootMidi", "mappingStatus", "loop"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"}, "registrationId": {"$ref": "#/$defs/id"},
+        "sourcePath": {"type": "string", "maxLength": 2048}, "sourceHash": {"$ref": "#/$defs/hash"},
+        "url": {"type": "string", "minLength": 1, "maxLength": 2048}, "hash": {"$ref": "#/$defs/hash"},
+        "bytes": {"type": "integer", "minimum": 1, "maximum": 67108864}, "codec": {"const": "vorbis"},
+        "channels": {"const": 2}, "sampleRate": {"type": "integer", "minimum": 8000, "maximum": 384000},
+        "frames": {"type": "integer", "minimum": 1, "maximum": 1400000000}, "duration": {"type": "number", "minimum": 0.001, "maximum": 3600},
+        "rootMidi": {"type": ["integer", "null"], "minimum": 0, "maximum": 127},
+        "mappingStatus": {"enum": ["filename-derived", "unmapped"]},
+        "loop": {"oneOf": [{"type": "null"}, {"type": "object", "required": ["approved", "start", "end"], "properties": {"approved": {"type": "boolean"}, "start": {"type": "number", "minimum": 0}, "end": {"type": "number", "minimum": 0}}}]}
+      }
+    }}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "hash": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"}
+  },
+  "$comment": "Runtime validation additionally enforces unique identities, complete cross-references, safe percent-encoded relative URLs, zone ordering and valid loop bounds. Roots are provisional filename-derived data; no hardware map is implied. contentHash canonicalization is specified in docs/KLAIS-ASSET-AUDIT.md."
+}

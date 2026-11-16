@@ -1,0 +1,66 @@
+/* Shared surface: reserve boundaries for interaction/state, not nested panels. */
+:root{--panel-surface:#070909;--line:#203027}
+.pod-root{background:var(--panel-surface)}.pod-root .panel-body,.pod-root .spore-figure,.pod-root .bank-layout,.pod-root .bank-inspector,.pod-root .mix-strip,.pod-root .audio-route,.pod-root .message,.pod-root .sysex-tester{background:transparent;border:0;box-shadow:none}
+.dv-groupview{border:0}.dockview-theme-hylon{--dv-background-color:#070909;--dv-group-view-background-color:#070909;--dv-tabs-and-actions-container-background-color:#070909;--dv-activegroup-visiblepanel-tab-background-color:#0b130e;--dv-inactivegroup-visiblepanel-tab-background-color:#070909;--dv-activegroup-hiddenpanel-tab-background-color:#070909;--dv-inactivegroup-hiddenpanel-tab-background-color:#070909;--dv-tab-divider-color:transparent;--dv-separator-border:#203027}
+.pod-root button:not(.reg-knob):not(.route-button):not(.matrix-dot):not(.bank-key):not(.score-square),.pod-root .file-button:not(.score-square){border-color:transparent;background:transparent}
+.pod-root button:not(.reg-knob):not(.route-button):not(.matrix-dot):not(.bank-key):not(.score-square):hover{background:#b6ffcf08}
+.pod-root button.active:not(.route-button):not(.reg-knob):not(.matrix-dot){color:var(--green);border-bottom-color:#618e70}
+.pod-root input:not([type=range]):not([type=checkbox]):not([type=file]),.pod-root select,.pod-root textarea{background:transparent;border:0;border-bottom:1px solid #263a2d}
+.pod-root input[type=range]{background:transparent;border:0}.pod-root .reg-display{border:0!important;background:transparent!important}
+.capture-overview,.slot-browser,.observation,.reg-head,.reg-jambs,.reg-jamb-L,.reg-row,.mix-strip,.bank-sample-row,.spore-subheader{border-color:transparent}.reg-jambs,.reg-jamb-L{border:0}.slot-row{border-bottom:0}.slot-row.selected{background:#b6ffcf06;box-shadow:inset 1px 0 #618e70}.spore-figure h3{border-bottom:0}.pod-root .status{border-left:0;padding-left:0}.capture-overview{border:0}.mix-strip{border-right:0}.score-pod .score-sub{border-bottom:0}.pod-root .reg-tip{background:#070909;border:1px solid #354c3d}.pod-root .message{padding-left:0;padding-right:0}
+
+/* Compact square commander; the mirrored remote keeps its larger touch target. */
+.masthead .header-main-row{gap:6px}
+.masthead .header-main-row button,.masthead .header-main-row select,.masthead .score-fast-button{width:28px;min-width:28px;max-width:28px;height:28px;min-height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;border-radius:0}
+.masthead .header-main-row select{display:block;font-size:9px;padding:0 1px}
+.masthead .header-main-row button svg{width:17px;height:17px;flex:none}
+.masthead .brand{gap:0;letter-spacing:.1em}.masthead .brand-stack{display:flex;flex-direction:column;align-items:flex-start;line-height:1.15;font-size:12px}.masthead .brand-stack b{font-size:12px;font-weight:600}.masthead .brand-stack span{font-size:7px;border:0;padding:0;color:#82978a;letter-spacing:.12em}.masthead .brand-stack small{font-size:5px;letter-spacing:.03em}
+.masthead [data-clock] [data-total]{font-size:.62em;font-weight:400;color:#82978a}
+.masthead .reg-header-digits svg{width:auto;height:27px}.masthead .reg-header-step{font-size:21px!important}
+
+/* Counter width follows the current digit count; no four-digit reservation. */
+.masthead .header-main-row .reg-header-counter{gap:1px;min-width:0;width:max-content;padding-left:2px}
+.masthead .reg-header-digits{min-width:0;width:max-content;flex:0 0 auto}
+.masthead .header-main-row .reg-header-counter .reg-header-step{width:20px;min-width:20px;max-width:20px}
+.masthead .reg-header-digits svg{display:block;max-width:none}
+
+/* Narrow elastic pod rail replaces the horizontal main navigation. */
+.workspace-shell{display:flex;flex:1;min-height:0;min-width:0;overflow:hidden;padding:0 5px 4px 0;gap:4px}
+.workspace-shell>#workspace{flex:1;min-width:0;min-height:0;height:100%;margin:0}
+.pod-rail{width:34px;min-width:34px;display:flex;flex-direction:column;gap:8px;padding:4px 2px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain}
+.pod-rail-pods,.pod-rail-workspaces,.pod-rail-tools{display:flex;flex-direction:column;align-items:center;gap:3px}.pod-rail-workspaces{margin-top:auto;padding-top:8px}.pod-rail-tools{padding-top:5px}
+.pod-rail button{position:relative;display:flex;align-items:center;justify-content:center;width:28px;min-width:28px;height:28px;min-height:28px;padding:5px;border:0;background:transparent;color:#7e9686;flex-shrink:0;transition:transform 180ms cubic-bezier(.2,1.5,.4,1),color 120ms,background 120ms;touch-action:manipulation}
+.pod-rail button svg{display:block;width:18px;height:18px;pointer-events:none}.pod-rail button[data-panel]{cursor:grab}.pod-rail button:active,.pod-rail button.dragging{cursor:grabbing;transform:scale(.94)}.pod-rail button:hover{transform:scale(1.12);color:#b6ffcf;background:#b6ffcf08}.pod-rail button.active{color:#b6ffcf;background:#b6ffcf0c;box-shadow:inset 2px 0 #b6ffcf}.pod-rail button.present:not(.active)::after{content:'';position:absolute;left:1px;bottom:5px;width:2px;height:2px;background:#52725e}.pod-rail [data-workspace]{font-size:11px;padding:0;color:#52695b}.pod-rail [data-workspace].stored{color:#a4bcad}.pod-rail [data-workspace].active{color:#b6ffcf}
+@media(max-height:650px){.pod-rail{gap:4px}.pod-rail-pods,.pod-rail-workspaces,.pod-rail-tools{gap:1px}.pod-rail-workspaces{padding-top:3px}}
+@media(prefers-reduced-motion:reduce){.pod-rail button{transition:none}}
+
+.pod-rail #reset-layout{display:flex}
+
+/* Thin Dockview tabs, retaining explicit close buttons and readable titles. */
+.dockview-theme-hylon{--dv-tabs-and-actions-container-height:22px;--dv-tab-font-size:9px}
+.dockview-theme-hylon .dv-tabs-and-actions-container{height:22px;min-height:22px}
+.dockview-theme-hylon .dv-tab{height:22px;min-height:22px;font-size:9px;padding-top:0;padding-bottom:0}
+.dockview-theme-hylon .dv-default-tab{min-height:0;height:22px;gap:4px}.dockview-theme-hylon .dv-default-tab .pod-close{min-height:16px;height:16px;width:16px;padding:0}
+
+@keyframes workspace-save-flash{from{background:#b6ffcf45;color:#d9ffe5}to{background:transparent}}.pod-rail [data-workspace].workspace-saved{animation:workspace-save-flash .7s ease-out}
+
+.performance-knobs{display:flex;align-items:center;gap:6px;flex:none}.performance-knob{display:grid;grid-template-columns:26px auto;grid-template-rows:12px 12px;column-gap:4px;align-items:center;touch-action:none;user-select:none;cursor:ns-resize;outline:none;font:7px ui-monospace,monospace;color:#90aa99}.performance-knob>span{grid-column:2;grid-row:1}.performance-knob>output{grid-column:2;grid-row:2;font-size:8px;color:#c6e8cf;font-variant-numeric:tabular-nums}.performance-knob>i{grid-column:1;grid-row:1/3;display:block;width:25px;height:25px;border-radius:50%;border:1px solid #496752;background:#0c1510;position:relative;transform:rotate(var(--knob-angle,0deg))}.performance-knob>i:after{content:'';position:absolute;left:calc(50% - 1px);top:3px;width:2px;height:7px;background:#b6ffcf}.performance-knob:focus-visible>i{border-color:#d1ffdf;box-shadow:0 0 0 1px #b6ffcf55}.performance-knob[aria-disabled=true]{opacity:.3;cursor:default}
+
+.global-output-buttons{display:flex;align-items:center;gap:4px;flex:none}
+
+.score-fast-line .active-score-title{margin-left:auto;min-width:0;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 19px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#74867b;letter-spacing:.025em;padding:0 10px;flex-shrink:1}.score-fast-line .active-score-title+.reg-preview{margin-left:0}
+
+/* Stable centre slot: changing preview content cannot move the score title. */
+.masthead>.score-fast-line{display:grid;grid-template-columns:max-content minmax(0,1fr) clamp(120px,28vw,360px);align-items:center;column-gap:8px}
+.score-fast-line>.score-fast-buttons{grid-column:1;grid-row:1}
+.score-fast-line>.active-score-title{grid-column:2;grid-row:1;margin:0;width:100%;max-width:none;text-align:center;padding:0 6px}
+.score-fast-line>.reg-preview{grid-column:3;grid-row:1;margin:0;min-width:0;max-width:100%;width:100%;justify-content:flex-end;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+.score-fast-line>.reg-preview[hidden]{display:none}
+
+.score-fast-line>.active-score-title{display:flex;justify-content:center;align-items:baseline;gap:10px}.active-score-title>.active-score-name,.active-score-title>.active-section-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.active-score-title>.active-section-name{font-style:italic;font-size:.9em;color:#968794}.active-score-title>.active-section-name[hidden]{display:none}
+
+/* Section end warning: last 5 s, yellow, bold, larger, blinking (blink phase set by JS so the remote mirror keeps it). */
+.active-score-title>.active-section-name.ending{font-style:normal;font-weight:800;font-size:1.9em;line-height:1;color:#ffe14a;text-shadow:0 0 12px #ffe14a88}.active-score-title>.active-section-name.ending.blink{color:#3a3308;text-shadow:none}
+
+/* No accidental text selection in the performance UI; text entry and the score editor stay selectable. */
+body{-webkit-user-select:none;user-select:none}input,textarea,[contenteditable]:not([contenteditable="false"]),[contenteditable]:not([contenteditable="false"]) *,[role="textbox"],pre.selectable{-webkit-user-select:text;user-select:text}

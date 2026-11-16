@@ -141,6 +141,45 @@ piece[\sections][\coda] = (
 );
 
 ~apxCore[\attachStandardPieceMethods].(piece);
+
+// Output option5: macOS internal virtual MIDI (IAC). This is a menu option,
+// not MIDI channel5 and not the OS destination index. Select before playback.
+piece[\outputOptions] = IdentityDictionary.new;
+piece[\outputOptions][5] = "Virtual MIDI / IAC";
+piece[\useOutput] = { |option = 5, portName|
+	var endpoint, candidates, out;
+
+	if(option != 5) { Error("Esporo: virtual output is option5.").throw };
+	if(piece[\routine].notNil or: { piece[\activePlayers].notEmpty }) {
+		Error("Esporo: stop the piece before changing its MIDI destination.").throw;
+	};
+	if(MIDIClient.initialized.not) { MIDIClient.init };
+	candidates = MIDIClient.destinations.select { |destination|
+		destination.device.asString.toLower.find("iac").notNil
+	};
+	if(portName.isNil) {
+		if(candidates.size != 1) {
+			candidates.do { |destination| [destination.device, destination.name].postln };
+			Error("Esporo: enable an IAC bus in Audio MIDI Setup; if several exist, pass its exact port name as the second argument.").throw;
+		};
+		endpoint = candidates.first;
+	} {
+		endpoint = candidates.detect { |destination| destination.name == portName };
+	};
+	if(endpoint.isNil) { Error("Esporo: requested IAC port not found.").throw };
+
+	out = MIDIOut.newByName(endpoint.device, endpoint.name);
+	out.latency = ~apx[\midi][\latency];
+	// ApomixisCore's asLivePattern and registration functions share ensureOut.
+	~apx[\midi][\outIndex] = MIDIClient.destinations.indexOf(endpoint);
+	~apx[\out] = out;
+	("Esporo output5 -> " ++ endpoint.device ++ " / " ++ endpoint.name).postln;
+	out;
+};
+// After loading, choose explicitly (does not start the piece):
+// ~apxPieces[\esporo][\useOutput].(5);
+// ~apxPieces[\esporo][\useOutput].(5, "Bus 1");
+
 ~apxPieces[\esporo] = piece;
 "01_Esporo loaded.".postln;
 )

@@ -1,0 +1,7 @@
+.lyrics-pod{position:relative;display:flex;flex-direction:column;justify-content:center;gap:.6em;height:100%;min-height:0;padding:16px 22px;overflow:hidden;font-size:28px;line-height:1.35}
+.lyrics-prev{color:#4d6457;font-size:.62em;min-height:1.35em}
+.lyrics-now{color:#eafff1;text-wrap:balance}
+.lyrics-now .caesura{color:#ff8fd0;padding:0 .35em}
+.lyrics-pod.empty .lyrics-now{color:#4d6457;font-size:.5em}
+.lyrics-tools{position:absolute;top:4px;right:6px;display:flex;gap:3px;align-items:center;font-size:9px;color:var(--muted)}
+.lyrics-tools button{width:22px;height:22px;min-height:22px;padding:0;font-size:12px}

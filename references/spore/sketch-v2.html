@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070909">
+<title>SPORE · sketch v2 · Apomixis 01</title>
+<!--
+  SPORE engine — composition sketch v2 (single file, no dependencies, offline).
+  DEMO / SKETCH: not the HYLON runtime, not a live projection.
+
+  v2 changes (composer feedback 2026-11-11):
+  - Growth across all four manuals + pedal: the substrate has five bands (SO, RE, PO, GO, PE) that become
+    fertile progressively (GO+PE → PO → RE → SO), then close again in the Coda.
+  - Composite timbres by POLYEMBRYONY: every expressed note can spawn "adventitious embryos" — satellite notes
+    on another manual with another timbre at +1 (semitone), +13 (minor ninth) or +23 (two octaves minus a
+    semitone). Same genome, different tissue: same pitch identity ±1 mod 12, different stop family. The
+    satellite interval is a gene (emb) and is therefore inherited and mutated.
+  - Less regular rhythm: staggered blocks, poly-striation (internodes 4:5:3:7:2 per division, Euclidean
+    placement + rotation), additive hocket slots from genome ratios, clustered granular bursts, long "tuber"
+    notes that cross generation boundaries, and micro-delays on satellites.
+-->
+<style>
+:root{--bg:#070909;--panel:#0a0e0c;--line:#27352f;--line2:#35463c;--fg:#d3ddd8;--muted:#80948a;--dim:#4c5f55;
+--green:#b6ffcf;--pink:#ff87ad;--cyan:#8fe3ff;--amber:#ffd27a;
+font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--fg);background:var(--bg)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg)}
+body{display:flex;flex-direction:column;min-height:100dvh}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.brand{font-size:22px;letter-spacing:.16em;color:var(--green)}
+.brand small{font-size:9px;letter-spacing:.14em;color:var(--muted);margin-left:12px;border-left:1px solid var(--line2);padding-left:12px}
+.badge{font-size:9px;letter-spacing:.12em;color:var(--pink);border:1px solid #744155;padding:4px 7px}
+.metrics{display:flex;gap:16px;flex-wrap:wrap;margin-left:auto;font-size:10px;color:var(--muted)}
+.metrics b{color:var(--green);font-weight:400}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line)}
+button,select,input{font:inherit;background:#0c1210;color:#b8c9bf;border:1px solid var(--line2);min-height:28px;padding:4px 10px;border-radius:0;letter-spacing:.05em}
+button:hover,select:hover{border-color:var(--green);color:var(--green)}
+button.on{color:var(--green);border-color:#618e70;background:#13251a}
+input{width:90px}
+label{color:var(--muted);font-size:10px;display:flex;gap:6px;align-items:center}
+main{flex:1;display:grid;gap:10px;padding:10px 12px;grid-template-columns:2fr 1fr;
+grid-template-rows:150px minmax(280px,1fr) 200px minmax(170px,.6fr);
+grid-template-areas:"macro macro" "meso morph" "micro harm" "micro side"}
+.pod{border:1px solid var(--line);background:var(--panel);position:relative;min-height:0;display:flex;flex-direction:column}
+.pod.active{border-color:#618e70;box-shadow:0 0 0 1px #b6ffcf22,0 0 18px #83ffb012}
+.pod.active h3::after{content:'● ACTIVE';color:var(--pink);margin-left:auto;padding-left:8px}
+#harm canvas{cursor:ns-resize;touch-action:none}
+#harm{grid-area:harm}
+.pod h3{margin:0;font-weight:400;font-size:9px;letter-spacing:.14em;color:var(--green);padding:6px 9px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+.pod h3 span{color:var(--muted)}
+.pod canvas{flex:1;width:100%;min-height:0;display:block}
+#macro{grid-area:macro}#meso{grid-area:meso}#morph{grid-area:morph}#micro{grid-area:micro}
+#side{grid-area:side;overflow:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:10px}
+.tbl td{border-bottom:1px solid #18221d;padding:4px 8px;vertical-align:top}
+.tbl td:first-child{color:var(--green);width:62px;letter-spacing:.1em}
+.tbl .k{color:var(--muted)}
+.gen{font-size:10px;padding:6px 9px;line-height:1.55}
+.gen .dna{color:var(--cyan);letter-spacing:.06em}
+.gen .mut{color:var(--pink)}
+.gen .row{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{display:inline-block;height:6px;background:var(--green);opacity:.7;vertical-align:middle;margin-right:6px}
+footer{padding:6px 16px;border-top:1px solid var(--line);font-size:9px;color:var(--dim);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:900px){main{grid-template-columns:1fr;grid-template-rows:140px 340px 320px 240px 220px auto;grid-template-areas:"macro" "meso" "morph" "micro" "harm" "side"}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">SPORE<small>APOMIXIS · 01 · AUTO · GO → PO → RE → SO + PE</small></div>
+  <span class="badge">SKETCH v2 · DEMO · NOT LIVE</span>
+  <div class="metrics">
+    <span>T <b id="mT">00:00.0</b></span>
+    <span>SEC <b id="mSec">I</b></span>
+    <span>BPM <b id="mBpm">48</b></span>
+    <span>GEN <b id="mGen">0</b></span>
+    <span>POP <b id="mPop">0</b></span>
+    <span>GENOTYPES <b id="mGeno">1</b></span>
+    <span>H <b id="mH">0.00</b> bit</span>
+  </div>
+</header>
+<div class="controls">
+  <button id="bPlay" class="on">PLAY</button>
+  <button id="bReset">RESET</button>
+  <label>SPEED <select id="sSpeed"><option>1</option><option>2</option><option>4</option><option>8</option><option>16</option></select></label>
+  <label>SEED <input id="iSeed" value="1931"></label>
+  <button id="bSeed">NEW SEED</button>
+  <label>TEXTURE <select id="sTex"><option value="">AUTO (score)</option><option>tutti</option><option>striated</option><option>hocket</option><option>granulation</option></select></label>
+  <button id="bSat" class="on">POLYEMBRYONY ON</button>
+  <button id="bHarmSrc" class="on">HARM: SCORE</button>
+  <button id="bAudio" class="on">AUDIO ON</button>
+  <button id="bExport">EXPORT JSON</button>
+  <span style="color:var(--dim);font-size:9px">click a pod to activate it · SPACE play · ` cycle pods · MACRO 1–5 sections · MICRO 1–4 textures (0 auto) · HARMONICITY 1–9 / ⇧1–8 / ←→ / 0 poly</span>
+</div>
+<main>
+  <section class="pod" id="macro"><h3>MACRO · FORM 00:00–05:00 · ENTROPY H(t) / POPULATION / FERTILE DIVISIONS<span id="macroInfo"></span></h3><canvas id="cMacro"></canvas></section>
+  <section class="pod" id="meso"><h3>MESO · SUBSTRATE = KEYBOARD × 5 DIVISIONS · ONE GENERATION = ONE BEAT<span id="mesoInfo"></span></h3><canvas id="cMeso"></canvas></section>
+  <section class="pod" id="morph"><h3>MORPHOLOGY · STOPS = LEAVES · COUPLERS = CLONAL INTEGRATION<span id="morphInfo"></span></h3><canvas id="cMorph"></canvas></section>
+  <section class="pod" id="micro"><h3>MICRO · 4 BEATS · TEXTURE = REPRODUCTIVE MODE · THIN = ADVENTITIOUS EMBRYO<span id="microInfo"></span></h3><canvas id="cMicro"></canvas></section>
+  <section class="pod active" id="harm" tabindex="0"><h3>HARMONICITY · EMBRYO MODES · DRAG / WHEEL / 1–9 · ⇧1–8 · ←→<span id="harmInfo"></span></h3><canvas id="cHarm"></canvas></section>
+  <section class="pod" id="side">
+    <h3>TRANSLATION · TIME LEVEL × PARAMETER<span></span></h3>
+    <table class="tbl" id="trans"></table>
+    <h3>GENOME · LINEAGES / MUTATIONS<span id="genoInfo"></span></h3>
+    <div class="gen" id="geno"></div>
+  </section>
+</main>
+<footer>
+  <span>green GO · cyan PO · violet RE · orange SO · amber PE · pink = hack gene (host reeds) · thin/dotted = satellite +1 / +13 / +23</span>
+  <span>keyboard C = MIDI 24 (provisional) · pedal C–f1 = 24–53 · audio = additive approximation, not GLIP samples</span>
+</footer>
+
+<script>
+'use strict';
+/* ================================================================ data */
+const W = 61, STRATA = 5, DIVS = ['so','re','po','go','pe'], H = STRATA*DIVS.length;   // rows top→bottom
+const BAND = Object.fromEntries(DIVS.map((d,i)=>[d,{div:d,r0:i*STRATA,idx:i}]));
+const DIVCOL = {go:'#b6ffcf', po:'#8fe3ff', re:'#c9a7ff', so:'#ffa070', pe:'#ffd27a'};
+const INT = [-5,-3,-2,0,2,3,5,7];             // motif interval alphabet
+const RH  = [1/4,1/3,1/2,2/3,3/4,1,3/2,2];    // rhythm alphabet (beats / proportions)
+const EMB = [0,1,13,23];                      // polyembryony gene: none, +1, +13 (m9), +23 (2 oct − 1)
+const PIECE_END = 300;
+
+// Klais CCK (from dev/data/klais_cck_stoplist.json): [key, label, harmonic re 8', family]
+const STOPS = {
+ go:[['montre16','Montre 16',.5,'principal'],['diapason8','Diapason 8',1,'principal'],['fluteHarmonique8','Fl. harm. 8',1,'flute'],
+     ['dulciane8','Dulciane 8',1,'string'],['bourdon8','Bourdon 8',1,'stopped'],['prestant4','Prestant 4',2,'principal'],
+     ['fluteDouce4','Fl. douce 4',2,'flute'],['quinte223','Quinte 2⅔',3,'mutation'],['octave2','Octave 2',4,'principal'],
+     ['fournitureV2','Fourniture V',4,'compound'],['bombarde16','Bombarde 16',.5,'reed'],['trompette8','Trompette 8',1,'reed'],['clairon4','Clairon 4',2,'reed']],
+ po:[['bourdon16','Bourdon 16',.5,'stopped'],['principal8','Principal 8',1,'principal'],['salicional8','Salicional 8',1,'string'],
+     ['bourdon8','Bourdon 8',1,'stopped'],['octave4','Octave 4',2,'principal'],['fluteOctaviante4','Fl. oct. 4',2,'flute'],
+     ['doublette2','Doublette 2',4,'principal'],['cornetV8','Cornet V',1,'compound'],['pleinJeuIII113','Plein jeu III',6,'compound'],['clarinette8','Clarinette 8',1,'reed']],
+ re:[['quintaton16','Quintaton 16',.5,'stopped'],['diapason8','Diapason 8',1,'principal'],['fluteTraversiere8','Fl. trav. 8',1,'flute'],
+     ['violeDeGambe8','Viole de gambe 8',1,'string'],['voixCeleste8','Voix céleste 8',1,'celeste'],['corDeNuit8','Cor de nuit 8',1,'stopped'],
+     ['fluteOctaviante4','Fl. oct. 4',2,'flute'],['viole4','Viole 4',2,'string'],['nazard223','Nazard 2⅔',3,'mutation'],
+     ['octavin2','Octavin 2',4,'flute'],['tierce135','Tierce 1⅗',5,'mutation'],['pleinJeuIV223','Plein jeu IV',3,'compound'],
+     ['basson16','Basson 16',.5,'reed'],['trompetteH8','Trompette h. 8',1,'reed'],['bassonHautbois8','Basson-Hautbois 8',1,'reed'],
+     ['voixHumaine8','Voix humaine 8',1,'reed'],['soprano4','Soprano h. 4 (?)',2,'flute']],
+ so:[['seraphon8','Seraphon Flûte 8',1,'flute'],['tubaMagna16','Tuba magna 16',.5,'reed'],['tubaAnglais8','Tuba anglais 8',1,'reed']],
+ pe:[['flute32','Flûte 32',.25,'flute'],['soubasse32','Soubasse 32',.25,'stopped'],['contrebasse16','Contrebasse 16',.5,'principal'],
+     ['violonbasse16','Violonbasse 16',.5,'string'],['soubasse16','Soubasse 16',.5,'stopped'],['flute8','Flûte 8',1,'flute'],
+     ['violoncelle8','Violoncelle 8',1,'string'],['bourdon8','Bourdon 8',1,'stopped'],['principal4','Principal 4',2,'principal'],
+     ['contrebombarde32','Contrebombarde 32',.25,'reed'],['bombarde16','Bombarde 16',.5,'reed'],['trompette8','Trompette 8',1,'reed'],['clairon4','Clairon 4',2,'reed']]
+};
+const COMPOUND = {fournitureV2:[4,6,8,12,16], cornetV8:[1,2,3,4,5], pleinJeuIII113:[6,8,12], pleinJeuIV223:[3,4,6,8]};
+// couplers: from-division stops sound when the to-division is played (tr = transposition)
+const COUPLERS = {
+ ii_i:{from:'po',to:'go',tr:0,label:'II–I',morph:'graft'},      iii_i:{from:'re',to:'go',tr:0,label:'III–I',morph:'graft'},
+ iv_i:{from:'so',to:'go',tr:0,label:'IV–I',morph:'graft'},      iii_ii:{from:'re',to:'po',tr:0,label:'III–II',morph:'graft'},
+ iv_ii:{from:'so',to:'po',tr:0,label:'IV–II',morph:'graft'},    iv_iii:{from:'so',to:'re',tr:0,label:'IV–III',morph:'graft'},
+ iii16_i:{from:'re',to:'go',tr:-12,label:"III 16'–I",morph:'graft+root'},
+ ii16_ii:{from:'po',to:'po',tr:-12,label:"II 16'",morph:'roots'}, ii4_ii:{from:'po',to:'po',tr:12,label:"II 4'",morph:'shoot'},
+ iii16_iii:{from:'re',to:'re',tr:-12,label:"III 16'",morph:'roots'}, iii4_iii:{from:'re',to:'re',tr:12,label:"III 4'",morph:'shoot'},
+ i_p:{from:'go',to:'pe',tr:0,label:'I–P',morph:'stolon'},       ii_p:{from:'po',to:'pe',tr:0,label:'II–P',morph:'rhizome'},
+ iii_p:{from:'re',to:'pe',tr:0,label:'III–P',morph:'rhizome'},  iii4_p:{from:'re',to:'pe',tr:12,label:"III 4'–P",morph:'rhizome+shoot'},
+ iv_p:{from:'so',to:'pe',tr:0,label:'IV–P',morph:'rhizome'}
+};
+const FAMCOL = {principal:'#b6ffcf',flute:'#8fe3ff',stopped:'#6fb6d0',string:'#c9a7ff',celeste:'#e6d6ff',mutation:'#ff87ad',compound:'#ffffff',reed:'#ffd27a'};
+// satellite partner: which manual hosts the adventitious embryo of a note, by embryo slot (0, 1, 2)
+const PARTNER = {go:['re','po','so'], po:['go','re','so'], re:['po','go','so'], so:['re','po','go'], pe:['go','re','po']};
+
+/* HARMONICITY — embryo modes. Each mode gives up to three slots (one per partner manual); a slot is a list of
+   intervals above the mother note. Discrete interval modes generalise the original semitone triple
+   (+1, +13, +23) as (k, 12+k, 24−k): interval, compound interval, compound inversion.
+   Stylistic "hyper-harmony" modes are polytonal major-triad complexes. The knob is continuous: between two
+   modes each embryo draws one of the two neighbours with crossfade probability (gradual harmonicity). */
+const PCN = ['C','D♭','D','E♭','E','F','F♯','G','A♭','A','B♭','B'];
+const IVN = ['m2','M2','m3','M3','P4','TT 4+','P5','m6','M6','m7','M7','P8'];
+const MODES = IVN.map((n,i)=>{ const k=i+1;
+  return {key:n, label:n, group:'interval', who:'discrete interval', desc: k===12?'octave · twelfth · double octave':`${n} · ${n} + 8ve · inversion + 8ve`,
+          slots: k===12 ? [[12],[19],[24]] : [[k],[12+k],[24-k]]}; });
+MODES.push(
+ {key:'petrushka', label:'PETRUSHKA', group:'hyper', who:'Stravinsky · Petrushka', desc:'C major + F♯ major (tritone polytonality)', slots:[[4,7],[6,10,13]]},
+ {key:'augurs',    label:'AUGURS',    group:'hyper', who:'Stravinsky · Rite of Spring', desc:'E♭7 + F♭ major (semitone polytonality)', slots:[[4,7,10],[1,5,8]]},
+ {key:'axis',      label:'AXIS',      group:'hyper', who:'Bartók · axis system', desc:'major-minor on the pole + tritone counter-pole', slots:[[3,4,7],[6,9,10,13]]},
+ {key:'mode2',     label:'MODE 2',    group:'hyper', who:'Messiaen · mode 2 (octatonic)', desc:'major triads a minor third apart: C · E♭ · F♯ · A', slots:[[3,7,10],[6,10,13],[9,13,16]]},
+ {key:'resonance', label:'RÉSONANCE', group:'hyper', who:'Messiaen · accord de la résonance (approx.)', desc:'upper partials folded into a chord', slots:[[16,19,22],[26,30,33]]}
+);
+const BANK1 = ['m2','m3','M3','P4','TT 4+','P5','P8','petrushka','mode2'];
+const BANK2 = ['M2','m6','M6','m7','M7','augurs','axis','resonance'];
+const harm = {pos:0, target:0, drag:false, log:[], src:'score'};
+const modeIdx = k => MODES.findIndex(m=>m.key===k);
+/* SCORE HARMONICITY CURVE — part of the composition (deterministic, evaluated at generation time).
+   Breakpoints [pieceSeconds, modePosition, note]; equal times = discontinuity (jump).
+   Arc: the semitone seed opens interval by interval during Replication, drifts through unstable intervals in the
+   Bridge, is captured by the host's cultural language (polytonal hyper-harmony) in the Climax, and dissolves back
+   through every interval to the semitone seed in the Coda (the clone that passes to GAMETO). */
+const M_ = k => modeIdx(k);
+const HARM_SCORE = [
+  [0,   M_('m2'),        'I · semitone seed: capsule pressure, beating'],
+  [44,  M_('m2'),        ''],
+  [48,  M_('m2'),        'R · replication opens the interval'],
+  [80,  M_('m3'),        ''],
+  [110, M_('M3'),        ''],
+  [135, M_('P4'),        ''],
+  [150, M_('P5'),        'B · drift through unstable intervals'],
+  [165, M_('TT 4+'),     ''],
+  [180, M_('m7'),        ''],
+  [192, M_('M7'),        ''],
+  [192, M_('petrushka'), 'C · host captured: polytonal hyper-harmony'],
+  [215, M_('petrushka'), ''],
+  [230, M_('augurs'),    ''],
+  [245, M_('axis'),      ''],
+  [258, M_('mode2'),     ''],
+  [258, M_('resonance'), 'O · résonance folds to the octave, then dissolves to the seed'],
+  [266, M_('resonance'), ''],
+  [266, M_('P8'),        ''],
+  [272, M_('P8'),        ''],
+  [292, M_('m2'),        ''],
+  [300, M_('m2'),        '']
+];
+function harmAt(t){
+  const B=HARM_SCORE; if (t<=B[0][0]) return B[0][1];
+  for (let i=0;i<B.length-1;i++){ const [t0,p0]=B[i], [t1,p1]=B[i+1];
+    if (t>=t0 && t<t1 && t1>t0) return p0+(p1-p0)*(t-t0)/(t1-t0); }
+  return B[B.length-1][1];
+}
+const harmPosNow = () => harm.src==='score' ? harmAt(S.tNext) : harm.pos;
+function pickMode(){ const p=harmPosNow(), lo=Math.floor(p), hi=Math.min(MODES.length-1,lo+1), f=p-lo; return rng()<f?hi:lo; }
+const ATTACK_BUDGET = 45;   // attacks/s across all divisions (sketch value; the 50/s metadata is not a certified limit)
+// fertility: when each division opens / closes (piece seconds) — growth across the instrument
+const OPEN  = {go:0, pe:0, po:30, re:95, so:178};
+const CLOSE = {so:262, re:272, po:283, go:1e9, pe:1e9};
+const fertile = (d,t) => t>=OPEN[d] && t<CLOSE[d];
+
+const TEX = {
+ tutti:      {repro:'AGAMOSPERMY',   note:'clonal block, staggered entries, unequal lengths'},
+ striated:   {repro:'STOLON',        note:'poly-striation: internodes 4:5:3:7:2 per division (Euclidean, rotated)'},
+ hocket:     {repro:'RHIZOME',       note:'additive slots from genome ratios, rotating divisions'},
+ granulation:{repro:'FRAGMENTATION', note:'clustered bursts, log-scaled grain lengths'}
+};
+
+const SECTIONS = [
+ {id:'I',name:'Introduction',start:0,  dur:48, bpm:48,rel:'seed pulse',     rule:'B3/S23',      ruleName:'LIFE',      texture:'tutti',      mu:0,   field:[0,2,5,7,9],              cap:4, disp:.1, poly:.15, tuber:.3,
+  regs:{go:['bourdon8'],po:['salicional8'],re:['voixCeleste8','corDeNuit8'],so:[],pe:['soubasse32']}, couplers:[], swell:.3, cresc:.15,
+  bio:'dormant spore · capsule pressurisation (Sphagnum ≈ 4–5 atm)'},
+ {id:'R',name:'Replication', start:48, dur:102,bpm:72,rel:'3:2 expansion',  rule:'B1357/S1357', ruleName:'REPLICATOR',texture:'striated',   mu:.01, field:[0,2,4,5,7,9,11],        cap:10,disp:.3, poly:.35, tuber:.18,
+  regs:{go:['bourdon8','fluteHarmonique8','prestant4'],po:['bourdon8','fluteOctaviante4','clarinette8'],re:['violeDeGambe8','voixCeleste8','nazard223'],so:['seraphon8'],pe:['soubasse32','soubasse16','flute8']},
+  couplers:['ii_p','iii_ii'], swell:.6, cresc:.35, bio:'discharge · clones travel together in vortex rings (≈32 000 g)'},
+ {id:'B',name:'Bridge',      start:150,dur:42, bpm:54,rel:'3:4 contraction',rule:'B3678/S34678',ruleName:'DAY&NIGHT', texture:'hocket',     mu:.02, field:[0,2,3,5,7,9,10],        cap:7, disp:.2, poly:.5, tuber:.35,
+  regs:{go:['dulciane8'],po:['salicional8','bourdon16'],re:['quintaton16','voixHumaine8'],so:['seraphon8'],pe:['flute32','violonbasse16']},
+  couplers:['ii16_ii','iv_iii','iii_p'], swell:.45, cresc:.25, bio:'aerial drift without destination · Equisetum elaters walk'},
+ {id:'C',name:'Climax',      start:192,dur:66, bpm:81,rel:'3:2 expansion',  rule:'B2/S',        ruleName:'SEEDS',     texture:'granulation',mu:.06, field:[0,1,2,3,4,5,6,7,8,9,10,11],cap:12,disp:.4, poly:.45, tuber:.4, hack:true,
+  regs:{go:['montre16','diapason8','prestant4','quinte223','octave2'],po:['principal8','doublette2','cornetV8'],re:['diapason8','tierce135','pleinJeuIV223'],so:['tubaAnglais8'],pe:['contrebasse16','soubasse16','principal4']},
+  hackRegs:{go:['trompette8','bombarde16'],po:['clarinette8'],re:['basson16','bassonHautbois8'],so:['tubaMagna16'],pe:['bombarde16','contrebombarde32']},
+  couplers:['ii_i','iii_i','iv_i','i_p','ii_p','iii4_iii'], swell:1, cresc:.85, bio:'mass release · the host is captured (fern catapult ≈10⁵ g)'},
+ {id:'O',name:'Coda',        start:258,dur:42, bpm:54,rel:'2:3 settling',   rule:'B3/S23',      ruleName:'LIFE → 1',  texture:'tutti',      mu:0,   field:[0,5,7],                 cap:4, disp:0, poly:.25, tuber:.45, extinction:true,
+  regs:{go:['bourdon8'],po:['salicional8'],re:['voixCeleste8'],so:[],pe:['soubasse32']}, couplers:['iii_p'], swell:.2, cresc:.08,
+  bio:'apomixis · a single clone survives and passes to 02 GAMETO'}
+];
+const RULES = {};
+for (const s of SECTIONS){ const m=s.rule.match(/B(\d*)\/S(\d*)/); RULES[s.rule]={b:new Set([...m[1]].map(Number)), s:new Set([...m[2]].map(Number))}; }
+
+/* ================================================================ rng / genome */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rng = mulberry32(1);
+const ri = n => Math.floor(rng()*n);
+const gauss = () => (rng()+rng()+rng()-1.5)/1.5;
+
+function encode(g){                            // 32 bits → 16 bases
+  let v=0; const push=(x,b)=>{v=v*2**b+x};
+  g.m.forEach(x=>push(x,3)); g.r.forEach(x=>push(x,3));
+  push(g.reg,3); push(g.tim,3); push(g.dor,3); push(g.vec,2); push(g.emb,2); push(g.hack,1); push(0,1);
+  let s=''; for (let i=15;i>=0;i--) s+='ACGT'[Math.floor(v/4**i)%4];
+  return s.replace(/(.{4})(?=.)/g,'$1·');
+}
+// hack must stay the LAST slot (it is excluded outside the Climax)
+const SLOTS = [['m',0,8],['m',1,8],['m',2,8],['m',3,8],['r',0,8],['r',1,8],['reg',null,8],['tim',null,8],['dor',null,8],['vec',null,4],['emb',null,4],['hack',null,2]];
+const SLOTNAME = ['motif0','motif1','motif2','motif3','rhythm0','rhythm1','register','timbre','dormancy','vector','embryo','hack'];
+
+/* ================================================================ simulation */
+let S;
+const valid = (r,c) => !(r>=BAND.pe.r0 && c>=30);
+const divOf = r => DIVS[Math.floor(r/STRATA)];
+const secAt = t => { for (let i=SECTIONS.length-1;i>=0;i--) if (t>=SECTIONS[i].start) return i; return 0; };
+const pcIn = (n,f) => f.includes(((n%12)+12)%12);
+const cloneG = g => ({m:[...g.m], r:[...g.r], reg:g.reg, tim:g.tim, dor:g.dor, vec:g.vec, emb:g.emb, hack:g.hack});
+
+function reset(seed){
+  rng = mulberry32(seed);
+  S = {seed, gen:0, tNext:0, si:0, grid:new Int32Array(W*H).fill(-1), age:new Int16Array(W*H), born:new Uint8Array(W*H),
+       genomes:[], hist:[], events:[], allEvents:[], mutations:[], lastNotes:0, lastSats:0, ended:false, counts:new Map(), bucket:new Map()};
+  // seed genome: cell C-D-F-G, rhythm 1 / 1/2, vortex vector, embryo +1 (semitone shadow on the Récit)
+  S.genomes.push({id:0, g:{m:[3,4,6,7], r:[5,2], reg:3, tim:0, dor:0, vec:3, emb:1, hack:0}, parent:null, gen:0, slot:null});
+  const r0 = BAND.go.r0+1, c0 = 29;                         // R-pentomino ("methuselah") in the GO band
+  [[1,0],[2,0],[0,1],[1,1],[1,2]].forEach(([dc,dr])=>{ const i=(r0+dr)*W+c0+dc; S.grid[i]=0; S.born[i]=1; });
+  measure();
+}
+function fitness(gid, c, sec){
+  const G=S.genomes[gid].g; let k=0;
+  for (const m of G.m) if (pcIn(24+c+INT[m], sec.field)) k++;
+  return k/4;                                               // hack is selectively neutral
+}
+function mutate(pid, sec){
+  if (rng() >= sec.mu) return pid;
+  const g = cloneG(S.genomes[pid].g);
+  const hp = sec.hack ? .25*Math.max(0,(S.tNext-sec.start)/sec.dur) : 0;
+  const slot = (sec.hack && rng()<hp) ? SLOTS.length-1 : ri(sec.hack ? SLOTS.length : SLOTS.length-1);
+  const [k,idx,n] = SLOTS[slot];
+  if (idx===null){ let v; do v=ri(n); while (v===g[k]); g[k]=v; }
+  else { let v; do v=ri(n); while (v===g[k][idx]); g[k][idx]=v; }
+  const id = S.genomes.length;
+  S.genomes.push({id, g, parent:pid, gen:S.gen, slot});
+  S.mutations.push({t:S.tNext, gen:S.gen, id, parent:pid, slot:SLOTNAME[slot], dna:encode(g)});
+  return id;
+}
+function place(r,c,gid,ng,na,nb){
+  if (r<0||r>=H||c<0||c>=W||!valid(r,c)||!fertile(divOf(r),S.tNext)) return;
+  const i=r*W+c; ng[i]=gid; na[i]=0; nb[i]=1;
+}
+function stepGen(sec){
+  const rule=RULES[sec.rule], g=S.grid, t=S.tNext;
+  const ng=new Int32Array(W*H).fill(-1), na=new Int16Array(W*H), nb=new Uint8Array(W*H), nbrs=new Int32Array(8);
+  const fert = DIVS.map(d=>fertile(d,t));
+  const p = (t-sec.start)/sec.dur;
+  for (let r=0;r<H;r++){
+    if (!fert[Math.floor(r/STRATA)]) continue;               // closed division: nothing lives there
+    for (let c=0;c<W;c++){
+      if (!valid(r,c)) continue;
+      let n=0;
+      for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++){
+        if (!dr && !dc) continue; const rr=r+dr, cc=c+dc;
+        if (rr<0||rr>=H||cc<0||cc>=W) continue;
+        const v=g[rr*W+cc]; if (v>=0) nbrs[n++]=v;
+      }
+      const i=r*W+c, alive=g[i]>=0;
+      if (alive && rule.s.has(n)){ ng[i]=g[i]; na[i]=S.age[i]+1; }
+      else if (!alive && n>0 && rule.b.has(n)){
+        let pid;
+        if (sec.extinction){
+          const cnt=new Map(); for (let k=0;k<n;k++) cnt.set(nbrs[k],(cnt.get(nbrs[k])||0)+1);
+          pid=[...cnt.entries()].sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0][0];
+        } else {
+          let tot=0; const w=[];
+          for (let k=0;k<n;k++){ const f=fitness(nbrs[k],c,sec); w.push(f*f+.05); tot+=f*f+.05; }
+          let x=rng()*tot, k=0; while (k<n-1 && (x-=w[k])>0) k++;
+          pid=nbrs[k];
+        }
+        ng[i]=mutate(pid,sec); na[i]=0; nb[i]=1;
+      }
+    }
+  }
+  // dispersal vectors: 0 wind (neighbouring division), 1 host (any division, Climax), 2 ballistic, 3 vortex
+  if (sec.disp>0 && rng()<sec.disp){
+    const live=[]; for (let i=0;i<W*H;i++) if (ng[i]>=0) live.push(i);
+    const k=1+ri(3);
+    for (let j=0;j<k && live.length;j++){
+      const i=live[ri(live.length)], r=Math.floor(i/W), c=i%W, gid=ng[i], G=S.genomes[gid].g, sgn=rng()<.5?-1:1;
+      const bi=Math.floor(r/STRATA);
+      if (G.vec===0){ const nb2=Math.max(0,Math.min(DIVS.length-1,bi+(rng()<.5?-1:1))); place(nb2*STRATA+ri(STRATA), c+sgn*ri(4), gid, ng,na,nb); }
+      else if (G.vec===1){ if (sec.hack) place(ri(DIVS.length)*STRATA+ri(STRATA), ri(W), gid, ng,na,nb); }
+      else if (G.vec===2){ place(r, c+sgn*(8+ri(13)), gid, ng,na,nb); }
+      else { const cc=c+sgn*(4+ri(7)); for (const [a,b] of [[0,0],[0,1],[1,0],[1,1]]) place(r+a, cc+b, gid, ng,na,nb); }
+    }
+  }
+  // colonisation pulse: a newly opened division receives a few propagules from its neighbour band
+  for (const d of DIVS){
+    if (t>=OPEN[d] && t-OPEN[d] < 60/sec.bpm && OPEN[d]>0){
+      const bi=BAND[d].idx, src=[]; for (const nbI of [bi-1,bi+1]) if (nbI>=0 && nbI<DIVS.length)
+        for (let r=nbI*STRATA;r<nbI*STRATA+STRATA;r++) for (let c=0;c<W;c++) if (ng[r*W+c]>=0) src.push(r*W+c);
+      for (let k=0;k<6 && src.length;k++){ const s=src[ri(src.length)], c=s%W, r0=BAND[d].r0+ri(STRATA);
+        for (const [a,b] of [[0,0],[0,1],[1,0],[1,1],[0,2]]) place(r0+a, c+b, ng[s], ng,na,nb); }
+    }
+  }
+  if (sec.extinction){
+    const pd=.03+.3*p*p;
+    for (let i=0;i<W*H;i++) if (ng[i]>=0 && rng()<pd) ng[i]=-1;
+    if (p>.8){
+      const cnt=new Map(); for (let i=0;i<W*H;i++) if (ng[i]>=0) cnt.set(ng[i],(cnt.get(ng[i])||0)+1);
+      const dom=[...cnt.entries()].sort((a,b)=>b[1]-a[1])[0];
+      if (dom) for (let i=0;i<W*H;i++) if (ng[i]>=0 && ng[i]!==dom[0]) ng[i]=-1;
+    }
+    if (!ng.some(v=>v>=0)){                                  // one survivor passes to GAMETO
+      for (const d of ['go','pe']) { const b=BAND[d]; for (let i=b.r0*W;i<(b.r0+STRATA)*W;i++) if (g[i]>=0){ ng[i]=g[i]; break; } if (ng.some(v=>v>=0)) break; }
+    }
+  }
+  S.grid=ng; S.age=na; S.born=nb;
+}
+function measure(){
+  const cnt=new Map(); let pop=0; const perDiv={so:0,re:0,po:0,go:0,pe:0};
+  for (let i=0;i<W*H;i++){ const v=S.grid[i]; if (v>=0){ pop++; perDiv[divOf(Math.floor(i/W))]++; cnt.set(v,(cnt.get(v)||0)+1); } }
+  let Hb=0; for (const k of cnt.values()){ const q=k/pop; Hb-=q*Math.log2(q); }
+  S.pop=pop; S.geno=cnt.size; S.H=pop?Hb:0; S.counts=cnt; S.perDiv=perDiv;
+  S.hist.push({t:S.tNext, H:S.H, pop, geno:cnt.size, perDiv:{...perDiv}});
+}
+
+/* ================================================================ textural functions */
+function quant(n,f){ for (const d of [0,1,-1,2,-2,3,-3,4,-4,5,-5,6]) if (pcIn(n+d,f)) return n+d; return n; }
+const RANGE = d => d==='pe' ? [24,53] : [24,84];
+function fold(n,d){ const [lo,hi]=RANGE(d); while (n<lo) n+=12; while (n>hi) n-=12; return n; }   // keeps n mod 12
+const hasRegs = (sec,d) => (sec.regs[d]||[]).length>0;
+function euclid(n,k,rot){ const out=[]; for (let i=0;i<n;i++) out.push((Math.floor(i*k/n)+rot)%k); return out; }
+
+function makeNotes(sec){
+  const tex = texOverride || sec.texture, beatSec = 60/sec.bpm;
+  const cands=[];
+  for (let i=0;i<W*H;i++){
+    const gid=S.grid[i]; if (gid<0) continue;
+    const G=S.genomes[gid].g; if (S.age[i] !== (G.dor%4)) continue;   // dormancy gene delays expression
+    const c=i%W, r=Math.floor(i/W), d=divOf(r);
+    if (!hasRegs(sec,d)) continue;
+    cands.push({i,c,r,div:d,gid,fit:fitness(gid,c,sec)});
+  }
+  cands.sort((a,b)=>b.fit-a.fit || a.i-b.i);
+  let list=cands;
+  if (tex==='tutti' && cands.length){
+    const cnt=new Map(); cands.forEach(x=>cnt.set(x.gid,(cnt.get(x.gid)||0)+1));
+    const dom=[...cnt.entries()].sort((a,b)=>b[1]-a[1])[0][0];
+    list=cands.filter(x=>x.gid===dom).concat(cands.filter(x=>x.gid!==dom));
+  }
+  // round-robin across divisions (each list keeps its fitness/tutti order): growth is heard in every manual
+  const byDiv={}; for (const x of list) (byDiv[x.div]=byDiv[x.div]||[]).push(x);
+  const out=[], dOrder=DIVS.filter(d=>byDiv[d]);
+  while (out.length<sec.cap && dOrder.some(d=>byDiv[d].length)) for (const d of dOrder){ if (out.length>=sec.cap) break; if (byDiv[d].length) out.push(byDiv[d].shift()); }
+  const seen=new Set();
+  let notes = out.map(x=>{
+    const G=S.genomes[x.gid].g;
+    return {div:x.div, midi:fold(quant(24+x.c+INT[G.m[S.gen%4]], sec.field), x.div), gid:x.gid, hack:!!(sec.hack&&G.hack), rh:RH[G.r[0]], rh2:RH[G.r[1]], emb:G.emb};
+  }).filter(n=>{const k=n.div+n.midi; if (seen.has(k)) return false; seen.add(k); return true;});
+
+  // --- onsets: irregular by design
+  if (tex==='tutti'){
+    notes.forEach(n=>{ n.on=Math.abs(gauss())*.18; n.dur=Math.min(3.2,Math.max(.75,n.rh*1.6))*(.7+.6*rng()); });
+  } else if (tex==='striated'){
+    const SUB={go:4,po:5,re:3,so:7,pe:2}, gr={}; notes.forEach(n=>(gr[n.div]=gr[n.div]||[]).push(n));
+    for (const d in gr){ const k=SUB[d], rot=(S.gen*(d.charCodeAt(0)%5+1))%k, sl=euclid(gr[d].length,k,rot);
+      gr[d].forEach((n,j)=>{ n.on=(sl[j]+(j>=k?.5:0))/k; n.dur=(.55+.4*rng())/k*(rng()<.18?3:1); }); }
+  } else if (tex==='hocket'){
+    const gr={}; notes.forEach(n=>(gr[n.div]=gr[n.div]||[]).push(n));
+    const order=[], ds=Object.keys(gr).sort(()=>rng()-.5);
+    while (ds.some(d=>gr[d].length)) for (const d of ds) if (gr[d].length) order.push(gr[d].shift());
+    const wts=order.map(n=>n.rh2+.15), tot=wts.reduce((a,b)=>a+b,0), span=1+.6*rng(); let acc=0;
+    order.forEach((n,j)=>{ const sl=wts[j]/tot*span; n.on=acc; n.dur=sl*(.45+.3*rng()); acc+=sl; }); notes=order;
+  } else {
+    const centers=[...Array(1+ri(3))].map(()=>rng());
+    notes.forEach(n=>{ const c=centers[ri(centers.length)]; n.on=Math.max(0,Math.min(1.15,c+gauss()*.09)); n.dur=.03*Math.pow(8,rng()); });
+  }
+
+  // --- tuber: a long sustained note from the oldest cell of PE or RE (crosses generation boundaries)
+  if (rng()<sec.tuber){
+    let best=-1, ba=-1;
+    for (const d of ['pe','re']){ if (!hasRegs(sec,d) || best>=0) continue; const b=BAND[d];     // pedal first, Récit as fallback
+      for (let i=b.r0*W;i<(b.r0+STRATA)*W;i++) if (S.grid[i]>=0 && S.age[i]>ba){ ba=S.age[i]; best=i; } }
+    if (best>=0){ const gid=S.grid[best], G=S.genomes[gid].g, d=divOf(Math.floor(best/W));
+      notes.push({div:d, midi:fold(quant(24+best%W, sec.field), d), gid, hack:false, rh:2, emb:G.emb, on:rng()*.8, dur:3+4*rng(), tuber:true}); }
+  }
+
+  // --- polyembryony: adventitious embryos on other manuals, intervals given by the HARMONICITY mode
+  let sats=[];
+  if (satOn) for (const n of notes){
+    const M=MODES[pickMode()], ns=M.slots.length, slots=[];
+    if (n.emb) slots.push((n.emb-1)%ns);
+    if (rng()<sec.poly){ const rest=[...Array(ns).keys()].filter(s=>!slots.includes(s)); if (rest.length) slots.push(rest[ri(rest.length)]); }
+    for (const s of slots){
+      let d=PARTNER[n.div][s];
+      if (!hasRegs(sec,d) || d===n.div){ const alt=DIVS.filter(x=>x!==n.div && x!=='pe' && hasRegs(sec,x)); if (!alt.length) continue; d=alt[ri(alt.length)]; }
+      M.slots[s].forEach((iv,j)=>{
+        const delay=(.005+.085*rng()+j*.025)/beatSec;     // 5–90 ms behind the mother, chords slightly rolled
+        sats.push({div:d, midi:fold(n.midi+iv,d), gid:n.gid, hack:n.hack, sat:iv, mode:M.key, on:n.on+delay, dur:n.dur*(.6+.7*rng()), pmidi:n.midi, pon:n.on});
+      });
+    }
+  }
+  const budget=Math.max(0, Math.floor(ATTACK_BUDGET*beatSec)-notes.length);   // keep total attacks under budget
+  if (sats.length>budget) sats=sats.slice(0,budget);
+  return {notes:notes.concat(sats), tex, nPrim:notes.length, nSat:sats.length};
+}
+
+/* ================================================================ audio (additive approximation) */
+let AC=null, master=null, audioOn=true, satOn=true, activeOsc=0;
+const WAVES={};
+function initAudio(){
+  if (AC) return;
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  const comp=AC.createDynamicsCompressor(); comp.threshold.value=-20; comp.ratio.value=4;
+  master=AC.createGain(); master.gain.value=.5;
+  const verb=AC.createConvolver(), len=AC.sampleRate*3.4, ir=AC.createBuffer(2,len,AC.sampleRate);
+  for (let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); for (let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2); }
+  verb.buffer=ir; const wet=AC.createGain(); wet.gain.value=.34;
+  master.connect(comp); master.connect(verb); verb.connect(wet); wet.connect(comp); comp.connect(AC.destination);
+  const mk=a=>{ const re=new Float32Array(a.length+1), im=new Float32Array(a.length+1); a.forEach((v,i)=>im[i+1]=v); return AC.createPeriodicWave(re,im); };
+  WAVES.principal=mk([1,.5,.32,.18,.1,.06]); WAVES.flute=mk([1,.12,.04]); WAVES.stopped=mk([1,0,.22,0,.07]);
+  WAVES.string=mk([...Array(14)].map((_,i)=>.6/Math.pow(i+1,.9))); WAVES.celeste=WAVES.string;
+  WAVES.reed=mk([...Array(18)].map((_,i)=>1/(i+1))); WAVES.mutation=WAVES.flute; WAVES.compound=WAVES.principal;
+}
+const mtof = m => 440*Math.pow(2,(m-69)/12);
+function voicesFor(note, sec){
+  const keys=[...(sec.regs[note.div]||[])];
+  if (note.hack && sec.hackRegs) keys.push(...(sec.hackRegs[note.div]||[]));
+  const v=keys.map(k=>({k, div:note.div, tr:0}));
+  for (const ck of sec.couplers){ const C=COUPLERS[ck]; if (C.to!==note.div) continue; for (const k of (sec.regs[C.from]||[])) v.push({k, div:C.from, tr:C.tr}); }
+  return v;
+}
+function playNote(note, when, durSec, sec){
+  if (!AC || !audioOn) return;
+  const parts=[];
+  for (const v of voicesFor(note,sec)){
+    const st=STOPS[v.div].find(s=>s[0]===v.k); if (!st) continue;
+    for (const h of (COMPOUND[v.k]||[st[2]])){ const f=mtof(note.midi+12+v.tr)*h; if (f>18 && f<8000) parts.push({f, fam:st[3], div:v.div}); }
+    if (st[3]==='celeste'){ const f=mtof(note.midi+12+v.tr)*st[2]*1.0045; if (f<8000) parts.push({f, fam:'celeste', div:v.div}); }  // detuned rank
+  }
+  if (!parts.length || activeOsc+parts.length>280) return;
+  const lvl=(.085+.06*sec.cresc)/Math.sqrt(parts.length+2)*(note.sat?.7:1)*(note.tuber?.8:1);
+  const att=note.tuber?.12:.018, rel=note.tuber?.25:.09, d=Math.max(durSec,att+.01);
+  for (const p of parts){
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.setPeriodicWave(WAVES[p.fam]); o.frequency.value=p.f;
+    const famG=p.fam==='reed'?.8:(p.fam==='string'||p.fam==='celeste')?.55:1;
+    const sw=(p.div==='po'||p.div==='re')?.35+.65*sec.swell:1;
+    const L=lvl*famG*sw;
+    g.gain.setValueAtTime(0,when); g.gain.linearRampToValueAtTime(L,when+att); g.gain.setValueAtTime(L,when+d); g.gain.linearRampToValueAtTime(0,when+d+rel);
+    o.connect(g); g.connect(master); o.start(when); o.stop(when+d+rel+.02);
+    activeOsc++; o.onended=()=>{ activeOsc--; o.disconnect(); g.disconnect(); };
+  }
+}
+
+/* ================================================================ transport */
+let playing=false, speed=1, realAnchor=0, pieceAnchor=0, texOverride='';
+const now = () => AC ? AC.currentTime : performance.now()/1000;
+const pieceNow = () => playing ? Math.min(PIECE_END, pieceAnchor+(now()-realAnchor)*speed) : pieceAnchor;
+const toReal = pt => realAnchor+(pt-pieceAnchor)/speed;
+
+function doGen(silent){
+  S.si=secAt(S.tNext);
+  const sec=SECTIONS[S.si], beat=60/sec.bpm;
+  if (S.gen>0){ stepGen(sec); measure(); }
+  const {notes, tex, nPrim, nSat}=makeNotes(sec);
+  S.lastNotes=nPrim; S.lastSats=nSat; S.lastTex=tex;
+  for (const n of notes){
+    const t0=S.tNext+n.on*beat;
+    // rolling attack budget in 0.5 s buckets: embryos are dropped first, mother notes always sound
+    const bk=Math.floor(t0*2), bc=S.bucket.get(bk)||0;
+    if (n.sat && bc>=ATTACK_BUDGET/2) { S.lastSats--; continue; }
+    S.bucket.set(bk,bc+1);
+    const ev={t:t0, d:n.dur*beat, midi:n.midi, div:n.div, hack:n.hack, gen:S.gen, gid:n.gid, sec:sec.id, tex, sat:n.sat||0, mode:n.mode||null, tuber:!!n.tuber,
+              pt:n.sat?S.tNext+n.pon*beat:null, pm:n.sat?n.pmidi:null};
+    S.events.push(ev); if (S.allEvents.length<60000) S.allEvents.push(ev);
+    if (!silent) playNote(n, toReal(t0), n.dur*beat/speed, sec);
+  }
+  S.gen++; S.tNext+=beat;
+  if (S.events.length>4000) S.events.splice(0,S.events.length-4000);
+}
+function scheduler(){
+  if (!playing) return;
+  const horizon=pieceAnchor+(now()+.12-realAnchor)*speed;
+  while (S.tNext<=horizon && S.tNext<PIECE_END) doGen(false);
+  if (pieceNow()>=PIECE_END){ pause(); S.ended=true; }
+}
+setInterval(scheduler,25);
+function play(){ initAudio(); if (AC.state==='suspended') AC.resume(); if (S.ended){ reset(S.seed); pieceAnchor=0; } realAnchor=now(); playing=true; bPlay.textContent='PAUSE'; }
+function pause(){ pieceAnchor=pieceNow(); playing=false; bPlay.textContent='PLAY'; }
+function seek(t){ const was=playing; if (was) pause(); reset(S.seed); while (S.tNext<t) doGen(true); pieceAnchor=t; if (was) play(); }
+
+/* ================================================================ drawing */
+const $=id=>document.getElementById(id);
+const cv={macro:$('cMacro'), meso:$('cMeso'), morph:$('cMorph'), micro:$('cMicro'), harm:$('cHarm')};
+function fit(c){ const r=c.getBoundingClientRect(), d=devicePixelRatio||1;
+  if (c.width!==Math.round(r.width*d)||c.height!==Math.round(r.height*d)){ c.width=Math.round(r.width*d); c.height=Math.round(r.height*d); }
+  const x=c.getContext('2d'); x.setTransform(d,0,0,d,0,0); return [x,r.width,r.height]; }
+const mmss=t=>{ const m=Math.floor(t/60), s=t-m*60; return String(m).padStart(2,'0')+':'+s.toFixed(1).padStart(4,'0'); };
+function hueFor(gid,div){ const base={go:135,po:190,re:265,so:20,pe:45}[div]; const h=base+((gid*37)%30)-15; return `hsl(${h},85%,${60+(gid%3)*8}%)`; }
+
+function drawMacro(t){
+  const [x,w,h]=fit(cv.macro); x.clearRect(0,0,w,h);
+  const X=s=>8+s/PIECE_END*(w-16), top=8, bot=h-18;
+  x.font='9px ui-monospace,monospace';
+  // fertility lanes (growth across the instrument)
+  DIVS.forEach((d,k)=>{ const y=bot-4-k*4; x.strokeStyle=DIVCOL[d]; x.globalAlpha=.55; x.beginPath(); x.moveTo(X(OPEN[d]),y); x.lineTo(X(Math.min(PIECE_END,CLOSE[d])),y); x.stroke(); x.globalAlpha=1; });
+  for (let i=0;i<SECTIONS.length;i++){ const s=SECTIONS[i], tx=texOverride||s.texture;
+    x.strokeStyle=i===S.si?'#618e70':'#27352f';
+    if (i===S.si){ x.fillStyle='#b6ffcf0d'; x.fillRect(X(s.start),top,X(s.start+s.dur)-X(s.start),bot-top); }
+    x.strokeRect(X(s.start)+.5,top+.5,X(s.start+s.dur)-X(s.start)-1,bot-top);
+    x.fillStyle=i===S.si?'#b6ffcf':'#80948a'; x.fillText(`${s.id} ${s.bpm} · ${s.ruleName}`,X(s.start)+5,top+12);
+    x.fillStyle='#4c5f55'; x.fillText(`${tx.toUpperCase()} ← ${TEX[tx].repro}`,X(s.start)+5,top+24);
+    x.fillText(`μ ${s.mu} |F| ${s.field.length} poly ${s.poly}`,X(s.start)+5,top+36);
+  }
+  const yH=v=>bot-26-v/9*(bot-top-62), yP=v=>bot-26-v/(W*H)*(bot-top-62);
+  x.beginPath(); S.hist.forEach((p,i)=>{ i?x.lineTo(X(p.t),yP(p.pop)):x.moveTo(X(p.t),yP(p.pop)); }); x.strokeStyle='#8fe3ff55'; x.stroke();
+  x.beginPath(); S.hist.forEach((p,i)=>{ i?x.lineTo(X(p.t),yH(p.H)):x.moveTo(X(p.t),yH(p.H)); }); x.strokeStyle='#b6ffcf'; x.lineWidth=1.4; x.stroke(); x.lineWidth=1;
+  x.fillStyle='#4c5f55'; for (let b=0;b<=8;b+=4) x.fillText(b+'b',w-22,yH(b)+3);
+  x.fillStyle='#80948a'; for (let m=0;m<=5;m++) x.fillText(`${m}:00`,X(m*60)-10,h-5);
+  // score harmonicity curve (modes 0..16), manual override drawn as a marker
+  const yM=v=>top+42+(1-v/(MODES.length-1))*(bot-top-74);
+  x.setLineDash([2,2]); x.strokeStyle='#ff87ad99'; x.beginPath();
+  for (let tt=0;tt<=PIECE_END;tt+=.5){ const py=yM(harmAt(tt)); tt?x.lineTo(X(tt),py):x.moveTo(X(tt),py); } x.stroke(); x.setLineDash([]);
+  x.fillStyle='#ff87ad99'; x.fillText('harm',w-30,yM(MODES.length-1)+3);
+  if (harm.src==='manual'){ x.fillStyle='#ffd27a'; x.fillRect(X(t)-3,yM(harm.pos)-3,6,6); }
+  x.strokeStyle='#ff87ad'; x.beginPath(); x.moveTo(X(t)+.5,top); x.lineTo(X(t)+.5,bot); x.stroke();
+}
+function drawMeso(){
+  const [x,w,h]=fit(cv.meso); x.clearRect(0,0,w,h);
+  const L=30, cw=(w-L-6)/W, ch=(h-12)/H, tt=S.tNext;
+  x.font='9px ui-monospace,monospace';
+  for (const d of DIVS){ const b=BAND[d], y0=4+b.r0*ch;
+    if (!fertile(d,tt)){ x.fillStyle='#0d1310'; x.fillRect(L,y0,W*cw,STRATA*ch); x.fillStyle='#35463c'; x.fillText(OPEN[d]>tt?`opens ${mmss(OPEN[d])}`:'closed', L+8, y0+STRATA*ch/2+3); }
+    x.fillStyle=DIVCOL[d]; x.globalAlpha=fertile(d,tt)?.9:.3; x.fillText(d.toUpperCase(),4,y0+STRATA*ch/2+3); x.globalAlpha=1;
+    x.strokeStyle='#35463c'; x.beginPath(); x.moveTo(L,y0+.5); x.lineTo(w-6,y0+.5); x.stroke();
+  }
+  x.strokeStyle='#141d18'; for (let c=0;c<=W;c+=12){ x.beginPath(); x.moveTo(L+c*cw+.5,4); x.lineTo(L+c*cw+.5,h-8); x.stroke(); }
+  const pr=BAND.pe.r0; x.fillStyle='#0f1512'; x.fillRect(L+30*cw,4+pr*ch,(W-30)*cw,STRATA*ch);
+  const sec=SECTIONS[S.si];
+  for (let r=0;r<H;r++) for (let c=0;c<W;c++){
+    const i=r*W+c, gid=S.grid[i]; if (gid<0) continue;
+    const G=S.genomes[gid].g;
+    x.fillStyle=(sec.hack&&G.hack)?'#ff87ad':hueFor(gid,divOf(r));
+    x.globalAlpha=S.born[i]?1:Math.max(.22,.8-S.age[i]*.05);
+    x.fillRect(L+c*cw+1,4+r*ch+1,Math.max(1,cw-2),Math.max(1,ch-2));
+    if (G.emb){ x.globalAlpha=.9; x.fillStyle='#070909'; x.fillRect(L+c*cw+cw/2-1,4+r*ch+ch/2-1,2,2); }   // embryo mark
+  }
+  x.globalAlpha=1; x.fillStyle='#4c5f55'; for (let c=0;c<W;c+=12) x.fillText('C'+(1+c/12),L+c*cw+2,h-1);
+}
+function drawMorph(){
+  const [x,w,h]=fit(cv.morph); x.clearRect(0,0,w,h);
+  const sec=SECTIONS[S.si], ground=h*.64, top=h*.07, tt=S.tNext;
+  const pos={so:w*.09, re:w*.3, po:w*.5, go:w*.7, pe:w*.9};
+  const yOf=hm=>ground-(Math.log2(hm)+2.3)/(2.3+2.6)*(ground-top);
+  x.font='8px ui-monospace,monospace';
+  x.strokeStyle='#35463c'; x.beginPath(); x.moveTo(4,ground+.5); x.lineTo(w-4,ground+.5); x.stroke();
+  x.fillStyle='#4c5f55'; x.fillText('soil / wind-chest',6,ground+11);
+  const act=new Set(); for (const d of DIVS) (sec.regs[d]||[]).forEach(k=>act.add(d+':'+k));
+  const hackOn=sec.hack && [...S.counts.keys()].some(g=>S.genomes[g].g.hack);
+  if (hackOn && sec.hackRegs) for (const d in sec.hackRegs) sec.hackRegs[d].forEach(k=>act.add(d+':'+k));
+  for (const d of DIVS){
+    const X0=pos[d], fe=fertile(d,tt), grown=fe?Math.min(1,(tt-OPEN[d])/20):0;
+    const stemTop=ground-(ground-top)*Math.max(.12,grown);
+    x.setLineDash(fe?[]:[2,4]); x.strokeStyle=DIVCOL[d]; x.globalAlpha=fe?.75:.3;
+    x.beginPath(); x.moveTo(X0,ground); x.lineTo(X0,fe?stemTop:top+30); x.stroke(); x.setLineDash([]); x.globalAlpha=1;
+    x.fillStyle=DIVCOL[d]; x.globalAlpha=fe?1:.4; x.fillText(d.toUpperCase()+' '+(S.perDiv?S.perDiv[d]:0),X0-10,top-2); x.globalAlpha=1;
+    STOPS[d].forEach((s,j)=>{
+      const on=act.has(d+':'+s[0]), y=yOf(s[2])-(j%4)*3, side=j%2?1:-1, len=on?20:6;
+      if (y<stemTop && !on) return;
+      x.strokeStyle=on?FAMCOL[s[3]]:'#22302a'; x.lineWidth=on?1.6:1;
+      x.beginPath(); x.moveTo(X0,y); x.lineTo(X0+side*len,y-len*.45); x.stroke(); x.lineWidth=1;
+      if (on){ x.fillStyle=FAMCOL[s[3]]; x.textAlign=side>0?'left':'right'; x.fillText(s[1],X0+side*(len+3),y-len*.45+3); x.textAlign='left'; }
+    });
+  }
+  // couplers as clonal integration
+  const used=new Set(SECTIONS.flatMap(s=>s.couplers)); let lane=0;
+  for (const k of used){ const C=COUPLERS[k], on=sec.couplers.includes(k);
+    x.strokeStyle=on?'#b6ffcf':'#1a2520'; x.fillStyle=on?'#b6ffcf':'#2c3b33'; x.setLineDash(on?[]:[3,3]);
+    if (C.from===C.to){
+      const X0=pos[C.to];
+      if (C.tr<0){ for (const a of [-10,0,10]){ x.beginPath(); x.moveTo(X0,ground); x.lineTo(X0+a,ground+26); x.stroke(); } x.fillText(C.label+' roots',X0-26,ground+36); }
+      else { x.beginPath(); x.moveTo(X0-7,top+12); x.lineTo(X0,top+2); x.lineTo(X0+7,top+12); x.stroke(); x.fillText(C.label+' shoot',X0+9,top+10); }
+    } else if (C.to==='pe'){
+      const dy=18+lane*9; x.beginPath(); x.moveTo(pos[C.from],ground+3); x.bezierCurveTo(pos[C.from],ground+dy,pos.pe,ground+dy,pos.pe,ground+3); x.stroke();
+      x.fillText(`${C.label} ${C.morph}`,(pos[C.from]+pos.pe)/2-20,ground+dy*.75+8); lane++;
+    } else {
+      const y=yOf(1)-6-lane*7, dy=-16-lane*4;
+      x.beginPath(); x.moveTo(pos[C.from],y); x.bezierCurveTo(pos[C.from],y+dy,pos[C.to],y+dy,pos[C.to],y); x.stroke();
+      if (on) x.fillText(`${C.label} ${C.morph}`,(pos[C.from]+pos[C.to])/2-16,y+dy*.75-2); lane++;
+    }
+    x.setLineDash([]);
+  }
+  for (const d of ['po','re']){ const sy=ground-12; x.strokeStyle=DIVCOL[d]; x.beginPath(); x.ellipse(pos[d]-16,sy,6,1+4*sec.swell,0,0,Math.PI*2); x.stroke(); }
+  x.fillStyle='#4c5f55'; x.fillText('swell = stomata',pos.re-12,ground-22);
+  x.strokeStyle='#27352f'; x.strokeRect(6.5,h-12.5,w-13,6); x.fillStyle='#ffd27a88'; x.fillRect(7,h-12,(w-14)*sec.cresc,5);
+  x.fillStyle='#4c5f55'; x.fillText('crescendo = turgor pressure',8,h-16);
+}
+function drawMicro(t){
+  const [x,w,h]=fit(cv.micro); x.clearRect(0,0,w,h);
+  const sec=SECTIONS[secAt(t)], beat=60/sec.bpm, span=4*beat, t0=t-span*.75, L=26;
+  const X=tt=>L+(tt-t0)/span*(w-L-4), Y=m=>h-10-(m-24)/(98-24)*(h-20);
+  x.font='8px ui-monospace,monospace';
+  for (let m=24;m<=96;m+=12){ x.strokeStyle='#141d18'; x.beginPath(); x.moveTo(L,Y(m)+.5); x.lineTo(w,Y(m)+.5); x.stroke(); x.fillStyle='#4c5f55'; x.fillText('C'+(m/12-1),4,Y(m)+3); }
+  const b0=sec.start+Math.floor((t0-sec.start)/beat)*beat;
+  for (let b=b0;b<t0+span;b+=beat){ x.strokeStyle='#27352f'; x.beginPath(); x.moveTo(X(b)+.5,4); x.lineTo(X(b)+.5,h-6); x.stroke(); }
+  for (const e of S.events){ if (e.t+e.d<t0||e.t>t0+span) continue;
+    x.globalAlpha=e.t<=t?1:.35;
+    if (e.sat){ x.strokeStyle='#ffffff22'; x.setLineDash([1,2]); x.beginPath(); x.moveTo(X(e.pt),Y(e.pm)); x.lineTo(X(e.t),Y(e.midi)); x.stroke(); x.setLineDash([]); }
+    x.strokeStyle=e.hack?'#ff87ad':DIVCOL[e.div]; x.lineWidth=e.sat?1:e.tuber?3:2;
+    x.beginPath(); x.moveTo(X(e.t),Y(e.midi)); x.lineTo(Math.max(X(e.t)+2,X(e.t+e.d)),Y(e.midi)); x.stroke(); }
+  x.globalAlpha=1; x.lineWidth=1;
+  x.strokeStyle='#ff87ad'; x.beginPath(); x.moveTo(X(t)+.5,4); x.lineTo(X(t)+.5,h-6); x.stroke();
+  const tex=texOverride||sec.texture; x.fillStyle='#b6ffcf'; x.font='10px ui-monospace,monospace';
+  x.fillText(`${tex.toUpperCase()}  ←  ${TEX[tex].repro}   + EMBRYO MODE ${satOn?harmLabel():'off'}`,L+6,14);
+  x.fillStyle='#80948a'; x.font='9px ui-monospace,monospace'; x.fillText(TEX[tex].note,L+6,26);
+}
+function updateSide(){
+  const sec=SECTIONS[S.si], tex=texOverride||sec.texture, beat=60/sec.bpm;
+  const stops=DIVS.reduce((a,d)=>a+(sec.regs[d]||[]).length,0), fert=DIVS.filter(d=>fertile(d,S.tNext)).map(d=>d.toUpperCase()).join('+');
+  const embC=[0,0,0,0]; for (const [g,n] of S.counts) embC[S.genomes[g].g.emb]+=n;
+  $('trans').innerHTML=`
+   <tr><td>MACRO</td><td><span class="k">section</span> ${sec.id} ${sec.name} · ${sec.rel}<br><span class="k">rule</span> ${sec.rule} ${sec.ruleName} · <span class="k">μ</span> ${sec.mu} · <span class="k">field</span> {${sec.field.join(',')}}<br><span class="k">fertile</span> ${fert}<br><span class="k">bio</span> ${sec.bio}</td></tr>
+   <tr><td>MESO</td><td><span class="k">gen</span> ${S.gen} · <span class="k">pop</span> ${S.pop} · <span class="k">genotypes</span> ${S.geno} · <span class="k">H</span> ${S.H.toFixed(2)} bit<br><span class="k">texture</span> ${tex} ← ${TEX[tex].repro}<br><span class="k">timbre</span> ${stops} stops · couplers [${sec.couplers.map(k=>COUPLERS[k].label+' '+COUPLERS[k].morph).join(', ')||'—'}]<br><span class="k">embryo slots</span> none ${embC[0]} · A ${embC[1]} · B ${embC[2]} · C ${embC[3]}</td></tr>
+   <tr><td>MICRO</td><td><span class="k">harmonicity</span> ${satOn?harmLabel():'off'}<br><span class="k">beat</span> ${(beat*1000).toFixed(0)} ms · <span class="k">mother notes</span> ${S.lastNotes} · <span class="k">embryos</span> ${S.lastSats} · <span class="k">attacks/s</span> ${((S.lastNotes+S.lastSats)/beat).toFixed(1)}<br><span class="k">onsets</span> ${TEX[tex].note}</td></tr>`;
+  const top=[...S.counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+  let html=top.map(([g,n])=>`<div class="row"><span class="bar" style="width:${Math.max(2,n/S.pop*90)}px"></span>g${String(g).padStart(3,'0')} <span class="dna">${encode(S.genomes[g].g)}</span> emb ${'·ABC'[S.genomes[g].g.emb]} ${n}</div>`).join('');
+  const muts=S.mutations.slice(-9).reverse();
+  html+=`<div style="margin-top:6px;color:var(--muted)">${muts.length?'last mutations':'clonal: no mutations yet (μ = '+sec.mu+')'}</div>`;
+  html+=muts.map(m=>`<div class="row">g${String(m.id).padStart(3,'0')} ← g${String(m.parent).padStart(3,'0')} <span class="mut">${m.slot}</span> <span class="dna">${m.dna}</span></div>`).join('');
+  if (S.ended && top[0]) html+=`<div style="margin-top:6px;color:var(--pink)">→ 02 GAMETO receives clone g${top[0][0]} ${encode(S.genomes[top[0][0]].g)}</div>`;
+  $('geno').innerHTML=html; $('genoInfo').textContent=`${S.genomes.length} genotypes ever · ${S.mutations.length} mutations`;
+}
+/* ================================================================ harmonicity knob */
+function setSrc(src){
+  harm.src=src; harm.log.push({t:+pieceNow().toFixed(3), source:src});
+  const b=$('bHarmSrc'); if (b){ b.textContent=src==='score'?'HARM: SCORE':'HARM: MANUAL'; b.classList.toggle('on',src==='score'); }
+}
+function harmLabel(){
+  const p=harm.pos, lo=Math.floor(p), hi=Math.min(MODES.length-1,lo+1), f=p-lo;
+  if (f<.02 || lo===hi) return MODES[lo].label;
+  if (f>.98) return MODES[hi].label;
+  return `${MODES[lo].label} ${Math.round((1-f)*100)}% · ${MODES[hi].label} ${Math.round(f*100)}%`;
+}
+function setHarm(target, immediate){
+  if (harm.src==='score'){ harm.pos=harmAt(pieceNow()); setSrc('manual'); }
+  harm.target=Math.max(0,Math.min(MODES.length-1,target));
+  if (immediate) harm.pos=harm.target;
+  harm.log.push({t:+pieceNow().toFixed(3), target:+harm.target.toFixed(3), glide:!immediate});
+}
+let lastGlide=performance.now();
+function glideHarm(){                       // shortcut jumps glide at 4 modes/s → gradual harmonicity
+  const n=performance.now(), dt=(n-lastGlide)/1000; lastGlide=n;
+  if (harm.drag) return;
+  if (harm.src==='score'){ harm.pos=harm.target=harmAt(pieceNow()); return; }
+  const d=harm.target-harm.pos, step=4*dt;
+  harm.pos = Math.abs(d)<=step ? harm.target : harm.pos+Math.sign(d)*step;
+}
+const ivName = iv => PCN[((iv%12)+12)%12] + (iv>=12 ? '′'.repeat(Math.floor(iv/12)) : '');
+function drawHarm(){
+  const [x,w,h]=fit(cv.harm); x.clearRect(0,0,w,h);
+  const cx=Math.min(w*.26,h*.62), cy=h*.55, r=Math.min(h*.36,w*.2), N=MODES.length;
+  const ang=i=>(135+i/(N-1)*270)*Math.PI/180;
+  x.font='8px ui-monospace,monospace'; x.lineWidth=1;
+  x.strokeStyle='#27352f'; x.beginPath(); x.arc(cx,cy,r,ang(0),ang(N-1)); x.stroke();
+  x.strokeStyle='#b6ffcf'; x.lineWidth=2; x.beginPath(); x.arc(cx,cy,r,ang(0),ang(harm.pos)); x.stroke(); x.lineWidth=1;
+  const near=Math.round(harm.pos);
+  MODES.forEach((m,i)=>{
+    const a=ang(i), c=m.group==='hyper'?'#ff87ad':'#b6ffcf', on=i===near;
+    x.strokeStyle=on?c:c+'55'; x.beginPath(); x.moveTo(cx+Math.cos(a)*(r-4),cy+Math.sin(a)*(r-4)); x.lineTo(cx+Math.cos(a)*(r+4),cy+Math.sin(a)*(r+4)); x.stroke();
+    const lx=cx+Math.cos(a)*(r+13), ly=cy+Math.sin(a)*(r+13);
+    x.fillStyle=on?c:'#4c5f55'; x.textAlign=Math.cos(a)<-.2?'right':Math.cos(a)>.2?'left':'center';
+    x.fillText(m.group==='hyper'?m.label.slice(0,5):m.label.replace(' 4+',''), lx, ly+3);
+  });
+  x.textAlign='left';
+  const a=ang(harm.pos); x.strokeStyle='#ff87ad'; x.beginPath(); x.moveTo(cx,cy); x.lineTo(cx+Math.cos(a)*(r-8),cy+Math.sin(a)*(r-8)); x.stroke();
+  x.beginPath(); x.arc(cx,cy,3,0,Math.PI*2); x.stroke();
+  // right column: current mode
+  const M=MODES[near], tx=cx+r+48, col=M.group==='hyper'?'#ff87ad':'#b6ffcf';
+  x.fillStyle=col; x.font='16px ui-monospace,monospace'; x.fillText(M.label, tx, 22);
+  x.font='9px ui-monospace,monospace'; x.fillStyle='#80948a'; x.fillText(M.who, tx, 36); x.fillText(M.desc, tx, 48);
+  x.fillStyle='#d3ddd8'; x.fillText(satOn?harmLabel():'POLYEMBRYONY OFF (0)', tx, 62);
+  x.fillStyle=harm.src==='score'?'#b6ffcf':'#ffd27a'; x.font='9px ui-monospace,monospace';
+  const cur=[...HARM_SCORE].reverse().find(b=>b[0]<=pieceNow() && b[2]);
+  x.fillText(harm.src==='score' ? `SCORE CURVE · ${cur?cur[2]:''}` : 'MANUAL OVERRIDE · press S to return to the score curve', tx, h-38);
+  x.font='8px ui-monospace,monospace';
+  x.fillStyle='#4c5f55'; x.textAlign='center'; x.fillText(harm.src==='score'?'SCORE':'MANUAL', cx, cy+r*.55); x.textAlign='left';
+  M.slots.forEach((sl,k)=>{ x.fillStyle='#4c5f55'; x.fillText(`slot ${'ABC'[k]}`, tx, 78+k*12);
+    x.fillStyle=col; x.fillText(sl.map(v=>'+'+v).join(' ')+'   C → '+sl.map(ivName).join(' '), tx+42, 78+k*12); });
+  x.fillStyle='#4c5f55'; x.font='8px ui-monospace,monospace';
+  x.fillText('1 m2  2 m3  3 M3  4 P4  5 TT  6 P5  7 P8  8 PETRUSHKA  9 MODE 2', tx, h-26);
+  x.fillText('⇧1 M2 ⇧2 m6 ⇧3 M6 ⇧4 m7 ⇧5 M7 ⇧6 AUGURS ⇧7 AXIS ⇧8 RÉSONANCE', tx, h-15);
+  x.fillText('←/→ step · drag/wheel = continuous · dbl-click snap · 0 poly on/off · S score/manual', tx, h-4);
+}
+// knob input
+cv.harm.addEventListener('pointerdown',e=>{ if (harm.src==='score'){ harm.pos=harmAt(pieceNow()); setSrc('manual'); } harm.drag=true; harm.y=e.clientY; cv.harm.setPointerCapture(e.pointerId); setActive('harm'); });
+cv.harm.addEventListener('pointermove',e=>{ if (!harm.drag) return; const dy=harm.y-e.clientY; harm.y=e.clientY;
+  harm.pos=harm.target=Math.max(0,Math.min(MODES.length-1,harm.pos+dy*.04)); });
+cv.harm.addEventListener('pointerup',()=>{ if (harm.drag){ harm.drag=false; setHarm(harm.pos,true); } });
+cv.harm.addEventListener('wheel',e=>{ e.preventDefault(); setHarm(harm.target+(e.deltaY>0?-.25:.25),true); },{passive:false});
+cv.harm.addEventListener('dblclick',()=>setHarm(Math.round(harm.pos),false));
+
+/* ================================================================ active pod + shortcuts */
+let activePod='harm';
+const PODS=['macro','meso','morph','micro','harm','side'];
+function setActive(id){ activePod=id; PODS.forEach(p=>$(p).classList.toggle('active',p===id)); }
+PODS.forEach(p=>$(p).addEventListener('pointerdown',()=>setActive(p)));
+function toggleSat(){ $('bSat').onclick({target:$('bSat')}); }
+document.addEventListener('keydown',e=>{
+  if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName) || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.code==='Space'){ e.preventDefault(); playing?pause():play(); return; }
+  if (e.code==='Backquote'){ e.preventDefault(); setActive(PODS[(PODS.indexOf(activePod)+1)%PODS.length]); return; }
+  const m=e.code.match(/^(?:Digit|Numpad)(\d)$/), dg=m?+m[1]:null;
+  if (activePod==='harm'){
+    if (dg>=1){ const key=(e.shiftKey?BANK2:BANK1)[dg-1]; if (key){ e.preventDefault(); setHarm(modeIdx(key),false); } }
+    else if (dg===0) toggleSat();
+    else if (e.code==='KeyS'){ setSrc(harm.src==='score'?'manual':'score'); if (harm.src==='manual') harm.target=harm.pos; }
+    else if (e.key==='ArrowRight'||e.key===']'){ e.preventDefault(); setHarm(Math.round(harm.target)+1,false); }
+    else if (e.key==='ArrowLeft'||e.key==='['){ e.preventDefault(); setHarm(Math.round(harm.target)-1,false); }
+  } else if (activePod==='macro' && dg>=1 && dg<=5){ seek(SECTIONS[dg-1].start); }
+  else if (activePod==='micro' && dg!==null && dg<=4){ texOverride=['','tutti','striated','hocket','granulation'][dg]; $('sTex').value=texOverride; }
+});
+
+let lastSide=0;
+function frame(){
+  const t=pieceNow(), sec=SECTIONS[secAt(t)];
+  $('mT').textContent=mmss(t); $('mSec').textContent=sec.id+' '+sec.name; $('mBpm').textContent=sec.bpm; $('mGen').textContent=S.gen;
+  $('mPop').textContent=S.pop; $('mGeno').textContent=S.geno; $('mH').textContent=S.H.toFixed(2);
+  $('macroInfo').textContent=`seed ${S.seed}`; $('mesoInfo').textContent=`${sec.rule} · gen ${S.gen}`;
+  $('morphInfo').textContent=sec.hack?'host reeds armed by hack gene':''; $('microInfo').textContent=`${S.lastNotes} + ${S.lastSats} emb / beat`;
+  glideHarm(); drawMacro(t); drawMeso(); drawMorph(); drawMicro(t); drawHarm();
+  if (performance.now()-lastSide>200){ updateSide(); lastSide=performance.now(); }
+  requestAnimationFrame(frame);
+}
+
+/* ================================================================ ui */
+const bPlay=$('bPlay');
+bPlay.onclick=()=>playing?pause():play();
+$('bReset').onclick=()=>{ const was=playing; if (was) pause(); reset(+$('iSeed').value||1); pieceAnchor=0; if (was) play(); };
+$('bSeed').onclick=()=>{ $('iSeed').value=Math.floor(Math.random()*99999); $('bReset').onclick(); };
+$('sSpeed').onchange=e=>{ const t=pieceNow(); pieceAnchor=t; realAnchor=now(); speed=+e.target.value; };
+$('sTex').onchange=e=>{ texOverride=e.target.value; };
+$('bSat').onclick=e=>{ satOn=!satOn; e.target.textContent=satOn?'POLYEMBRYONY ON':'POLYEMBRYONY OFF'; e.target.classList.toggle('on',satOn); };
+$('bHarmSrc').onclick=()=>{ setSrc(harm.src==='score'?'manual':'score'); if (harm.src==='manual') harm.target=harm.pos; };
+$('bAudio').onclick=e=>{ audioOn=!audioOn; e.target.textContent=audioOn?'AUDIO ON':'AUDIO OFF'; e.target.classList.toggle('on',audioOn); };
+$('bExport').onclick=()=>{
+  const blob=new Blob([JSON.stringify({kind:'spore-sketch-log', version:2, demo:true, seed:S.seed, textureOverride:texOverride||null, polyembryony:satOn,
+    open:OPEN, close:CLOSE, harmonicitySource:harm.src, harmonicityScore:HARM_SCORE, harmonicityLog:harm.log, modes:MODES, sections:SECTIONS.map(({regs,hackRegs,...s})=>s), hist:S.hist, mutations:S.mutations, events:S.allEvents},null,1)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`spore_v2_seed${S.seed}.json`; a.click();
+};
+cv.macro.addEventListener('click',e=>{ const r=cv.macro.getBoundingClientRect(); seek(Math.max(0,Math.min(PIECE_END-1,(e.clientX-r.left-8)/(r.width-16)*PIECE_END))); });
+
+reset(+$('iSeed').value);
+bPlay.textContent='PLAY';
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

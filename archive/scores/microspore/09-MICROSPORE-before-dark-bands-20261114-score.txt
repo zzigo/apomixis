@@ -1,0 +1,141 @@
+HYLON-SCORE 1
+# Apomixis 09 / MICROSPORE — Micróspora / grano de polen. Recorded recitation, mimed live by the organist.
+# Focus: vocal anthropomixis, prosody, parasitic ornament. The voice is a tape (apps/hylon/public/audio/
+# apomixis-lyrics.mp3, Melodyne-tuned) that runs with the transport into the MIC strip; the organ does not imitate it.
+# An organ vocoder: the voice starts at once; every sung note (≥ 60 ms, offline pitch profile
+# packages/hylon-algos/tape-profile.js) sounds as a harmonic chord, homorhythmic with the syllable:
+# pedal an octave below, I partials 1–2, II 3–4, III 5–6, IV 7–8, later 8 + 14 15 16 (a semitone
+# cluster four octaves up whose difference tone is the fundamental). The bands are added one by one from
+# the bass. Until «Clon tras clon» each syllable is marked; from there the chords are tied (legato) and
+# the voice is heard as partial 3, 5, 7 or 9 of another root, so the harmony leaves the continuous G.
+# From the first «ya estaba cantado» every note is held to the end: the voice's acoustic shadow.
+# Registration grows Voix (90) → 4' (91) → 2' (92) → 1' via 4' couplers + tierce (93) → Voix (90).
+# Verse times come from silence segmentation of the recording aligned to the text by syllable count:
+# check them by ear. Registration: the set that ends 08 PROTOSPORE, one program for the whole piece.
+id apomixis.microspora
+version 0.1.0-draft.1
+title "MICROSPORE"
+number microspora
+duration 161.5
+attacca 06
+seed 2039
+audition-transpose 0
+tape apomixis-lyrics.mp3 at 0 gain 0 dry 1 tune 0
+
+voice $SO = so range 36 96
+voice $RE = re range 36 96
+voice $PO = po range 36 96
+voice $GO = go range 36 96
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P5" "the voice dwells on G"
+harmonicity 161.5 "P5" ""
+
+set REG = 22 23 39 40 47 55 56 73 8 32
+set V = @REG 67 69
+set V4 = @V 24 25 41 42 58 59
+set V2 = @V4 27 43 61
+set V1 = @V2 51 72 62
+
+section A1 "Bass" for 10.5 bpm 81
+native off
+pgm @V
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12 spread 0 ring 0.05~3 min 60 delay 0 len 1 prob 1
+verse at 0.2 "La semilla copia a la madre."
+bio "the bass alone, one attack per syllable · Voix humaine and céleste"
+end
+
+section A2 "Fundamental" for 17.7 bpm 81
+native off
+pgm @V
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12 spread 10 ring 0.1~3 min 60 delay 0 len 1 prob 1
+verse at 10.5 "No hay otro en la célula."
+verse at 18.0 "La célula alcanza a la célula."
+bio "I adds the fundamental and its octave"
+end
+
+section A3 "Partials" for 15.7 bpm 81
+native off
+pgm @V4
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12/po:19,24 spread 12 ring 0.1~3 min 60 delay 0 len 1 prob 1
+verse at 28.2 "Lo que crece es el mismo."
+verse at 34.9 "Y no es lo mismo."
+verse at 37.8 "La mitad no se pierde."
+bio "II: partials 3–4 · 4' stops"
+end
+
+section A4 "Fifth partials" for 14.0 bpm 81
+native off
+pgm @V4
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12/po:19,24/re:28,31 spread 15 ring 0.1~3 min 60 delay 0 len 1 prob 1
+verse at 43.9 "Una planta entera vive dentro de una planta entera."
+bio "III: partials 5–6"
+end
+
+section B1 "Clone" for 16.6 bpm 72
+native off
+pgm @V2
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12/po:19,24/re:28,31/so:34,36 spread 18 legato 2.5 as 1|3|1|5 ashold 6 min 60 delay 0 len 1 prob 1
+verse at 57.9 "Clon tras clon, la deriva escribe."
+verse at 68.3 "Las pequeñas diferencias."
+bio "from here no silences: each chord lasts to the next syllable · the voice heard as partial 3 or 5 of another root · 2' stops"
+end
+
+section B2 "Drift" for 12.1 bpm 72
+native off
+pgm @V2
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12/po:19,24/re:28,31/so:34,36 spread 20 legato 2.5 as 3|5|9|1 ashold 5 min 60 delay 0 len 1 prob 1
+verse at 74.5 "No hay padre, no hay azar y no hay encuentro."
+bio "the root drifts away from G: C, E-flat, F"
+end
+
+section C1 "Error" for 12.5 bpm 96
+native off
+pgm @V1
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12/po:19,24/re:28,31/so:36,46,47,48 spread 22 legato 2.5 as 1|5|3|7 ashold 4 min 60 delay 0 len 1 prob 1
+verse at 86.6 "Sólo el error al copiar."
+verse at 92.6 "Y otro error, y otro error."
+bio "IV: partials 14 15 16, a semitone cluster four octaves up whose difference tone is the voice's own fundamental · 1' (4' couplers) and tierce"
+end
+
+section C2 "Clock of errors" for 19.3 bpm 96
+native off
+pgm @V1
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12/po:19,24/re:28,31/so:36,46,47,48 spread 25 legato 2.5 as 7|3|9|5|1 ashold 3 min 60 delay 0 len 1 prob 1
+verse at 99.1 "El jardín es un reloj de errores, repartido en el tiempo."
+bio "the most unstable harmony: A, C, F, E-flat, G change every three syllables"
+end
+
+section O1 "Membrane" for 20.6 bpm 48
+native off
+pgm @V1
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12/po:19,24/re:28,31/so:34,36 spread 28 legato 2.5 as 1|3 ashold 8 ring 0.2~3 min 60 delay 0 len 1 prob 1
+verse at 118.4 "La voz no sale, sino entra, con el agua en la semilla."
+verse at 128.4 "La conduce, no la ordena."
+verse at 133.9 "Humedece la membrana."
+verse at 138.5 "Lo que canta ya estaba cantado,"
+bio "the voice enters instead of leaving · back towards G"
+end
+
+section S "Shadow" for 22.5 bpm 36
+native off
+pgm @V
+laser off
+parasite apomixis-lyrics at 0 bands pe:-12/go:0,12/po:19,24/re:0,12 spread 30 sustain 1 min 60 delay 0 len 1 prob 1
+verse at 144.0 "antes de la boca."
+verse at 147.4 "Ya estaba cantado."
+bio "from the first «ya estaba cantado» every sung note is held to the end: a cluster, the acoustic shadow of the voice, ringing 10 s after it"
+end

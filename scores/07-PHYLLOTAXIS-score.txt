@@ -1,0 +1,248 @@
+HYLON-SCORE 1
+# Apomixis 07 / PHYLLOTAXIS — Filotaxis. AUTO · presto, inhibition / tutti · GO PO RE SO PE.
+# From lab 18 RHIZOSPHERE (2026-11-14), see docs/PHYLLOTAXIS-DOSSIER.md.
+# An exclusive total cluster on the four manuals: every key belongs to one manual only. Each manual
+# changes one key at a time on its own clock, 70–100 ms, never in unison; the key a manual
+# releases is taken by another. The pedal's first octave grows underneath and wins.
+# (pick inhibit / clocks golden were tried and rejected: clusters came and went; see dossier.)
+# Registration: 70 = 73 40 23 1 2 56 (IV Seraphon 8' · II Bourdon 8' · I Bourdon 8' · III Voix
+# céleste 8' · P Flûte 32', Soubasse 32'). 71 = 70 + 21 54 22 47 69 57 (I Flûte harmonique 8',
+# Dulciane 8' · III Flûte harmonique 8', Cor de nuit 8' · II and III tremolo). 72 = 70 + 3
+# (P Contrebasse 16').
+#  0–250  mass: 15 → 10 → 15 voices per manual (cos, 200 s); narrower = slower
+#  90–144 registration tremolo 71 ⇄ 70 every 3 s (neighbouring buttons)
+#  120–262 pedal C1–B1: 2–3 key clusters in irregular, growing bands, up to the whole octave
+#  210–295 the manuals fade out into the undulation, gone at 04:55; the bands lengthen and close
+#          their gaps (+ Contrebasse 16')
+#  255     the octave process enters under the last band (same keys: no re-attack on the organ)
+#  260–290 from 04:20 the octave comes apart key by key into a tremolo (two halves, 300–360 ms)
+#  290–320 pendulum: the keys drift apart into a rolling wave and gather again into blocks;
+#          written rallentando 300–320 (05:00–05:20): the step stretches to ×3 and comes apart
+# ATTACCA: at 05:20 08 PROTOSPORE loads and starts at once; the registration preview announces
+# its first program (80, change of ten) during the last 30 s.
+# LASER: one red vertical line crosses the field left → right over the whole piece; green and
+# blue enter late (log), white at the end; field size and intensity signal at 100 % for the
+# whole piece. The score never starts the laser.
+id apomixis.filotaxis
+version 0.1.0
+title "PHYLLOTAXIS"
+number filotaxis
+duration 320
+seed 3181
+audition-transpose 0
+attacca 08
+
+voice $SO = so range 36 96
+voice $RE = re range 36 96
+voice $PO = po range 36 96
+voice $GO = go range 36 96
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "m2" "total chromatic cluster"
+harmonicity 320 "m2" ""
+
+set MASS = mass div manuals low C2 high B6 n 15~10 ms 70~100 period 200 span 0 295 out 210 295 stagger 60
+set ROOTS = bands div pe low C1 high B1 size 2->12 len 1.5->12 gap 7->0 span 120 262
+set OCTAVE = bands div pe low C1 high B1 size 12 len 600 gap 0 trem 300~360 wave 6 hold 5 emerge 30 drift 20 spread 1 rall 20 3 span 255 320
+set LASER = laser line span 0 320 color 1,0,0->1,1,1 curve log field 100 signal 100
+
+section A "Total" for 40 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+bio "every key owned by one manual · the mass starts to mutate"
+end
+
+section B "Narrowing" for 50 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+bio "the slow curve narrows the band · changes slow down"
+end
+
+section T1 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T2 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T3 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T4 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T5 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T6 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T7 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T8 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T9 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T10 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T11 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+@ROOTS
+bio "registration tremolo 71 ⇄ 70 · the pedal joins"
+end
+
+section T12 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+@ROOTS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T13 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+@ROOTS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T14 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+@ROOTS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T15 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+@ROOTS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T16 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+@ROOTS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T17 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56 21 54 22 47 69 57
+@LASER
+@MASS
+@ROOTS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section T18 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+@ROOTS
+bio "registration tremolo 71 ⇄ 70"
+end
+
+section C "Roots" for 56 bpm 60
+native off
+pgm 73 40 23 1 2 56
+@LASER
+@MASS
+@ROOTS
+bio "pedal bands grow · the band widens again, changes speed up"
+end
+
+section D "Rhizosphere" for 60 bpm 60
+native off
+pgm 73 40 23 1 2 56 3
+@LASER
+@MASS
+@ROOTS
+@OCTAVE
+bio "manuals fade out · the whole first pedal octave held, + Contrebasse 16'"
+end
+
+section E "Undulation" for 60 bpm 60
+native off
+pgm 73 40 23 1 2 56 3
+@LASER
+@MASS
+@ROOTS
+@OCTAVE
+bio "the octave comes apart key by key · pendulum of the two halves, apart and together"
+end

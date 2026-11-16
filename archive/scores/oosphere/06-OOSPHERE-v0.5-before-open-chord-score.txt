@@ -1,0 +1,295 @@
+HYLON-SCORE 1
+# Apomixis06 / OOSPHERE — HORVITZ now opens the finale, directly and recognisably.
+# 458s: glissandi70 + original Rhythmicon60 + ap6 + FM3:7 18 + 12-voice morph48 + s+p+i30
+#       + twelve BEFERA FM modules170 + fixed diatonic body30 + timbral insistence20.
+# VECTOR explicitly shapes only the opening glissandi. The twelve-voice body morphs in pitch,
+# preserving three clock voices per manual. GAMETE's interlock returns at132*.9=118.8BPM.
+# One-second terminal pause, then the archived spectral superchord for five seconds. Concert order09->06 remains.
+id apomixis.oosfera
+version 0.5.0-draft.1
+title "OOSPHERE"
+number oosfera
+duration 458
+seed 3151
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P8" "Sixteen glissandi · VECTOR"
+harmonicity 70 "P8" "HORVITZ Rhythmicon"
+harmonicity 130 "resonance" "ap · memory of HUMUS03"
+harmonicity 136 "resonance" "first FM3:7"
+harmonicity 154 "petrushka" "four tonal fields · three voices per manual"
+harmonicity 202 "resonance" "Bells become the s+p+i interlock"
+harmonicity 232 "resonance" "spectral modules continue without extinction"
+harmonicity 402 "resonance" "fixed diatonic body · moving timbre"
+harmonicity 432 "resonance" "150ms timbral insistence"
+harmonicity 452 "resonance" "one second of silence"
+harmonicity 453 "resonance" "last spectral mega chord"
+harmonicity 458 "resonance" ""
+
+# Exact HORVITZ pitch lists, not a sparse substitute.
+set HARMONIC_MINOR = C6 B5 Ab5 G5 F5 Eb5 D5 C5 B4 Ab4 G4 F4 Eb4 D4 C4 B3 Ab3 G3 F3 Eb3 D3 C3
+# Perfect fifth pairs: D-A / Bb-F / Gb-Db, then the same shape23semitones up fromC#4.
+set RHYTHMICON = D2 A2 Bb2 F3 Gb3 Db4 C#4 G#4 A4 E5 F5 C6
+# Round-robin I/II/III/IV: E-G-B / Bb-D-F / F#-A-C# / C-Eb-Ab.
+set TWELVE = E3 Bb3 F#3 C4 G4 D5 A4 Eb5 B4 F5 C#5 Ab4
+set RMEGA = @strings @principals @flutes @pedalvoice -19 -4 -1
+set FMREG = @strings @principals @flutes @mutations @mixtures -19 -4 -1
+set SPIREG = III.corDeNuit8 @mutations @mixtures 73 I.@principals II.@principals I.@brass II.@brass @pedalvoice
+set NOISE = pedal ostinato 24 26 25 27 28 rate 1/32 dur 6 rdur 40
+set PA = C4:0,1,6,11,13,18
+set PB = C4:0,2,7,11,14,19
+set SINE = A4 | E5 | A4 | C#5
+set IMPULSE = C5:0,6,13,19
+set MASS1 = FM:D1:1:6:5
+set MASS2 = FM:D1:1:4:6
+set MASS3 = FM:D1:2:7:6
+set MASS4 = FM:D1:1:2:6
+# Terminal universe: D mixolydian + Eb/G# across three octaves,27 fixed keys.
+set DIATONIC = D3,E3,F#3,G3,A3,B3,C4,D4,E4,F#4,G4,A4,B4,C5,D5,E5,F#5,G5,A5,B5,C6,Eb3,G#3,Eb4,G#4,Eb5,G#5
+# Nested prefixes: existing pitches stay fixed; new diatonic keys join gradually.
+set GROW1 = D3,A3,E4,B4,F#5
+set GROW2 = D3,A3,E4,B4,F#5,C6,G3,D4,A4,E5
+set GROW3 = D3,A3,E4,B4,F#5,C6,G3,D4,A4,E5,F#3,B3,F#4,C5,G5
+set GROW4 = D3,A3,E4,B4,F#5,C6,G3,D4,A4,E5,F#3,B3,F#4,C5,G5,E3,C4,G4,D5,A5,B5,Eb3,G#3,Eb4,G#4,Eb5,G#5
+set UNISONS = 33 34 36 14 15 16 18
+
+section H1 "Sixteen glissandi" for 70 bpm 60
+native off
+pgm I.fluteHarmonique8 II.fluteTraversiere4 III.fluteOctaviante4 73
+laser off
+rhythmicon @HARMONIC_MINOR base 5 voices 16 mode harmonic step 1 ms 50 arch on accel 1->4 div manuals vector on scales 0,2,3,5,7,8,11/0,2,4,6,7,9,11/0,4,6,7,11/0,2,3,5,6,8,9,11
+bio "HORVITZ clocks: harmonic minor → Lydian → Chinese pentatonic (0,4,6,7,11) → whole-half octatonic; modal fields gradually interpenetrate · VECTOR remains live"
+end
+
+section H2 "Rhythmicon / HORVITZ" for 60 bpm 60
+native off
+pgm @principals -19 -4 @pedalvoice 73
+laser off
+cresc 0.3->0.7
+rhythmicon @RHYTHMICON base 6 voices 12 mode harmonic ms 80->200 div go,po,re,so
+pedal drone 24
+bio "HORVITZ paired perfect fifths and semitone links in two strata, original harmonic clocks · IV73 makes the fourth manual audible"
+end
+
+section AP "ap / Humus memory" for 6 bpm 80
+native off
+pgm @noise32
+laser off
+@NOISE
+bio "six seconds of BEFERA32-foot aperiodic material · a short memory of03HUMUS"
+end
+
+section F0 "FM 3:7 / First irruption" for 18 bpm 60
+native off
+pgm @FMREG
+laser off
+cresc 0.7
+chord FM:D1:3:7:6 | FM:D1:1:2:6 pat x..x.x.x rate 1/16 ms 800 hold 1 morph 1 strum 20 div manuals
+pedal drone 26
+bio "BEFERA module11 appears early, in its original pitch family, before the twelve-voice body"
+end
+
+section RM "Mega Rhythmicon / Into Bells" for 48 bpm 60
+native off
+pgm @RMEGA
+laser off
+cresc 0.65->0.8
+exp3 0.3~0.9 7
+rhythmicon @TWELVE base 6 voices 12 mode harmonic ms 80->600 step 0 arch off accel 1 div manuals to E5 morph 0->1
+pedal drone 26
+bio "twelve distinct pitches, three clocks in each manual · the same clocks converge chromatically to HORVITZ Bells E5 without restarting"
+end
+
+section SPI "s+p+i / Expanded interlock" for 30 bpm 118.8
+native off
+pgm @SPIREG
+laser off
+cresc 0.8->1
+exp3 0.8~1 5
+chord @PA | @PB pat X..x.x.. rate 1/16 ms 70->160 hold 4 morph 1 div go vel 90
+chord @PB | @PA pat .xx.x.xx rate 1/16 ms 70->160 hold 4 morph 1 div po vel 90
+chord @SINE pat .....X.x.x.x.x.x.x.x.x.x......... rate 1/32 ms 250 hold 1 div re vel 94
+chord @IMPULSE pat .x.x.x.x.x.x.x.x rate 1/32 ms 45 hold 3 oct 0|1|-1 div so vel 90
+pedal drone 26
+bio "BEFERA timbres onGAMETE02's3+3+2/complement and odd-thirty-second interlock · ten percent less BPM, broader gates and brighter registers"
+end
+
+section S1 "FM 1:32" for 22 bpm 60
+native off
+pgm @strings II.bourdon8 @pedalvoice
+laser off
+cresc 0.55->0.6
+chord FM:D1:1:32:4 | FM:D1:1:31:4 pat x............... rate 1/16 ms 3600 hold 1 morph 1 strum 90 div re,po,go
+bio "module 1 · widest side bands"
+end
+
+
+section S2 "FM 1:23" for 18 bpm 60
+native off
+pgm @strings II.bourdon8 @pedalvoice
+laser off
+cresc 0.6->0.65
+chord FM:D1:1:23:4 | FM:D1:1:21:4 pat x............... rate 1/16 ms 3600 hold 1 morph 1 strum 90 div re,po,go
+bio "module 2"
+end
+
+
+section S3 "FM 1:16" for 15 bpm 60
+native off
+pgm @strings II.bourdon8 @pedalvoice
+laser off
+cresc 0.65->0.7
+chord FM:D1:1:16:4 | FM:D1:1:15:4 pat x........... rate 1/16 ms 2600 hold 1 morph 1 strum 70 div re,po,go,pe
+bio "module 3 · the pedal joins as a voice"
+end
+
+
+section S4 "FM 1:11" for 12 bpm 60
+native off
+pgm @strings II.bourdon8 @pedalvoice
+laser off
+cresc 0.7->0.72
+chord FM:D1:1:11:5 | FM:D1:1:10:5 pat x........... rate 1/16 ms 2600 hold 1 morph 1 strum 70 div re,po,go,pe
+bio "module 4"
+end
+
+
+section S5 "FM 1:8" for 10 bpm 60
+native off
+pgm @RMEGA
+laser off
+cresc 0.72->0.76
+chord FM:D1:1:8:5 | FM:D1:1:7:5 pat x....... rate 1/16 ms 1800 hold 1 morph 1 strum 50 div manuals
+bio "module 5"
+end
+
+
+section S6 "FM 1:6" for 8 bpm 60
+native off
+pgm @RMEGA
+laser off
+cresc 0.76->0.8
+chord FM:D1:1:6:5 | FM:D1:1:5:5 pat x....... rate 1/16 ms 1800 hold 1 morph 1 strum 50 div manuals
+bio "module 6 · axis"
+end
+
+
+section S7 "FM 1:5" for 8 bpm 60
+native off
+pgm @RMEGA
+laser off
+cresc 0.8->0.84
+chord FM:D1:1:5:6 | FM:D1:2:5:6 pat x....x.. rate 1/16 ms 1500 hold 1 morph 1 strum 40 div manuals
+bio "module 7 · axis"
+end
+
+
+section S8 "FM 1:4" for 10 bpm 60
+native off
+pgm @RMEGA
+laser off
+cresc 0.84->0.87
+chord FM:D1:1:4:6 | FM:D1:3:4:6 pat x....x.. rate 1/16 ms 1500 hold 1 morph 1 strum 40 div manuals
+bio "module 8"
+end
+
+
+section S9 "FM 2:7" for 12 bpm 60
+native off
+pgm @strings @principals @flutes @mutations -19 -4 -1
+laser off
+cresc 0.87->0.9
+chord FM:D1:2:7:6 | FM:D1:1:3:6 pat x...x..x rate 1/16 ms 1100 hold 1 morph 1 strum 30 div manuals
+bio "module 9"
+end
+
+
+section S10 "FM 1:3" for 15 bpm 60
+native off
+pgm @strings @principals @flutes @mutations -19 -4 -1
+laser off
+cresc 0.9->0.95
+chord FM:D1:1:3:6 | FM:D1:2:5:6 pat x...x..x rate 1/16 ms 1100 hold 1 morph 1 strum 30 div manuals
+pedal drone 26
+bio "module 10"
+end
+
+
+section S11 "FM 3:7" for 18 bpm 60
+native off
+pgm @strings @principals @flutes @mutations @mixtures -19 -4 -1
+laser off
+cresc 0.95->1
+chord FM:D1:3:7:6 | FM:D1:1:2:6 pat x..x.x.x rate 1/16 ms 800 hold 1 morph 1 strum 20 div manuals
+pedal drone 26
+bio "module 11"
+end
+
+
+section S12 "FM 1:2" for 22 bpm 60
+native off
+pgm @strings @principals @flutes @mutations @mixtures -19 -4 -1
+laser off
+cresc 1
+exp3 0.85->1
+chord FM:D1:1:2:6 pat x..x.x.x rate 1/16 ms 800->4000 hold 1 strum 20->120 prob 1 div manuals
+pedal drone 26
+bio "module 12 · ratio1:2 remains present as the chord opens toward the terminal masses"
+end
+
+
+# Restore spectral chords; grow the diatonic body alongside, not in their place.
+# At100BPM,1/3 is800ms: X....x.... preserves mass onsets every4s.
+section M "Mega chords / Growing diatonic body" for 30 bpm 100
+native off
+pgm @tutti -74 -75 -10 @UNISONS
+laser off
+cresc 0.8->1
+exp3 1
+chord @MASS1 | @MASS3 | @MASS2 | @MASS4 pat X....x.... rate 1/3 ms 4200|5000|4400|5400 hold 1 div manuals voicing spread iris 1 strum 0|12|0|25 vel 94
+chord @GROW1 | @GROW2 | @GROW3 | @GROW4 | @GROW4 pat x rate 1/16 ms 150 hold 50 morph 1 div manuals voicing spread iris 1 vel 82->100
+pedal drone 26
+bio "previous spectral chords every4s · a fixed D-mixolydian universe grows alongside from5 to27keys, every150ms, changing manual ownership"
+end
+
+# Full27-note body already reached in M;200pulses preserves rotation phase at the boundary.
+section T "Triumph / The full body" for 20 bpm 100
+native off
+pgm @tutti @UNISONS
+laser flash src go,po,re,so prob 100 dur 0.06 color 0,0,1 field 100 signal 100
+cresc 1
+exp3 1
+exp2 1
+chord @DIATONIC pat x rate 1/16 ms 150 hold 1 div manuals voicing spread iris 1 vel 106
+pedal drone 26
+bio "the fully grown27keys continue without pitch mutation, only timbral redistribution · spectral tails join the full registration, then the nine-class body remains"
+end
+
+# Literal last chord of archived v0.2 Triumph: MASS4 = FM:D1:1:2:6, stacked tutti.
+section Q "Suspension" for 1 bpm 60
+native off
+pgm @tutti @UNISONS
+laser off
+bio "one second without generated notes after the full body"
+end
+
+section Z "The last mega chord" for 5 bpm 12
+native off
+pgm @tutti @UNISONS
+laser off
+cresc 1
+exp3 1
+exp2 1
+chord @MASS4 pat X rate 1/1 ms 5000 hold 1 div tutti voicing stack strum 0 vel 106
+bio "the previous final spectral superchord returns once, stacked on all divisions, held five seconds"
+end

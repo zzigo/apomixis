@@ -1,0 +1,124 @@
+HYLON-SCORE 1
+# Apomixis 02 / GAMETE — Gameto / El grano. Candidate score. Seconds; notes MIDI C4=60.
+# Tonal: B minor (i) against its 5th degree F# major + diminished 7th (V: F# A# C# E G).
+# SPORE native notes are off in every section; only cell / arp / pedal / laser lines sound.
+# See dev/02_GAMETE_dossier.md for the genre, polarity and micro–macro reading.
+id apomixis.gamete
+version 0.1.0-draft.1
+title "GAMETE"
+number gameto
+duration 270
+seed 2027
+audition-transpose 0
+
+voice $SO = so range 24 84
+voice $RE = re range 24 84
+voice $PO = po range 24 84
+voice $GO = go range 24 84
+voice $PE = pe range 24 53
+
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+
+harmonicity 0 "P5" "B minor · i ↔ V polarity"
+harmonicity 270 "P5" ""
+
+# 1 · The grain: the cell b3–d4–c#4–e4 in tutti unison, E4 slightly longer.
+section I "Cell" 0 to 24 bpm 60
+native off
+pgm 3 5 20 24 38 53 73
+cell B3 D4 C#4 E4 dur 1 1 1 1.5 rate 1/4 div tutti at 1 repeat 3 gap 2 art 0.95 tr 0
+bio "pollen grain released · the haploid cell, closed and complete"
+end
+
+# 2 · Encounter on i: the arpeggiator enters incrementally (1 → 4 voices) over a tonic pedal.
+section A1 "Encounter i" 24 to 60 bpm 60
+native off
+pgm 5 21 40 57
+arp dir up pcs B,D,F# step harm len 6 root 59 rate 1/8 rand 0 rint 2 calibre 0 voices 1->4 rexp 0 rer 0 dur 0.9 rdur 0
+pedal drone 35
+bio "pollination · the grain lands on the stigma"
+end
+
+# 3 · Tremor 1: hypergrave 32' cluster, laser XY pulses with the pedal. Unease.
+section T1 "Tremor 1" 60 to 72 bpm 40
+native off
+pgm 1 2 10
+pedal ostinato 24 25 26 27 rate 1/16 dur 4 rdur 20
+laser midixy src pe size 30 prob 70 max 4 dur 0.5
+bio "hydration shock · the grain trembles before germinating"
+end
+
+# 4 · Polarity: V (F# major + dim7) answers; 4 → 12 voices, first rhythmic expansion.
+section A2 "Polarity V" 72 to 108 bpm 66
+native off
+pgm 5 6 21 24 40 42 56 57 73
+arp dir updown pcs F#,A#,C#,E,G step harm len 10 root 54 rate 1/8 rand 0 rint 2 calibre 0 voices 4->12 rexp 0.2 rer 0 dur 0.9 rdur 10
+pedal ostinato 30 30 37 30 rate 1/2 dur 1.8 rdur 0
+bio "germination · the pollen tube orients towards the ovule (chemotropism)"
+end
+
+# 5 · Return to i, denser (12 → 20 voices), hocket grows.
+section A3 "Return i" 108 to 140 bpm 66
+native off
+pgm 5 7 20 21 38 40 53 56 73
+arp dir up pcs B,D,F# step harm len 8 root 47 rate 1/12 rand 5 rint 2 calibre 0 voices 12->20 rexp 0.4 rer 10 dur 0.9 rdur 10
+pedal drone 35
+bio "tube growth · tip growth through the style"
+end
+
+# 6 · Tremor 2: the hypergrave object returns, wider and longer.
+section T2 "Tremor 2" 140 to 154 bpm 40
+native off
+pgm 1 2 10
+pedal ostinato 24 25 26 27 28 rate 1/24 dur 6 rdur 30
+laser midixy src pe size 50 prob 80 max 6 dur 1
+bio "second shock · resistance of the style tissue"
+end
+
+# 7 · Oscillation: i and V overlap as two arpeggiators (20 → 28 and 4 → 12 voices).
+section A4 "Oscillation" 154 to 196 bpm 72
+native off
+pgm 3 5 9 20 24 27 38 41 53 58 73
+arp dir up pcs B,D,F# step harm len 6 root 59 rate 1/16 rand 5 rint 2 calibre 0 voices 20->28 rexp 0.6 rer 5 dur 0.8 rdur 15
+arp dir down pcs F#,A#,C#,E,G step harm len 10 root 54 rate 1/12 rand 0 rint 2 calibre 0 voices 4->12 rexp 0.5 rer 0 dur 0.9 rdur 10
+pedal ostinato 35 30 rate 1/1 dur 1.9 rdur 0
+bio "two nuclei travel down the tube · generative and vegetative"
+end
+
+# 8 · Micro–macro: calibre closes and opens by non-transitive juxtaposition (no glide).
+section J "Juxtaposition" 196 to 232 bpm 72
+native off
+pgm +19 +26 +43 +44 +62 +63 +75 -41 -58 -73
+arp dir up pcs B,D,F# step harm len 6 root 47 rate 1/16 rand 10 rint 2 calibre 1|12|2|8|0|5|1|10 voices 28->40 rexp 0.3 rer 10 dur 0.8 rdur 20
+arp dir updown pcs F#,A#,C#,E,G step harm len 5 root 54 rate 1/12 rand 0 rint 2 calibre 3|11|1|7 voices 8 rexp 0.5 rer 5 dur 0.9 rdur 10
+pedal drone 35 30
+bio "double fertilisation · one nucleus to the egg, one to the endosperm"
+end
+
+# 9 · Tremor 3: ultra-beating, long overlapping 32' notes pendulum in the lowest pedal octave.
+section T3 "Ultra-beats" 232 to 252 bpm 30
+native off
+pgm 1 2 10
+pedal ostinato 24 25 26 27 26 25 rate 1/4 dur 3 rdur 25
+laser midixy src pe size 80 prob 100 max 8 dur 1.5
+bio "fusion · two genomes beat against each other before becoming one"
+end
+
+# 10 · Re-exposition of the cell in tutti.
+section R "Re-exposition" 252 to 264 bpm 60
+native off
+pgm 3 5 20 24 38 53 73
+cell B3 D4 C#4 E4 dur 1 1 1 1.5 rate 1/4 div tutti at 1 repeat 1 gap 2 art 0.95 tr 0
+bio "the seed · the cell, again, enclosed"
+end
+
+# 11 · Silence.
+section Z "Silence" 264 to 270 bpm 60
+native off
+pgm
+bio "dormancy · passes to 03 MEIOSIS"
+end

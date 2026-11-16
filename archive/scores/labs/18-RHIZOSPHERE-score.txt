@@ -1,0 +1,233 @@
+HYLON-SCORE 1
+# LAB 18 / RHIZOSPHERE — an exclusive total cluster on the four manuals that mutates every
+# 70–100 ms, never in unison; the pedal's lowest octave grows underneath and wins.
+# Registration: A = 73 40 23 1 2 (IV Seraphon 8' · II Bourdon 8' · I Bourdon 8' · P Flûte 32',
+# Soubasse 32'). B = A + 21 54 22 47 69 (I Flûte harmonique 8', Dulciane 8' · III Flûte harmonique 8'
+# · II and III tremolo). In A manual III has no stop: its share of the cluster is silent until B.
+# Final: A + 3 (P Contrebasse 16').
+#  1  each manual holds 15 pitches, no pitch shared (4 × 15 = 60 keys, C2–B6)
+#  2  each manual changes one pitch at a time on its own clock, 70–100 ms, never in unison;
+#     a pitch released by one manual is taken by another
+#  3  a slow curve (period 200 s) narrows 15 → 10 voices per manual and back; narrower = slower
+#  4  90–144 s: registration tremolo B ⇄ A every 3 s (two neighbouring buttons)
+#  5  from 120 s the pedal joins in C1–B1: 2–3 note clusters in irregular, growing bands
+#  6  200–250 s the manuals fade out while the pedal grows to the whole octave, + Contrebasse 16'
+#  7  250–300 s undulating pedal tremolo, the two halves of the octave alternating every 300–360 ms
+# Assumes manual compass C2–C6+ up to B6 (61 keys). If the manuals stop lower, lower `high` and `n`.
+id apomixis.lab.rhizosphere
+version 0.1.0-lab.1
+title "RHIZOSPHERE"
+number lab18
+duration 300
+seed 3181
+audition-transpose 0
+
+voice $SO = so range 36 96
+voice $RE = re range 36 96
+voice $PO = po range 36 96
+voice $GO = go range 36 96
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "m2" "total chromatic cluster"
+harmonicity 300 "m2" ""
+
+set MASS = mass div manuals low C2 high B6 n 15~10 ms 70~100 period 200 span 0 250 out 200 250 stagger 60
+set ROOTS = bands div pe low C1 high B1 size 2->12 len 1.5->9 gap 7->0 span 120 250
+
+section A "Total" for 40 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+bio "60 keys, each owned by one manual · the mass starts to mutate"
+end
+
+section B "Narrowing" for 50 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+bio "the slow curve begins to narrow the band · changes slow down"
+end
+
+section T1 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T2 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T3 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T4 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T5 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T6 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T7 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T8 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T9 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T10 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+bio "registration tremolo B ⇄ A"
+end
+
+section T11 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+@ROOTS
+bio "registration tremolo B ⇄ A · the pedal joins"
+end
+
+section T12 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+@ROOTS
+bio "registration tremolo B ⇄ A"
+end
+
+section T13 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+@ROOTS
+bio "registration tremolo B ⇄ A"
+end
+
+section T14 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+@ROOTS
+bio "registration tremolo B ⇄ A"
+end
+
+section T15 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+@ROOTS
+bio "registration tremolo B ⇄ A"
+end
+
+section T16 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+@ROOTS
+bio "registration tremolo B ⇄ A"
+end
+
+section T17 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2 21 54 22 47 69
+laser off
+@MASS
+@ROOTS
+bio "registration tremolo B ⇄ A"
+end
+
+section T18 "Tremolo" for 3 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+@ROOTS
+bio "registration tremolo B ⇄ A"
+end
+
+section C "Roots" for 56 bpm 60
+native off
+pgm 73 40 23 1 2
+laser off
+@MASS
+@ROOTS
+bio "pedal bands grow · the band widens again, changes speed up"
+end
+
+section D "Rhizosphere" for 50 bpm 60
+native off
+pgm 73 40 23 1 2 3
+laser off
+@MASS
+@ROOTS
+bio "manuals fade out · the pedal takes the whole first octave, + Contrebasse 16'"
+end
+
+section E "Undulation" for 50 bpm 60
+native off
+pgm 73 40 23 1 2 3
+laser off
+bands div pe low C1 high B1 size 12 len 60 gap 0 trem 300~360 wave 6 span 250 300
+bio "undulating pedal tremolo · two halves of the octave, 300–360 ms"
+end

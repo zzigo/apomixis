@@ -1,0 +1,107 @@
+HYLON-SCORE 1
+# Apomixis 09 / MICROSPORE — Micróspora / Grano de polen. PLACEHOLDER: form only, no composed music yet.
+# ANTH I · voice with pitch follower · delicate sad song before finale06 · PO RE SO PE.
+# Registration: begins (and, as placeholder, stays) on the set that ends 08 PROTOSPORE:
+# 22 23 39 40 47 55 56 73 8 32 (composer 2026-11-14). Finale06 now develops lab15 BEFERA; this song remains to be composed.
+# Five sections, durations and tempi from the archived tempo map (archive/supercollider/exports/
+# apomixis_tempo_nodes.csv, rounded to whole seconds). One registration for the whole piece, one soft
+# chord per bar and a pedal note, only so that every output, cue and pod has something to show.
+id apomixis.microspora
+version 0.0.0-placeholder
+title "MICROSPORE"
+number microspora
+duration 330
+attacca 06
+seed 2039
+audition-transpose 0
+# Recorded recitation (composer, mimed live). Uncomment when the file is in apps/hylon/public/audio/:
+# tape MICROSPORE-voz.ogg at 0 gain 0 dry 1 tune 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P5" "placeholder"
+harmonicity 330 "P5" ""
+
+set REG = 22 23 39 40 47 55 56 73 8 32
+set MARK = chord B2:0,7,14 pat x............... rate 1/16 ms 1200 hold 1 iris 1 div po,re,so
+
+section I "Introduction" for 43 bpm 54
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 35
+bio "placeholder · piece reset"
+end
+
+section R "Replication" for 102 bpm 81
+native off
+pgm @REG
+laser off
+verse "La semilla copia a la madre."
+verse "La semilla copia a la madre."
+verse "No hay otro en la célula."
+verse "La célula alcanza a la célula."
+verse "La célula… alcanza… a la célula."
+verse "Lo que crece es el mismo."
+verse "Y no es lo mismo."
+verse "Lo que crece es el mismo. Y no es lo mismo."
+verse "La mitad no se pierde."
+verse "Una planta entera vive dentro de una planta entera."
+verse "Dentro de una planta entera."
+verse "Dentro."
+@MARK
+pedal drone 35
+bio "placeholder · 3:2 vocal uptake"
+end
+
+section B "Bridge" for 59 bpm 72
+native off
+pgm @REG
+laser off
+verse "Clon tras clon, la deriva escribe."
+verse "Clon tras clon."
+verse "Clon tras clon."
+verse "La deriva escribe las pequeñas diferencias."
+verse "No hay padre. No hay azar. No hay encuentro."
+@MARK
+pedal drone 35
+bio "placeholder · 8:9 shadowing"
+end
+
+section C "Climax" for 76 bpm 96
+native off
+pgm @REG
+laser off
+verse "Sólo el error al copiar."
+verse "Y otro error, y otro error."
+verse "Y otro error, y otro error, y otro error."
+verse "El jardín es un reloj de errores, / repartido en el tiempo."
+verse "Un reloj de errores."
+verse "Sólo el error al copiar."
+@MARK
+pedal drone 35
+bio "placeholder · 4:3 pressure"
+end
+
+section O "Coda" for 50 bpm 36
+native off
+pgm @REG
+laser off
+verse "La voz no sale, sino entra, con el agua en la semilla."
+verse "La conduce, no la ordena. Humedece la membrana."
+verse "Lo que canta ya estaba cantado, antes de la boca."
+verse "Antes de la boca."
+verse "Ya estaba cantado."
+@MARK
+pedal drone 35
+bio "placeholder · 3:8 extinction halo"
+end

@@ -1,0 +1,3 @@
+// Custom monochrome symbols shared by desktop controls and their remote mirror.
+const paths={play:'<path d="m8 5 11 7-11 7Z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<path d="M6 6h12v12H6Z"/>',remote:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M10 17h4"/>',live:'<circle cx="12" cy="12" r="2"/><path d="M7 7a7 7 0 0 0 0 10M17 7a7 7 0 0 1 0 10M4 4a11 11 0 0 0 0 16M20 4a11 11 0 0 1 0 16"/>'};
+export const headerIcon=name=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.stop}</svg>`;

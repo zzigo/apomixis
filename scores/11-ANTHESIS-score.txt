@@ -1,0 +1,103 @@
+HYLON-SCORE 1
+# LAB 11 / ANTHESIS — full flowering, the tutti. Candidate lab score for the end of the cycle.
+# Every strategy at once: scales, arpeggios, repeated notes at speed, octave jumps, mega chords,
+# and holes: `silence every N dur S` opens a real gap before each downbeat.
+# Registration grows by families: pgm @principals … +@mixtures … +@brass; the tubas (74 75)
+# enter only in F. Family names are built in; a division prefix filters them (IV. @brass).
+id apomixis.lab.anthesis
+version 0.1.0-lab.1
+title "ANTHESIS"
+number lab11
+duration 280
+seed 3111
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P5" "E · bright field"
+harmonicity 280 "P5" ""
+
+# Mega chords, eight to ten tones, as ROOT:semitones. Edit freely: each is one object.
+set M1 = E2:0,7,16,22,26,30,33,37
+set M2 = G2:0,5,10,16,21,26,30,35
+set M3 = Bb1:0,7,14,19,22,28,33,37,42
+set M4 = C#2:0,6,11,16,22,27,31,36
+set M5 = E2:0,7,12,16,19,24,28,31,36,40
+set UNISONS = 33 34 36 14 15 16 18
+
+section A "Bud" for 30 bpm 144
+native off
+cresc 0->0.3
+exp3 0.3->0.7
+pgm @principals @flutes 33 34
+laser off
+arp dir up pcs E,F#,G#,A#,B,C#,D# step harm len 14 root 52 rate 1/32 calibre 0 voices 2->10 rexp 0.3 dur 0.6
+pedal ostinato 40 47 rate 1/2 dur 0.9
+bio "bud burst · lydian scales, 2 to 10 voices"
+end
+
+section B "Garden" for 50 bpm 152
+native off
+cresc 0.3->0.6
+exp3 0.7~1 5
+pgm @principals @flutes @mutations @UNISONS
+laser off
+arp dir updown pcs E,G#,B,D#,F# step harm len 10 root 52 rate 1/32 calibre 0 voices 8->14 rexp 0.5 rer 5 dur 0.5
+arp dir up step 0 len 1 root 76 rate 1/32 calibre 5 voices 4 rexp 0.75 dur 0.35
+pedal ostinato 28 35 40 35 rate 1/4 dur 0.8
+silence every 16 dur 0.1
+bio "arpeggios against repeated notes in fourths · a hole before every fourth bar"
+end
+
+section C "Octaves" for 40 bpm 152
+native off
+pgm @principals @flutes @mutations @mixtures @cloud2 @UNISONS
+laser off
+chord @M1 | @M2 pat x.xx.x.xx.x. rate 1/16 ms 70 hold 6 oct -1|1|0|2|-1|0 div manuals voicing split iris 1
+arp dir random pcs E,F#,G#,B,C# step harm len 12 root 64 rate 1/32 calibre 0 voices 12 rexp 0.8 dur 0.4
+pedal ostinato 28 40 28 52 rate 1/8 dur 0.5
+silence every 8 dur 0.09
+bio "the same chord jumps octaves on every hit · the 2-foot cloud opens"
+end
+
+section D "Mega chords" for 70 bpm 96
+native off
+pgm @tutti -74 -75 -10 @UNISONS
+laser midixy src go size 20 prob 30 max 3 dur 0.4
+chord @M1 | @M3 | @M2 | @M4 | @M5 pat X.....x.X...x... rate 1/16 ms 900->300 hold 1 div manuals voicing stack strum 0|12|0|25 tr 0|0|3|-2|5
+pedal ostinato 28 34 31 25 28 rate 1/1 dur 0.95
+silence every 4 dur 0.18
+bio "sudden changes · stacked chords on four manuals, each one cut before the next"
+end
+
+section E "Florescence" for 70 bpm 160
+native off
+cresc 0.6->1
+exp3 1
+pgm @tutti -74 -75 @UNISONS
+laser midixy src so,re size 10 prob 40 max 6 dur 0.3
+arp dir up pcs E,F#,G#,A#,B,C#,D# step harm len 16 root 40 rate 1/32 calibre 0|12|0|7 voices 10->16 rexp 0.6 rer 5 dur 0.5
+arp dir down step 0 len 1 root 79 rate 1/32 calibre 2 voices 4 rexp 1 dur 0.3
+chord @M5 | @M1 pat X.......x...X..x rate 1/16 ms 120 hold 2 oct 0|1|-1 div go,so voicing stack
+pedal ostinato 28 28 40 28 35 28 rate 1/8 dur 0.6
+silence every 16 dur 0.14 offset 0
+silence 34 0.5 52 0.35
+bio "full garden · scales, repeated clusters, chords and pedal together"
+end
+
+section F "Triumph" for 20 bpm 72
+native off
+pgm @tutti @UNISONS
+laser midixy src all size 40 prob 100 max 8 dur 0.6
+chord @M5 | @M3 | @M5 | @M1 pat X.......X.....X. rate 1/16 ms 1400 hold 1 div tutti voicing stack tr 0|0|0|12
+silence 18.5 1.5
+bio "Tuba magna and Tuba · four chords, then the room"
+end
