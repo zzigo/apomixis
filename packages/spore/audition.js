@@ -24,9 +24,9 @@ function playNote(note, when, durSec, sec){
     for (const h of (COMPOUND[v.k]||[st[2]])){ const f=mtof(note.midi+score.audition.transposeSemitones+v.tr)*h; if (f>18 && f<8000) parts.push({f, fam:st[3], div:v.div}); }
     if (st[3]==='celeste'){ const f=mtof(note.midi+score.audition.transposeSemitones+v.tr)*st[2]*1.0045; if (f<8000) parts.push({f, fam:'celeste', div:v.div}); }  // detuned rank
   }
-  if (!parts.length || activeOsc+parts.length>280) { dropped++; return 0; }
+  if (!parts.length || activeOsc+parts.length>4000) { dropped++; return 0; }
   const lvl=(.085+.06*sec.cresc)/Math.sqrt(parts.length+2)*(note.sat?.7:1)*(note.tuber?.8:1);
-  const att=note.tuber?.12:.018, rel=note.tuber?.25:.09, d=Math.max(durSec,att+.01);
+  const att=note.fast?Math.min(.003,durSec*.2):(note.tuber?.12:.018), rel=note.fast?Math.min(.008,durSec*.5):(note.tuber?.25:.09), d=note.fast?durSec:Math.max(durSec,att+.01);
   for (const p of parts){
     const o=AC.createOscillator(), g=AC.createGain();
     o.setPeriodicWave(WAVES[p.fam]); o.frequency.value=p.f;
@@ -50,8 +50,8 @@ function playNote(note, when, durSec, sec){
     dispatch(event,{when,durationSeconds}) {
       if(disposed||event.kind!=='note')return;
       const section=score.sections.find(s=>s.id===event.payload.sceneId); if(!section)throw new Error('Unknown SPORE scene');
-      if(!Number.isInteger(event.payload.note)||event.payload.note<0||event.payload.note>127||!CATALOG.DIVS.includes(event.division)||!Number.isFinite(when)||when<0||!Number.isFinite(durationSeconds)||durationSeconds<=0||durationSeconds>30)throw new Error('Invalid audition time');
-      return playNote({midi:event.payload.note,div:event.division,hack:event.payload.hack,sat:event.payload.satellite,tuber:event.payload.tuber},when,durationSeconds,section);
+      if(!Number.isInteger(event.payload.note)||event.payload.note<0||event.payload.note>127||!CATALOG.DIVS.includes(event.division)||!Number.isFinite(when)||when<0||!Number.isFinite(durationSeconds)||durationSeconds<=0||durationSeconds>600)throw new Error('Invalid audition time');
+      return playNote({midi:event.payload.note,div:event.division,hack:event.payload.hack,sat:event.payload.satellite,tuber:event.payload.tuber,fast:event.payload.articulation==='hocket'},when,durationSeconds,section);
     }, stop, stats:()=>({activeOsc,dropped}),
     dispose(){if(disposed)return;stop();disposed=true;for(const voice of voices){voice.o.disconnect();voice.g.disconnect();}voices.clear();activeOsc=0;master.disconnect();}
   };

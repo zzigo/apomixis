@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { compileSporeText } from '../packages/spore/text-score.js';
 import { canonicalJSON } from '../packages/spore/score.js';
 import { createSporeGenerator } from '../packages/spore/engine.js';
-const base = new URL('../scores/apomixis/spore/0.1.0-draft.1/', import.meta.url);
+const base = new URL('../archive/scores/apomixis/spore/0.1.0-draft.1/', import.meta.url);
 const text = readFileSync(new URL('score.txt', base), 'utf8');
 const score = JSON.parse(readFileSync(new URL('score.json', base), 'utf8'));
 const hash = value => createHash('sha256').update(value).digest('hex');

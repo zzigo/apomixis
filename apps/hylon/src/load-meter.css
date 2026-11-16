@@ -1,0 +1,8 @@
+/* Small phosphor load meter in the header: bar + worst main-thread lateness in ms. */
+.load-meter{--load:hsl(130 100% 58%);display:inline-flex;align-items:center;gap:4px;flex:none;height:28px;padding:0 3px;color:var(--load);font:700 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;cursor:default;text-shadow:0 0 6px var(--load)}
+.load-meter i{display:block;width:26px;height:6px;background:#0c1510;border:1px solid color-mix(in srgb,var(--load) 45%,transparent);overflow:hidden}
+.load-meter b{display:block;height:100%;width:0;background:var(--load);box-shadow:0 0 6px var(--load);transition:width .2s linear}
+.load-meter span{min-width:16px;text-align:right}
+.load-meter.critical{animation:load-critical .4s steps(2,jump-none) infinite}
+@keyframes load-critical{from{opacity:1}to{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.load-meter.critical{animation:none;outline:1px solid var(--load)}}

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "file": "messaien-onlifeonearth.mid",
+      "name": "messaien onlifeonearth",
+      "bytes": 47701
+    },
+    {
+      "file": "messiaen-dyptique.mid",
+      "name": "messiaen dyptique",
+      "bytes": 6509
+    },
+    {
+      "file": "messiaen-lamerlenoir.mid",
+      "name": "messiaen lamerlenoir",
+      "bytes": 26603
+    },
+    {
+      "file": "messiaen-lebanqueceleste.mid",
+      "name": "messiaen lebanqueceleste",
+      "bytes": 8328
+    },
+    {
+      "file": "messiaen-vintregards.mid",
+      "name": "messiaen vintregards",
+      "bytes": 7476
+    },
+    {
+      "file": "stanley-002.mid",
+      "name": "stanley 002",
+      "bytes": 12600
+    },
+    {
+      "file": "elgar-005.mid",
+      "name": "elgar 005",
+      "bytes": 27148
+    },
+    {
+      "file": "couperin-offertoire-grands-jeux.mid",
+      "name": "couperin offertoire grands jeux",
+      "bytes": 17779
+    }
+  ]
+}

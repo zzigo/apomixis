@@ -1,55 +1,23 @@
-.bank-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
-.bank-stats { padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--green); font-size: 10px; line-height: 1.7; }
-.bank-controls { display: grid; grid-template-columns: repeat(4,minmax(90px,1fr)); gap: 16px; max-width: 850px; }
-.bank-layout { display: grid; grid-template-columns: minmax(220px,34%) 1fr; border: 1px solid var(--line); margin: 20px 0; }
-.bank-layout > aside { border-right: 1px solid var(--line); padding: 14px; }
-.bank-layout > aside .toolbar { margin-top: 0; }
-.bank-layout input[type=search] { width: 100%; }
-.bank-layout .toolbar button { font-size: 9px; }
-.bank-registrations { max-height: 370px; overflow: auto; }
-.bank-registration { display: flex; align-items: center; gap: 10px; padding: 13px 9px; border-bottom: 1px solid #24382a; cursor: pointer; }
-.bank-registration.selected { background: #13291b; box-shadow: inset 2px 0 var(--green); }
-.bank-registration:has(input:disabled) { opacity: .45; }
-.bank-registration input { flex-shrink: 0; }
-.bank-registration-label { min-width: 0; }
-.bank-registration strong { display: block; font-size: 11px; font-weight: 400; color: #c0d4c6; overflow-wrap: anywhere; }
-.bank-registration small { display: block; color: #7a9c88; font-size: 9px; line-height: 1.8; margin-top: 5px; }
-.bank-inspector { min-width: 0; padding: 20px; }
-.bank-inspector select { width: 100%; }
-.bank-samples { max-height: 280px; overflow: auto; }
-.bank-sample-row { display: grid; grid-template-columns: minmax(80px,1fr) 90px 75px; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid #203125; }
-.bank-sample-row > span:first-child { color: #a4baad; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bank-sample-row .sample-pitch { font-size: 9px; color: #94caa6; }
-.bank-sample-row button { padding: 5px; min-height: 27px; font-size: 9px; }
-.bank-keyboard { display: flex; gap: 4px; overflow-x: auto; padding: 6px 1px 15px; touch-action: pan-x; }
-.bank-key { flex: 1 0 35px; display: flex; flex-direction: column; justify-content: end; align-items: center; min-width: 32px; height: 76px; padding: 8px 3px; color: #bfe8ce; background: #14261b; border-color: #405e49; font-size: 10px; touch-action: none; user-select: none; -webkit-user-select: none; }
-.bank-key.sharp { background: #080c0a; color: #8ba996; height: 54px; }
-.bank-key small { margin-top: 9px; font-size: 8px; color: #6e8f78; }
-.bank-key.held { background: #abd8bb; color: #08130d; box-shadow: 0 0 15px #a4ffbf25; }
-.file-lab { border-top: 1px solid var(--line); margin: 0 20px 25px; }
-.file-lab > summary { cursor: pointer; padding: 20px 0; color: #8fb49a; font-size: 10px; letter-spacing: .08em; }
-@media(max-width: 760px) {
-  .bank-controls { grid-template-columns: 1fr 1fr; gap: 6px 12px; }
-  .bank-layout { grid-template-columns: 1fr; }
-  .bank-layout > aside { border-right: 0; border-bottom: 1px solid var(--line); }
-  .bank-registrations { max-height: 210px; }
-  .bank-inspector { padding: 15px; }
-  .bank-sample-row { grid-template-columns: minmax(60px,1fr) 65px 65px; gap: 7px; }
-  .bank-samples { max-height: 190px; }
-  .bank-key { flex-basis: 33px; }
-}
-/* Keep the bank selector and playable keyboard visible together on a laptop. */
-.klais-bank > .toolbar { margin: 8px 0; }
-.klais-bank .bank-heading h1 { font-size: 26px; margin: 6px 0; }
-.klais-bank .bank-heading p { margin: 4px 0 10px; }
-.klais-bank > [data-library-status] { margin: 8px 0; font-size: 10px; }
-.klais-bank .bank-stats { padding: 8px 0; }
-.klais-bank .bank-layout { grid-template-columns: minmax(220px,28%) minmax(0,1fr); margin-top: 12px; }
-.klais-bank .bank-inspector { padding-top: 6px; }
-.klais-bank .bank-key { flex-basis: 27px; min-width: 24px; }
-@media(max-width: 760px) {
-  .klais-bank .bank-layout { display: flex; flex-direction: column; }
-  .klais-bank .bank-inspector { order: 0; }
-  .klais-bank .bank-layout > aside { order: 1; border-top: 1px solid var(--line); }
-  .klais-bank .bank-key { flex-basis: 33px; min-width: 30px; }
-}
+.klais-bank{padding:10px 12px}.bank-header{display:flex;align-items:center;gap:6px;margin-bottom:7px;min-height:30px}.bank-header .bank-square{width:28px;height:28px;min-height:28px;padding:0;font-size:12px}.bank-header [data-range]{width:auto;max-width:80px;min-height:28px;font-size:9px;padding:3px}.bank-stats{margin-left:auto;color:var(--muted);font-size:9px;white-space:nowrap}
+.bank-keyboard{display:block;position:relative;width:100%;height:83px;min-width:0;overflow:visible;margin:2px 0 8px;touch-action:pan-x;user-select:none;-webkit-user-select:none}
+.klais-bank .bank-key{position:absolute;top:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:80px;min-height:0;min-width:0;max-width:none;flex:none;margin:0;padding:3px 0;border:0;border-right:1px solid #070909;border-radius:0;color:#849c8c;background:#263c2e;box-shadow:none;touch-action:none;font-size:7px;letter-spacing:0;line-height:1;overflow:hidden;user-select:none;-webkit-user-select:none}
+.klais-bank .bank-key.sharp{height:49px;z-index:2;background:#080d0a;color:#849c8c;border:1px solid #0d1711}.klais-bank .bank-key:disabled{opacity:.25}.klais-bank .bank-key.held{background:#b6ffcf;color:#08130d;opacity:1}.klais-bank .bank-key.midi-held{background:var(--key-color,#b6ffcf);color:#08130d;opacity:1;filter:brightness(calc(.65 + var(--key-level,1)*.35));box-shadow:inset 0 -3px 0 #ffffff55}.bank-key:focus-visible{outline:1px solid #fff;outline-offset:-2px}
+.bank-subheader{display:flex;align-items:center;gap:10px;white-space:nowrap;overflow:auto;padding:4px 0 7px}.bank-subheader .field{display:flex;flex-direction:row;align-items:center;gap:5px;margin:0;min-width:0;flex:0 0 auto;font-size:8px}.bank-subheader input,.bank-subheader select{font-size:10px;min-height:25px;padding:3px 4px}.bank-subheader input[type=range]{width:80px;padding:0}.bank-subheader input[type=number]{width:7ch}.bank-subheader select{width:auto}.bank-note-status{font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;min-width:80px;max-width:280px}
+.bank-layout{display:grid;grid-template-columns:minmax(180px,30%) minmax(0,1fr);gap:15px;margin:8px 0;border:0;background:transparent}.bank-layout>aside{padding:0;border:0;min-width:0}.bank-layout .toolbar{gap:5px;margin:0 0 7px;flex-wrap:nowrap}.bank-layout input[type=search]{width:100%;padding:5px;font-size:10px}.bank-layout .toolbar button{min-height:25px;font-size:9px;padding:4px 6px}.bank-registrations{max-height:400px;overflow:auto}.bank-registration{display:flex;align-items:center;gap:6px;padding:6px 2px;cursor:pointer;border:0;background:transparent}.bank-registration.selected{background:transparent;box-shadow:none}.bank-registration:has(input:disabled){opacity:.4}.bank-registration input{flex-shrink:0}.bank-registration-label{min-width:0}.bank-registration strong{display:block;font-size:10px;font-weight:400;color:#b8cdbf;overflow-wrap:anywhere}.bank-registration.selected strong{color:var(--green)}.bank-registration small{display:block;font-size:8px;line-height:1.3;color:var(--division-color,var(--muted));margin:3px 0 0}.bank-inspector{min-width:0;padding:0;background:transparent;border:0}.bank-inspector .field{margin:0}.bank-inspector select{width:100%;font-size:10px;padding:5px;min-height:26px}.bank-inspector [data-map-summary]{margin:6px 0;font-size:9px}.bank-samples{max-height:340px;overflow:auto}.bank-sample-row{display:grid;grid-template-columns:minmax(70px,1fr) 75px 65px;gap:6px;align-items:center;padding:5px 0;border:0}.bank-sample-row>span:first-child{color:#a4baad;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bank-sample-row .sample-pitch{font-size:8px;color:#94caa6}.bank-sample-row button{font-size:8px;padding:4px;min-height:23px}.bank-advanced>summary,.file-lab>summary{font-size:9px;color:var(--muted);cursor:pointer;padding:8px 0}.bank-advanced .toolbar{margin:5px 0}.bank-advanced button{font-size:9px;min-height:25px;padding:4px 7px}.bank-advanced .status{font-size:9px;margin:4px 0}.file-lab{border:0;margin:0 12px 12px}.file-lab .panel-body{padding:8px 0}
+@media(max-width:760px){.bank-layout{grid-template-columns:1fr;gap:12px}.bank-registrations{max-height:230px}.bank-samples{max-height:230px}.klais-bank{padding:8px}.bank-subheader{gap:7px}.bank-stats{font-size:8px}}
+.bank-keyboard-scroll{width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;margin:2px 0 8px;padding-bottom:3px;touch-action:pan-x}.bank-keyboard{width:100%;min-width:300px;height:auto;aspect-ratio:36 / 5.5;margin:0}.klais-bank .bank-key{height:100%}.klais-bank .bank-key.sharp{height:62%}
+
+/* Four-staff pitch window shares the keyboard row; stack only in narrow pods. */
+.klais-bank{container-type:inline-size}.bank-playing{display:grid;grid-template-columns:minmax(0,1fr) clamp(210px,30%,300px);align-items:start;gap:10px}.bank-playing .bank-keyboard-scroll{margin:2px 0 0}.organ-staff{min-width:0;overflow:hidden}.organ-staff-drawing{height:300px;width:100%;overflow:hidden}.organ-staff-drawing svg{display:block}.organ-staff-legend{display:flex;justify-content:space-between;gap:4px;font-size:7px;padding:0 4px 5px;white-space:nowrap}
+@container(max-width:570px){.bank-playing{grid-template-columns:minmax(0,1fr)}.organ-staff{width:min(100%,320px);justify-self:end}}
+
+.bank-playing{grid-template-columns:minmax(0,1fr) minmax(0,100px)}.organ-staff{width:100%;max-width:100px;justify-self:end}.organ-staff-drawing{height:auto}.organ-staff-legend{flex-wrap:wrap;justify-content:flex-start;gap:2px 4px;font-size:6.5px}
+@container(max-width:570px){.bank-playing{grid-template-columns:minmax(0,1fr) minmax(0,100px)}.organ-staff{width:100%;max-width:100px}}
+
+/* Independent notation pod: compact proportional staves, no key-row legend. */
+.organ-notation-pod{display:flex;align-items:flex-start;justify-content:center;min-width:0;min-height:0;width:100%;height:100%;padding:2px;overflow:auto;background:transparent}.organ-notation-pod .organ-staff-drawing{flex:0 0 100%;width:100%;height:auto;overflow:visible}.organ-notation-pod svg{max-width:100%;display:block}.bank-advanced>.bank-subheader{padding-top:7px}
+
+.bank-range-buttons{display:flex;gap:3px;align-items:center}.klais-bank .bank-range-buttons button{min-height:25px;height:25px;padding:0 6px;font-size:8px;white-space:nowrap}
+.organ-notation-pod{flex-direction:column;align-items:stretch;justify-content:flex-start}.organ-notation-pod .organ-staff-drawing{flex:0 0 auto}.organ-staff-registers{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:3px 7px;padding:2px 5px 5px;font-size:9px;line-height:1.4;font-variant-numeric:tabular-nums}.organ-staff-registers[hidden]{display:none}
+.organ-staff-topbar{display:flex;align-items:flex-start;gap:4px;flex:none;min-width:0}.organ-staff-topbar .organ-staff-registers{flex:1;min-width:0}.organ-staff-zoom{display:flex;flex:none;gap:1px;margin-left:auto;padding:1px 2px}
+.pod-root .organ-staff-zoom button{display:inline-flex;align-items:center;justify-content:center;width:18px;min-width:18px;height:18px;min-height:18px;padding:0;font-size:12px;line-height:1;color:#82978a;border:0;background:transparent}.pod-root .organ-staff-zoom button:hover{color:#b6ffcf}.pod-root .organ-staff-zoom button:disabled{opacity:.25}

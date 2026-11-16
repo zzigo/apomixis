@@ -2,9 +2,10 @@
   "name": "apomixis-hylon",
   "private": true,
   "type": "module",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "viewer:serve": "node tools/apomixis-relay.mjs",
     "build": "vite build",
     "start": "node tools/serve.mjs",
     "test": "node --test tests/*.test.mjs",
@@ -17,7 +18,10 @@
     "check:spore": "node tools/compile-spore.mjs --check"
   },
   "dependencies": {
-    "dockview-core": "5.0.0"
+    "@tonejs/midi": "2.0.28",
+    "dockview-core": "5.0.0",
+    "vexflow": "4.2.5",
+    "ws": "^8.23.0"
   },
   "devDependencies": {
     "vite": "7.3.8"

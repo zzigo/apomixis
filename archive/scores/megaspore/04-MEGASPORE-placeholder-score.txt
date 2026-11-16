@@ -1,0 +1,74 @@
+HYLON-SCORE 1
+# Apomixis 04 / MEGASPORE — Megáspora / Espora. PLACEHOLDER: form only, no composed music yet.
+# AUTO · long dreamlike expansion · PO RE PE.
+# Five sections, durations and tempi from the archived tempo map (archive/supercollider/exports/
+# apomixis_tempo_nodes.csv, rounded to whole seconds). One registration for the whole piece, one soft
+# chord per bar and a pedal note, only so that every output, cue and pod has something to show.
+id apomixis.megaspora
+version 0.0.0-placeholder
+title "MEGASPORE"
+number megaspora
+duration 405
+seed 2034
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P5" "placeholder"
+harmonicity 405 "P5" ""
+
+set REG = II.bourdon8 III.corDeNuit8 P.bourdon8
+set MARK = chord D3:0,7,14 pat x............... rate 1/16 ms 1200 hold 1 iris 1 div po,re
+
+section I "Introduction" for 73 bpm 36
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 26
+bio "placeholder · piece reset"
+end
+
+section R "Replication" for 117 bpm 48
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 26
+bio "placeholder · 4:3 germination"
+end
+
+section B "Bridge" for 65 bpm 42
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 26
+bio "placeholder · 7:8 drift"
+end
+
+section C "Climax" for 77 bpm 63
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 26
+bio "placeholder · 3:2 dilation"
+end
+
+section O "Coda" for 73 bpm 42
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 26
+bio "placeholder · 2:3 settling"
+end

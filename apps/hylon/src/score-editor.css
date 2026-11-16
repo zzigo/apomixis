@@ -1,1 +1,45 @@
 .score-editor-shell{position:relative;background:#080d0b;border:1px solid var(--line);margin-top:8px}.score-editor-shell:focus-within{border-color:#5b8169}.score-editor-shell>textarea,.score-editor-shell>.score-editor-paint{font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace!important;letter-spacing:normal;tab-size:2;white-space:pre;box-sizing:border-box;padding:10px!important;border:0!important;margin:0!important;text-align:left}.score-editor-shell>textarea{display:block;position:relative;z-index:1;background:transparent!important;color:transparent!important;caret-color:#b6ffcf;width:100%;height:360px;min-height:150px;resize:vertical;overflow:auto;outline:none!important;-webkit-text-fill-color:transparent}.score-editor-shell>.score-editor-paint{position:absolute;inset:0;overflow:hidden;pointer-events:none;color:#abbfb2}.score-editor-shell>textarea::selection{background:#b6ffcf30}.score-comment{color:#668877}.score-key{color:#b6ffcf}.score-string{color:#c5b594}.score-voice{color:#a8b6e1}.score-number{color:#8dbec7}.score-operator{color:#d39aad}
+
+.score-editor-shell.has-cursor>textarea,.score-editor-shell.has-cursor>.score-editor-paint{padding-left:22px!important}.score-cursor-gutter{position:absolute;left:0;top:0;bottom:0;width:18px;overflow:hidden;pointer-events:none;z-index:2}.score-cursor{position:absolute;left:5px;width:0;display:flex;align-items:center}.score-cursor::before{content:'';border-style:solid;border-width:5px 0 5px 9px;border-color:transparent transparent transparent #ff3b4e;filter:drop-shadow(0 0 4px #ff3b4e)}.score-cursor-sub::before{border-width:4px 0 4px 7px;border-color:transparent transparent transparent #ff3b4e80;filter:none}
+.score-pod{padding:12px 14px;display:flex;flex-direction:column;height:100%;min-height:0}.score-pod>.toolbar{margin:0 0 6px}.score-pod-editor{display:flex;flex-direction:column;flex:1;min-height:0}.score-pod-editor>summary{display:none}.score-pod-editor>.muted{display:none}.score-pod-editor .score-editor-shell{flex:1;min-height:200px;display:flex}.score-pod-editor .score-editor-shell>textarea{height:auto;flex:1;resize:none}
+/* Line numbers (muted) + cursor gutter; text starts after them. */
+.score-editor-shell.has-cursor>textarea,.score-editor-shell.has-cursor>.score-editor-paint{padding-left:50px!important}
+.score-line-numbers{position:absolute;left:14px;top:0;bottom:0;width:30px;margin:0;padding:10px 0!important;overflow:hidden;pointer-events:none;text-align:right;color:#34483d;font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace!important;white-space:pre;z-index:2}
+.score-cursor-gutter{width:14px}.score-cursor{left:3px}
+/* SCORE TXT pod: borderless, editor only, one sub-header. */
+.score-pod{padding:6px 8px;gap:6px}
+.score-sub{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.score-sub select{width:auto;min-width:0;max-width:260px;min-height:26px;padding:3px 6px;font-size:11px;border-color:transparent;background:transparent;color:var(--muted)}
+.score-sub select:hover,.score-sub select:focus-visible{border-color:#34463c;color:var(--green)}
+.score-square{width:26px;height:26px;min-height:26px;padding:0;display:inline-grid;place-items:center;font-size:11px;border:1px solid #2a3a31;background:transparent;color:#8aa596;cursor:pointer;flex:0 0 auto}
+.score-square:hover{border-color:var(--green);color:var(--green);background:transparent}
+.score-square input[type=file]{display:none}
+.score-sub [data-apply]{color:var(--green)}
+.score-pod .score-editor-shell{border:0;margin:0;background:transparent}
+.score-pod .score-editor-shell:focus-within{border:0}
+.score-pod .spore-score-status{margin:0;font-size:10px;color:var(--muted);border:0;padding:2px 0 0;min-height:0}
+.score-pod .spore-score-status:empty{display:none}
+/* SCORE TXT: full pod width, no frame, slim sub-header, one-line log under the editor. */
+.score-pod{padding:0!important;gap:0}
+.score-pod-editor{border:0!important;padding:0!important;margin:0!important}
+.score-sub{gap:3px;padding:2px 4px;min-height:0}
+.score-sub select{min-height:20px;height:20px;padding:0 4px;font-size:10px}
+.score-square{width:20px;height:20px;min-height:20px;font-size:10px}
+.score-pod .score-editor-shell>textarea{padding-top:6px!important}
+.score-pod .score-editor-shell>.score-editor-paint{padding-top:6px!important}
+.score-pod .score-line-numbers{padding-top:6px!important}
+.score-pod .spore-score-status{padding:2px 8px;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 0 auto}
+/* Uniform square commands (the I label inherits .file-button sizing otherwise). */
+.score-sub .score-square{box-sizing:border-box;width:20px;height:20px;min-height:20px;min-width:20px;padding:0;margin:0;line-height:1;font-size:10px;letter-spacing:0;border:1px solid #2a3a31;background:transparent;display:inline-grid;place-items:center}
+.score-sub .score-square:hover{border-color:var(--green);color:var(--green);background:transparent}
+/* Editor fills the pod; the log line stays one row high under it. */
+.score-pod{display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
+.score-pod>.score-pod-editor{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+.score-pod .score-editor-shell{flex:1 1 auto;min-height:0;display:block;position:relative}
+.score-pod .score-editor-shell>textarea{height:100%!important;min-height:0;resize:none}
+.score-pod .spore-score-status{flex:0 0 auto;height:auto;max-height:16px;line-height:14px}
+
+.score-program{color:#ffbd69}
+
+/* LAB sentences and @set macros (docs/LAB-SCORES.md) */
+.score-lab{color:#ff8fd0}.score-macro{color:#e8e06a}

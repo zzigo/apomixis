@@ -110,3 +110,22 @@ All score editors use a shared minimal highlighted textarea layer: comments, dir
 The header mirrors PLAY/STOP (STOP resets), HOLD (preserves position), RESET and Speed. SPORE is the current active scene; the selector also identifies the current file. Keys 1–9 select available macro sections (currently 1–5); Shift+1–9 selects harmonicity bank 1. Text fields, score editing and modifier shortcuts are excluded.
 
 KLAIS, LOCAL AUDIO and MIDI OUT are independent output toggles. SIMULATION silences all three while retaining visual playback. Changes to these routes do not pause/reset the transport; newly enabled adapters join subsequent events. A single performance clock is translated into audio-context scheduling when dispatching local synthesis. MIDI must be enabled separately using M; while disabled, the form continues without physical notes. Mixer buses/velocity scaling are shared across scores. This iteration is intentionally unverified; no tests, builds or UI checks were run.
+
+## Macroform calibres: ambitus and elongation (2026-11-12)
+
+Two optional header curves shape the whole five-minute form, read through the same biology as the
+rest of SPORE. Both are piecewise-linear breakpoint lists like `harmonicity` (`TIME VALUE "annotation"`).
+
+| Directive | Value | Musical effect | Biological reading |
+|---|---|---|---|
+| `ambitus T F` | 0–1 | Active pitch range of every voice. 0 = only the **top octave** of the voice range (apex); 1 = full range. Notes keep their pitch class and fold by octaves into the open window (minimum one octave). | The spore leaves the capsule through the **apical operculum**: sound starts at the top. On germination the rhizoid grows **downward** into the substrate, so the register opens towards the bass as the plant anchors. |
+| `elongation T X` | 0.02–4 | Multiplies every SPORE note duration (min 30 ms). | A **dormant** spore only shows short metabolic flickers → staccatissimo. After **imbibition/rehydration** (~first minute) the germ tube breaks the wall and **protonema** filament cells elongate by tip growth → durations lengthen towards the end. |
+
+Default draft: ambitus 0 → 0.1 (60 s) → 0.5 (150 s) → 0.85 (192 s) → 1 (258–300 s);
+elongation 0.06 → 0.08 (60 s, staccatissimo) → 0.45 (150 s) → 1.3 (258 s) → 1.8 (300 s).
+Absent curves mean 1 (previous behaviour). `arp`/`pedal` library lines are not affected; they use their own `dur`.
+
+**DURATION control (SPORE pod):** like Harmonicity, *Score curve* follows `elongation`
+(the readout also shows the current ambitus %) and *Manual* sets a fixed factor (×0.02–×4) for
+subsequent generations; moving the slider switches to Manual. It enters the generation journal as
+option `elongation`, so snapshot/restore stays deterministic.

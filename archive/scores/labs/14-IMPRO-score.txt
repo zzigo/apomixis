@@ -1,0 +1,79 @@
+HYLON-SCORE 1
+# LAB 14 / IMPRO — states for the IMPRO pod. Candidate lab score.
+# The organist plays Manual I (channel 1). The pod re-sends each note to other divisions:
+#   tap DIVISION SEMITONES DELAY-MS   one echo: where, at which interval, how late
+#   rep N every MS stretch F           repeat the whole chain N times, each pass later and slower
+#   tail F                             echo length = held time × F (long tails → counterpoint)
+#   decay P                            later passes thin out with probability P per pass
+# This score only changes state and registration cue with the form; it plays no notes itself
+# (apart from one pedal drone). IMPRO pod: ARM, SCORE checked, MIDI IN = the console.
+# A tap can never target the source manual. The same lines work as states 1–9 in the pod.
+id apomixis.lab.impro
+version 0.1.0-lab.1
+title "IMPRO"
+number lab14
+duration 300
+seed 3141
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P8" "the player decides"
+harmonicity 300 "P8" ""
+
+section A "Canon at the unison" for 50 bpm 60
+native off
+pgm I.bourdon8 II.bourdon8 III.corDeNuit8 73
+laser off
+impro src I tap II 0 400 tap III 0 800 tap IV 0 1200 tail 1
+bio "timbre canon · the same pitch on four flutes, 400 ms apart"
+end
+
+section B "Fifths" for 50 bpm 60
+native off
+pgm I.bourdon8 II.salicional8 III.violeDeGambe8 73
+laser off
+impro src I tap II 7 600 tap III 12 1200 tap IV 19 1800 tail 2
+bio "fifth, octave, twelfth · each echo twice as long as the played note"
+end
+
+section C "Octaves and pedal" for 50 bpm 60
+native off
+pgm I.fluteHarmonique8 II.fluteTraversiere4 III.octavin2 73 @pedalvoice
+laser off
+impro src I tap II 12 250 tap III 24 500 tap IV -12 750 tap P -12 1000 tail 1.5
+bio "the pedal becomes a late voice at 8 feet"
+end
+
+section D "Long tails" for 60 bpm 60
+native off
+pgm I.dulciane8 II.salicional8 @voix 73
+laser off
+impro src I tap II 0 1000 tap III 7 3000 tap IV 12 6000 rep 3 every 8000 stretch 1.5 tail 6 max 30000
+bio "counterpoint of tails · a note returns for almost a minute"
+end
+
+section E "Swarm" for 50 bpm 60
+native off
+pgm I.fluteDouce4 II.fluteTraversiere4 III.fluteOctaviante4 73 @cloud2
+laser midixy src so,re size 0 prob 50 max 3 dur 0.08
+impro src I tap II 0 60 tap III 12 120 tap IV 24 180 rep 6 every 240 decay 0.8 tail 0.3 min 30
+bio "short shards · every key becomes a decaying burst across three manuals"
+end
+
+section F "Residue" for 40 bpm 60
+native off
+pgm I.bourdon8 73 @noise32 -10
+laser off
+impro src I tap IV 0 4000 tap P -12 8000 tail 8 max 40000
+pedal drone 26
+bio "one echo on the Seraphon, one in the 32-foot pedal, eight seconds late"
+end

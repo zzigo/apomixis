@@ -1,0 +1,165 @@
+HYLON-SCORE 1
+# Apomixis 05 / POLYGONUM — Polygonum. ANTH · guided improvisation with the IMPRO pod, incremental.
+# From lab 14 IMPRO (archived in archive/scores/labs/). Growth: the organist starts on Manual I only
+# and ends with the hands (and feet) everywhere. Each section opens one more source: A I · B I II ·
+# C I II III · D I II III IV · E–F all, pedal included. From F the operators change drastically
+# every 15 s, with a profusion of random arpeggios (arpUR / arpDR / arpBR), and the registration
+# changes every 7.5 s between neighbouring programs: reeds · mixtures · tremolos with Voix humaine ·
+# plenum with tubas (55–58), at most ten programs so 05 keeps its ten (50–59).
+# The organist plays Manual I (channel 1). The pod re-sends each note to other divisions:
+#   tap DIVISION SEMITONES DELAY-MS   one echo: where, at which interval, how late
+#   rep N every MS stretch F           repeat the whole chain N times, each pass later and slower
+#   tail F                             echo length = held time × F (long tails → counterpoint)
+#   decay P                            later passes thin out with probability P per pass
+# This score only changes state and registration cue with the form; it plays no notes itself
+# (apart from one pedal drone). IMPRO pod: ARM, SCORE checked, MIDI IN = the console.
+# A tap can never target the source manual. The same lines work as states 1–9 in the pod.
+id apomixis.polygonum
+version 0.1.0-lab.1
+title "POLYGONUM"
+number polygonum
+duration 330
+seed 3141
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P8" "the player decides"
+harmonicity 330 "P8" ""
+
+section A "Canon at the unison" for 45 bpm 60
+native off
+pgm I.bourdon8 II.bourdon8 III.corDeNuit8 73
+laser off
+impro src I tap II 0 400 tap III 0 800 tap IV 0 1200 tail 1
+bio "play on I only · the same pitch on four flutes, 400 ms apart"
+end
+
+section B "Fifths" for 45 bpm 60
+native off
+pgm I.bourdon8 II.salicional8 III.violeDeGambe8 73
+laser off
+impro src I tap II 7 600 tap III 12 1200 tap IV 19 1800 src II tap III 7 500 tap IV 12 1000 tail 2
+bio "I and II · fifth, octave, twelfth"
+end
+
+section C "Octaves and pedal" for 45 bpm 60
+native off
+pgm I.fluteHarmonique8 II.fluteTraversiere4 III.octavin2 73 @pedalvoice
+laser off
+impro src I tap II 12 250 tap III 24 500 tap IV -12 750 tap P -12 1000 src II tap I 12 300 tap IV 24 600 src III tap II -12 400 tap P -12 800 tail 1.5
+bio "I II III · the pedal becomes a late voice at 8 feet"
+end
+
+section D "Long tails" for 50 bpm 60
+native off
+pgm I.dulciane8 II.salicional8 @voix 73
+laser off
+impro src I tap II 0 1000 tap III 7 3000 tap IV 12 6000 src II tapL 4 III,IV 7 300 1.4 src III tap I 0 1000 tap IV 12 2000 src IV tap II -12 1500 rep 2 every 6000 stretch 1.5 tail 4 max 20000
+bio "all four manuals · counterpoint of tails"
+end
+
+section E "Swarm" for 40 bpm 60
+native off
+pgm I.fluteDouce4 II.fluteTraversiere4 III.fluteOctaviante4 73 @cloud2
+laser off
+impro src I tap II 0 60 tap III 12 120 tap IV 24 180 src II tapR 12 12 1200 src III arpU 6 * 7 90 src IV arpD 6 * 5 110 src P tap I 24 200 tap III 36 400 rep 3 every 240 decay 0.8 tail 0.4 min 30
+bio "hands and feet everywhere · shards"
+end
+
+section F1a "Profusion" for 7.5 bpm 60
+native off
+pgm 30 31 46 65 66 75 12 11
+laser off
+impro src I arpUR 8 * 7 70 src II arpUR 8 * 5 80 src III tapR 16 24 900 src IV arpDR 6 * 3 60 src P tap I 24 200 tail 0.5
+bio "random arpeggios from I and II · reeds"
+end
+
+section F1b "Profusion" for 7.5 bpm 60
+native off
+pgm 28 27 44 45 43 63 61 60 62 73 9
+laser off
+impro src I arpUR 8 * 7 70 src II arpUR 8 * 5 80 src III tapR 16 24 900 src IV arpDR 6 * 3 60 src P tap I 24 200 tail 0.5
+bio "random arpeggios from I and II · mixtures"
+end
+
+section F2a "Profusion" for 7.5 bpm 60
+native off
+pgm 30 31 46 65 66 75 12 11
+laser off
+impro src I holdR * 90 2 src II arpUR 10 * 12 60 src III arpUR 10 * 7 50 src IV tapL 6 * 7 120 1.5 src P arpUR 6 * 12 100 tail 0.6
+bio "held keys of I scattered · arpeggios everywhere else · reeds"
+end
+
+section F2b "Profusion" for 7.5 bpm 60
+native off
+pgm 21 32 40 47 67 56 69 73 8
+laser off
+impro src I holdR * 90 2 src II arpUR 10 * 12 60 src III arpUR 10 * 7 50 src IV tapL 6 * 7 120 1.5 src P arpUR 6 * 12 100 tail 0.6
+bio "held keys of I scattered · arpeggios everywhere else · tremolos, Voix humaine"
+end
+
+section F3a "Profusion" for 7.5 bpm 60
+native off
+pgm 28 27 44 45 43 63 61 60 62 73 9
+laser off
+impro src I arpUR 12 * 7 45 src II arpUR 12 * 4 55 src III arpUR 12 * 5 40 src IV arpUR 12 * 3 50 src P tapR 8 12 600 tail 0.4
+bio "profusion: random arpeggios from every manual · mixtures"
+end
+
+section F3b "Profusion" for 7.5 bpm 60
+native off
+pgm 19 20 24 27 28 29 38 41 45 53 63 65 74 75 3 4 10 11
+laser off
+impro src I arpUR 12 * 7 45 src II arpUR 12 * 4 55 src III arpUR 12 * 5 40 src IV arpUR 12 * 3 50 src P tapR 8 12 600 tail 0.4
+bio "profusion: random arpeggios from every manual · plenum, tubas"
+end
+
+section F4a "Profusion" for 7.5 bpm 60
+native off
+pgm 21 32 40 47 67 56 69 73 8
+laser off
+impro src I tapA 8 * 12 60 src II arpBR 8 * 7 70 src III arpUR 14 * 7 35 src IV arpDR 14 * 5 40 src P arpUR 8 * 7 90 tail 0.5
+bio "arithmetic taps against random arpeggios · tremolos, Voix humaine"
+end
+
+section F4b "Profusion" for 7.5 bpm 60
+native off
+pgm 19 20 24 27 28 29 38 41 45 53 63 65 74 75 3 4 10 11
+laser off
+impro src I tapA 8 * 12 60 src II arpBR 8 * 7 70 src III arpUR 14 * 7 35 src IV arpDR 14 * 5 40 src P arpUR 8 * 7 90 tail 0.5
+bio "arithmetic taps against random arpeggios · plenum, tubas"
+end
+
+section F5a "Profusion" for 7.5 bpm 60
+native off
+pgm 19 20 24 27 28 29 38 41 45 53 63 65 74 75 3 4 10 11
+laser off
+impro src I arpUR 16 * 7 32 src II arpDR 16 * 5 34 src III arpBR 16 * 4 36 src IV arpUR 16 * 3 38 src P arpUR 12 * 12 60 tail 0.3
+bio "maximal profusion · plenum, tubas"
+end
+
+section F5b "Profusion" for 7.5 bpm 60
+native off
+pgm 21 32 40 47 67 56 69 73 8
+laser off
+impro src I arpUR 16 * 7 32 src II arpDR 16 * 5 34 src III arpBR 16 * 4 36 src IV arpUR 16 * 3 38 src P arpUR 12 * 12 60 tail 0.3
+bio "maximal profusion · tremolos, Voix humaine"
+end
+
+section G "Residue" for 30 bpm 60
+native off
+pgm I.bourdon8 73 @noise32 -10
+laser off
+impro src I tap IV 0 4000 tap P -12 8000 src II tap IV 12 3000 src III tap P -12 6000 src IV tap I 0 5000 tail 8 max 40000
+pedal drone 26
+bio "one echo per manual, seconds late · the 32-foot pedal"
+end

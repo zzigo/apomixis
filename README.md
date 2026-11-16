@@ -20,7 +20,7 @@ npm run build
 npm start
 ```
 
-Open `http://localhost:4173` in Chrome or Edge. After preparation, starting the built console needs only Node and the local files; no Internet or npm installation is required. On macOS, double-click `tools/HYLON.command`. Keep its Terminal open. For local live updates use `tools/HYLON-dev.command` or `npm run dev` at the same localhost:4173 origin (stop the static server first); CSS hot updates and automatic reloads require no manual refresh. `npm run check` runs local validation. The top-bar corner icon toggles fullscreen. For a frozen build use `npm start`; for a prepared offline ZIP use `npm run package:offline`.
+Open `http://localhost:4173` in Chrome or Edge. On macOS, double-click `tools/HYLON.command`: the single launcher starts Vite with live updates. Keep its Terminal open. Dependencies must be prepared once with `npm ci`; local development then works without Internet. CSS hot updates and automatic reloads require no manual refresh. The top-bar corner icon toggles fullscreen. For an explicitly compiled offline build use `npm run build` then `npm start`; no separate `.command` launcher is provided. For a prepared offline ZIP use `npm run package:offline`.
 
 Read [the field guide](docs/HYLON-FIELD-GUIDE.md) before the room visit. JSON export is the portable backup; browser storage is tied to this localhost origin and browser profile. This is an initial capture console, not the completed HYLON score runtime or a commissioned organ/laser controller.
 
@@ -75,3 +75,7 @@ HYLON 0.6 simplifies **04 LASER** to CONNECT HELIOS → START OUTPUT / BLACKOUT,
 HYLON 0.7 compacts the header with A/M/L process toggles, hover state and mic/output peak lines. Shift-click runs finite L/R audio, channel 1–5 MIDI, or one-second laser square tests; the same tests remain in pods. I/O uses compact MIDI/AUDIO columns above 400 px and one shared AUDIO ON/OFF toggle. See the field guide for exact sequences and default USB MIDI selection.
 
 HYLON 0.7.1 corrects LASER mapping: runtime W toggle defaults OFF, full W/H dashed mapping guide, live pattern/geometry/profile changes, global RGB and minimum-sized MIDI XY loci. Saved quad coordinates no longer affect output until warp is explicitly enabled.
+
+### iPad remote
+
+Start the usual `tools/HYLON.command`, click **REMOTE** on the Mac and open the persistent `http://<Mac-IP>:4174/remoto` address in Safari on the iPad. Transport, speed, P2/SUPER PANIC, MACRO/FORM, SPORE manual controls and MIXER share synchronized state; the Mac retains its desktop pods and all device execution. REMOTE OFF stops the remote listener; enabling again uses the same address. See [HYLON-REMOTE-GUIDE](docs/HYLON-REMOTE-GUIDE.md) for scope and unverified status.

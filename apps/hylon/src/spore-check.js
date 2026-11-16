@@ -1,5 +1,5 @@
 // Development-only checks, excluded from the application build.
-import text from '../../../scores/apomixis/spore/0.1.0-draft.1/score.txt?raw';
+import text from '../../../archive/scores/apomixis/spore/0.1.0-draft.1/score.txt?raw';
 import { compileSporeText } from '../../../packages/spore/text-score.js';
 import { createSporeGenerator } from '../../../packages/spore/engine.js';
 import { createSporeAudition } from '../../../packages/spore/audition.js';

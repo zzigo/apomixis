@@ -4,7 +4,8 @@ export { ROOT_CONVENTION };
 
 // Reusable Web Audio multisampler. No DOM, network policy, MIDI ports or DAC I/O.
 // Roots follow C4=60; filename-derived roots remain unverified musical metadata.
-export function createKlaisSampler({ context, destination, manifest, loadSample, maxBytes = 128 * 1024 * 1024, maxVoices = 64, onStatus = () => {} }) {
+// resolveDestination(owner) may return another node for one voice owner (independent routing, e.g. IMPRO).
+export function createKlaisSampler({ context, destination, resolveDestination = null, manifest, loadSample, maxBytes = 128 * 1024 * 1024, maxVoices = 64, onStatus = () => {} }) {
   const data = validateManifest(manifest);
   if (!context || !destination || typeof loadSample !== 'function') throw new TypeError('Audio context, destination and sample loader are required');
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > 1024 ** 3) throw new RangeError('Invalid decoded cache budget');
@@ -124,7 +125,7 @@ export function createKlaisSampler({ context, destination, manifest, loadSample,
           }
           const now = context.currentTime;
           gain.gain.setValueAtTime(0,now); gain.gain.linearRampToValueAtTime(level,now+0.01);
-          source.connect(gain); gain.connect(destination);
+          source.connect(gain); gain.connect((resolveDestination && resolveDestination(ownerId)) || destination);
           voice = {owner:ownerId, channel, source,gain,lease,release:chosenOptions.release,level,started:now,released:false,cleaned:false};
           voices.add(voice);
           if (!owners.has(ownerId)) owners.set(ownerId,new Set());

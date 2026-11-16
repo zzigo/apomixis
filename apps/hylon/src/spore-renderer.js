@@ -1,7 +1,19 @@
+import {createNoteDensity} from './note-density.js';
+import { drawMorphology, morphologyState } from '../../../packages/hylon-visuals/morphology.js';
+import { DIVISION_UI, DIVISION_ORDER } from '../../../packages/hylon-midi/divisions.js';
 import { CATALOG } from '../../../packages/spore/catalog.js';
 import { harmonicityAt } from '../../../packages/spore/score.js';
 export function createSporeRenderer(container, score) {
   const { W, STRATA, DIVS, DIVCOL, STOPS, FAMCOL, MODES, TEX, PCN } = CATALOG, H=STRATA*DIVS.length;
+  const density=createNoteDensity(score.duration),rollCache=document.createElement('canvas'),microCache=document.createElement('canvas');
+  let rollKey='',microKey='',rollStamp=0,microStamp=0,microZoom=0;
+  const microHeader=container.querySelector('[data-pod="micro"] h3');
+  microHeader.querySelector('.micro-zoom')?.remove();
+  const zoomControls=document.createElement('span');zoomControls.className='micro-zoom';
+  const minus=document.createElement('button'),plus=document.createElement('button');minus.textContent='−';plus.textContent='+';minus.title='Zoom out · full score matches MACRO';plus.title='Zoom in around playhead';
+  zoomControls.append(minus,plus);microHeader.append(zoomControls);
+  const zoomState=()=>{minus.disabled=microZoom===0;plus.disabled=microZoom===8;zoomControls.title=microZoom?`×${2**microZoom} · playhead centred`:'Full score · aligned with MACRO';};
+  minus.onclick=()=>{microZoom=Math.max(0,microZoom-1);zoomState();};plus.onclick=()=>{microZoom=Math.min(8,microZoom+1);zoomState();};zoomState();
   const COUPLERS=score.couplings, SECTIONS=score.sections, HARM_SCORE=score.harmonicityCurve, PIECE_END=score.duration;
   const OPEN=score.fertility.open,CLOSE=score.fertility.close;
   const BAND=Object.fromEntries(DIVS.map((d,i)=>[d,{div:d,r0:i*STRATA,idx:i}]));
@@ -9,129 +21,102 @@ export function createSporeRenderer(container, score) {
   const secAt=t=>{for(let i=SECTIONS.length-1;i>=0;i--)if(t>=SECTIONS[i].start)return i;return 0;};
   const $=id=>container.querySelector(`[data-spore-id="${id}"]`);
   const cv=Object.fromEntries(['macro','meso','morph','micro','harm'].map(name=>[name,$('c'+name[0].toUpperCase()+name.slice(1))]));
+  cv.macro.onpointermove=event=>{const rect=cv.macro.getBoundingClientRect(),left=Number(cv.macro.dataset.plotLeft)||8,right=Number(cv.macro.dataset.plotRight)||8,time=Math.max(0,Math.min(PIECE_END,(event.clientX-rect.left-left)/Math.max(1,rect.width-left-right)*PIECE_END)),section=SECTIONS[secAt(time)];cv.macro.title=`${section.id} · ${section.name} / ${section.bpm} BPM / ${section.ruleName} / ${(texOverride||section.texture).toUpperCase()} / μ ${section.mu} / field ${section.field.length} / poly ${section.poly} · BPM curve 0–${Math.max(...SECTIONS.map(s=>s.bpm))} · bottom: transport note intent P/I/II/III/IV (not hardware feedback)`;};
   let S, texOverride='', satOn=true, harm={pos:0,src:'score'}, tNow=0;
   const pieceNow=()=>tNow,harmAt=t=>harmonicityAt(score,t);
 function fit(c){ const r=c.getBoundingClientRect(), d=devicePixelRatio||1;
   if (c.width!==Math.round(r.width*d)||c.height!==Math.round(r.height*d)){ c.width=Math.round(r.width*d); c.height=Math.round(r.height*d); }
   const x=c.getContext('2d'); x.setTransform(d,0,0,d,0,0); return [x,r.width,r.height]; }
 const mmss=t=>{ const m=Math.floor(t/60), s=t-m*60; return String(m).padStart(2,'0')+':'+s.toFixed(1).padStart(4,'0'); };
-function hueFor(gid,div){ const base={go:135,po:190,re:265,so:20,pe:45}[div]; const h=base+((gid*37)%30)-15; return `hsl(${h},85%,${60+(gid%3)*8}%)`; }
+function hueFor(gid,div){ return `hsl(${DIVISION_UI[div].hue},78%,${60+(gid%3)*6}%)`; }
 
 function drawMacro(t){
-  const [x,w,h]=fit(cv.macro); x.clearRect(0,0,w,h);
-  const X=s=>8+s/PIECE_END*(w-16), top=8, bot=h-18;
-  x.font='9px ui-monospace,monospace';
-  // fertility lanes (growth across the instrument)
-  DIVS.forEach((d,k)=>{ const y=bot-4-k*4; x.strokeStyle=DIVCOL[d]; x.globalAlpha=.55; x.beginPath(); x.moveTo(X(OPEN[d]),y); x.lineTo(X(Math.min(PIECE_END,CLOSE[d])),y); x.stroke(); x.globalAlpha=1; });
-  for (let i=0;i<SECTIONS.length;i++){ const s=SECTIONS[i], tx=texOverride||s.texture;
-    x.strokeStyle=i===S.si?'#618e70':'#27352f';
-    if (i===S.si){ x.fillStyle='#b6ffcf0d'; x.fillRect(X(s.start),top,X(s.start+s.dur)-X(s.start),bot-top); }
-    x.strokeRect(X(s.start)+.5,top+.5,X(s.start+s.dur)-X(s.start)-1,bot-top);
-    x.fillStyle=i===S.si?'#b6ffcf':'#80948a'; x.fillText(`${s.id} ${s.bpm} · ${s.ruleName}`,X(s.start)+5,top+12);
-    x.fillStyle='#4c5f55'; x.fillText(`${tx.toUpperCase()} ← ${TEX[tx].repro}`,X(s.start)+5,top+24);
-    x.fillText(`μ ${s.mu} |F| ${s.field.length} poly ${s.poly}`,X(s.start)+5,top+36);
+  const [x,w,h]=fit(cv.macro);x.clearRect(0,0,w,h);if(w<1||h<1)return;
+  const left=w<300?38:49,right=8,plotWidth=Math.max(1,w-left-right),X=s=>left+s/PIECE_END*plotWidth;
+  cv.macro.dataset.plotLeft=String(left);cv.macro.dataset.plotRight=String(right);
+  const active=secAt(t),current=SECTIONS[active],rowHeight=12,metaTop=20,graphTop=88,graphBottom=Math.max(graphTop+12,h-83);
+  const shorten=(text,width)=>{if(width<5)return '';if(x.measureText(text).width<=width)return text;let value=text;while(value&&x.measureText(value+'…').width>width)value=value.slice(0,-1);return value?value+'…':'';};
+  x.font='600 10px ui-monospace,monospace';x.fillStyle='#ffbd69';x.fillText(shorten(`${current.id} · ${current.name}`,w-16),8,12);
+  const labels=['SECTION','BPM','RULE','TEXTURE','GENES'];
+  x.font='6.5px ui-monospace,monospace';x.fillStyle='#607b69';labels.forEach((label,i)=>x.fillText(label,3,metaTop+9+i*rowHeight));
+  for(let i=0;i<SECTIONS.length;i++){
+    const section=SECTIONS[i],start=X(section.start),width=X(section.start+section.dur)-start,texture=texOverride||section.texture,on=i===active;
+    x.fillStyle=on?'#b6ffcf0b':'#070909';x.fillRect(start,metaTop,width,graphBottom-metaTop);
+    x.strokeStyle=on?'#618e70':'#27352f';x.beginPath();x.moveTo(start+.5,metaTop);x.lineTo(start+.5,graphBottom);x.stroke();
+    // Each cell clips independently; short sections never paint into their neighbours.
+    const values=[`${section.id} · ${section.name}`,String(section.bpm),section.ruleName,texture.toUpperCase(),`μ ${section.mu} · F ${section.field.length} · p ${section.poly}`];
+    x.save();x.beginPath();x.rect(start+1,metaTop,Math.max(0,width-2),rowHeight*5);x.clip();
+    for(let row=0;row<values.length;row++){
+      x.font=`${row===0?'600 ':''}${row===0?8:7.5}px ui-monospace,monospace`;
+      x.fillStyle=row===0?(on?'#ffbd69':'#c2ae82'):(on?'#b0c6b7':'#607b69');
+      const text=row===0&&x.measureText(values[row]).width>width-6?section.id:values[row];
+      x.fillText(shorten(text,Math.max(0,width-6)),start+3,metaTop+9+row*rowHeight);
+    }
+    x.restore();
   }
-  const yH=v=>bot-26-v/9*(bot-top-62), yP=v=>bot-26-v/(W*H)*(bot-top-62);
-  x.beginPath(); S.hist.forEach((p,i)=>{ i?x.lineTo(X(p.t),yP(p.pop)):x.moveTo(X(p.t),yP(p.pop)); }); x.strokeStyle='#8fe3ff55'; x.stroke();
-  x.beginPath(); S.hist.forEach((p,i)=>{ i?x.lineTo(X(p.t),yH(p.H)):x.moveTo(X(p.t),yH(p.H)); }); x.strokeStyle='#b6ffcf'; x.lineWidth=1.4; x.stroke(); x.lineWidth=1;
-  x.fillStyle='#4c5f55'; for (let b=0;b<=8;b+=4) x.fillText(b+'b',w-22,yH(b)+3);
-  x.fillStyle='#80948a'; for (let m=0;m<=5;m++) x.fillText(`${m}:00`,X(m*60)-10,h-5);
-  // score harmonicity curve (modes 0..16), manual override drawn as a marker
-  const yM=v=>top+42+(1-v/(MODES.length-1))*(bot-top-74);
-  x.setLineDash([2,2]); x.strokeStyle='#ff87ad99'; x.beginPath();
-  for (let tt=0;tt<=PIECE_END;tt+=.5){ const py=yM(harmAt(tt)); tt?x.lineTo(X(tt),py):x.moveTo(X(tt),py); } x.stroke(); x.setLineDash([]);
-  x.fillStyle='#ff87ad99'; x.fillText('harm',w-30,yM(MODES.length-1)+3);
-  if (harm.src==='manual'){ x.fillStyle='#ffd27a'; x.fillRect(X(t)-3,yM(harm.pos)-3,6,6); }
-  x.strokeStyle='#ff87ad'; x.beginPath(); x.moveTo(X(t)+.5,top); x.lineTo(X(t)+.5,bot); x.stroke();
+  x.strokeStyle='#27352f';x.beginPath();x.moveTo(left,metaTop+rowHeight);x.lineTo(w-right,metaTop+rowHeight);x.moveTo(left,graphTop-4);x.lineTo(w-right,graphTop-4);x.stroke();
+  const graphHeight=graphBottom-graphTop,yH=v=>graphBottom-v/9*graphHeight,yP=v=>graphBottom-v/(W*H)*graphHeight,yM=v=>graphBottom-v/(MODES.length-1)*graphHeight;
+  x.save();x.beginPath();x.rect(left,graphTop,plotWidth,graphHeight);x.clip();
+  x.beginPath();S.hist.forEach((p,i)=>{i?x.lineTo(X(p.t),yP(p.pop)):x.moveTo(X(p.t),yP(p.pop));});x.strokeStyle='#8fe3ff55';x.stroke();
+  x.beginPath();S.hist.forEach((p,i)=>{i?x.lineTo(X(p.t),yH(p.H)):x.moveTo(X(p.t),yH(p.H));});x.strokeStyle='#b6ffcf';x.lineWidth=1.4;x.stroke();x.lineWidth=1;
+  x.setLineDash([2,2]);x.strokeStyle='#ff87ad99';x.beginPath();for(let tt=0;tt<=PIECE_END;tt+=.5){tt?x.lineTo(X(tt),yM(harmAt(tt))):x.moveTo(X(tt),yM(harmAt(tt)));}x.stroke();x.setLineDash([]);
+  const bpmMax=Math.max(...SECTIONS.map(section=>section.bpm)),yB=value=>graphBottom-value/bpmMax*graphHeight;
+  x.setLineDash([5,3]);x.strokeStyle='#e5c58b77';x.beginPath();SECTIONS.forEach((section,i)=>{const start=X(section.start),end=X(section.start+section.dur),y=yB(section.bpm);if(i)x.lineTo(start,y);else x.moveTo(start,y);x.lineTo(end,y);});x.stroke();x.setLineDash([]);
+  if(harm.src==='manual'){x.fillStyle='#ffd27a';x.fillRect(X(t)-3,yM(harm.pos)-3,6,6);}
+  x.strokeStyle='#ff87ad';x.beginPath();x.moveTo(X(t)+.5,graphTop);x.lineTo(X(t)+.5,graphBottom);x.stroke();x.restore();
+  x.font='7px ui-monospace,monospace';x.fillStyle='#607b69';x.fillText('H / POP',3,graphTop+9);x.fillStyle='#ff87ad88';x.fillText('harm',3,graphTop+20);
+  x.fillStyle='#e5c58b88';x.fillText('BPM',3,graphTop+31);
+  const rollTop=h-75,laneHeight=9,activeNotes=density.activity(t),pixelWidth=Math.max(1,Math.ceil(plotWidth)),key=`${pixelWidth}:${density.version}`;
+  if(key!==rollKey&&(performance.now()-rollStamp>100||rollCache.width!==pixelWidth)){
+    rollCache.width=pixelWidth;rollCache.height=45;const ctx=rollCache.getContext('2d');
+    for(let k=0;k<5;k++){ctx.fillStyle=DIVISION_UI[DIVISION_ORDER[k]].color;for(let px=0;px<pixelWidth;px++){const [a,b]=density.columnRange(px,pixelWidth);let bits=0;for(let c=a;c<b;c++)bits|=density.lanes[k][c];for(let row=0;row<8;row++)if(bits&(1<<row))ctx.fillRect(px,k*laneHeight+row,1,1);}}
+    rollKey=key;rollStamp=performance.now();
+  }
+  x.save();x.beginPath();x.rect(left,rollTop,Math.max(0,X(t)-left),45);x.clip();x.globalAlpha=.85;x.drawImage(rollCache,left,rollTop,plotWidth,45);x.restore();
+  DIVISION_ORDER.forEach((d,k)=>{const y=rollTop+k*laneHeight;x.fillStyle=DIVISION_UI[d].color;x.globalAlpha=activeNotes[k]?1:.45;x.font=`${activeNotes[k]?'bold ':''}7px ui-monospace,monospace`;x.fillText(DIVISION_UI[d].label,left-16,y+7);if(activeNotes[k])x.fillRect(left-5,y+2,2,4);x.globalAlpha=1;x.strokeStyle='#293c302e';x.beginPath();x.moveTo(left,y+8.5);x.lineTo(w-right,y+8.5);x.stroke();});
+  x.strokeStyle='#ff87ad';x.beginPath();x.moveTo(X(t)+.5,graphBottom);x.lineTo(X(t)+.5,rollTop+45);x.stroke();
+  const maxTicks=Math.max(2,Math.floor(plotWidth/48)),step=[15,30,60,120,300,600].find(value=>PIECE_END/value<=maxTicks)||600;
+  x.font='8px ui-monospace,monospace';x.fillStyle='#80948a';for(let seconds=0;seconds<=PIECE_END;seconds+=step){const label=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;x.fillText(label,Math.max(left,Math.min(w-right-x.measureText(label).width,X(seconds)-10)),h-15);}
 }
 function drawMeso(){
   const [x,w,h]=fit(cv.meso); x.clearRect(0,0,w,h);
   const L=30, cw=(w-L-6)/W, ch=(h-12)/H, tt=S.tNext;
   x.font='9px ui-monospace,monospace';
-  for (const d of DIVS){ const b=BAND[d], y0=4+b.r0*ch;
+  for (const d of DIVS){ const b=BAND[d], y0=4+DIVISION_ORDER.indexOf(d)*STRATA*ch;
     if (!fertile(d,tt)){ x.fillStyle='#0d1310'; x.fillRect(L,y0,W*cw,STRATA*ch); x.fillStyle='#35463c'; x.fillText(OPEN[d]>tt?`opens ${mmss(OPEN[d])}`:'closed', L+8, y0+STRATA*ch/2+3); }
-    x.fillStyle=DIVCOL[d]; x.globalAlpha=fertile(d,tt)?.9:.3; x.fillText(d.toUpperCase(),4,y0+STRATA*ch/2+3); x.globalAlpha=1;
+    x.fillStyle=DIVCOL[d]; x.globalAlpha=fertile(d,tt)?.9:.3; x.fillText(DIVISION_UI[d].label,4,y0+STRATA*ch/2+3); x.globalAlpha=1;
     x.strokeStyle='#35463c'; x.beginPath(); x.moveTo(L,y0+.5); x.lineTo(w-6,y0+.5); x.stroke();
   }
   x.strokeStyle='#141d18'; for (let c=0;c<=W;c+=12){ x.beginPath(); x.moveTo(L+c*cw+.5,4); x.lineTo(L+c*cw+.5,h-8); x.stroke(); }
-  const pr=BAND.pe.r0; x.fillStyle='#0f1512'; x.fillRect(L+30*cw,4+pr*ch,(W-30)*cw,STRATA*ch);
+  const pr=DIVISION_ORDER.indexOf('pe')*STRATA; x.fillStyle='#0f1512'; x.fillRect(L+30*cw,4+pr*ch,(W-30)*cw,STRATA*ch);
   const sec=SECTIONS[S.si];
   for (let r=0;r<H;r++) for (let c=0;c<W;c++){
     const i=r*W+c, gid=S.grid[i]; if (gid<0) continue;
-    const G=S.genomes[gid].g;
+    const G=S.genomes[gid].g,displayRow=DIVISION_ORDER.indexOf(divOf(r))*STRATA+(r%STRATA);
     x.fillStyle=(sec.hack&&G.hack)?'#ff87ad':hueFor(gid,divOf(r));
     x.globalAlpha=S.born[i]?1:Math.max(.22,.8-S.age[i]*.05);
-    x.fillRect(L+c*cw+1,4+r*ch+1,Math.max(1,cw-2),Math.max(1,ch-2));
-    if (G.emb){ x.globalAlpha=.9; x.fillStyle='#070909'; x.fillRect(L+c*cw+cw/2-1,4+r*ch+ch/2-1,2,2); }   // embryo mark
+    x.fillRect(L+c*cw+1,4+displayRow*ch+1,Math.max(1,cw-2),Math.max(1,ch-2));
+    if (G.emb){ x.globalAlpha=.9; x.fillStyle='#070909'; x.fillRect(L+c*cw+cw/2-1,4+displayRow*ch+ch/2-1,2,2); }   // embryo mark
   }
   x.globalAlpha=1; x.fillStyle='#4c5f55'; for (let c=0;c<W;c+=12) x.fillText('C'+(1+c/12),L+c*cw+2,h-1);
 }
-function drawMorph(){
-  const [x,w,h]=fit(cv.morph); x.clearRect(0,0,w,h);
-  const sec=SECTIONS[S.si], ground=h*.64, top=h*.07, tt=S.tNext;
-  const pos={so:w*.09, re:w*.3, po:w*.5, go:w*.7, pe:w*.9};
-  const yOf=hm=>ground-(Math.log2(hm)+2.3)/(2.3+2.6)*(ground-top);
-  x.font='8px ui-monospace,monospace';
-  x.strokeStyle='#35463c'; x.beginPath(); x.moveTo(4,ground+.5); x.lineTo(w-4,ground+.5); x.stroke();
-  x.fillStyle='#4c5f55'; x.fillText('soil / wind-chest',6,ground+11);
-  const act=new Set(); for (const d of DIVS) (sec.regs[d]||[]).forEach(k=>act.add(d+':'+k));
-  const hackOn=sec.hack && [...S.counts.keys()].some(g=>S.genomes[g].g.hack);
-  if (hackOn && sec.hackRegs) for (const d in sec.hackRegs) sec.hackRegs[d].forEach(k=>act.add(d+':'+k));
-  for (const d of DIVS){
-    const X0=pos[d], fe=fertile(d,tt), grown=fe?Math.min(1,(tt-OPEN[d])/20):0;
-    const stemTop=ground-(ground-top)*Math.max(.12,grown);
-    x.setLineDash(fe?[]:[2,4]); x.strokeStyle=DIVCOL[d]; x.globalAlpha=fe?.75:.3;
-    x.beginPath(); x.moveTo(X0,ground); x.lineTo(X0,fe?stemTop:top+30); x.stroke(); x.setLineDash([]); x.globalAlpha=1;
-    x.fillStyle=DIVCOL[d]; x.globalAlpha=fe?1:.4; x.fillText(d.toUpperCase()+' '+(S.perDiv?S.perDiv[d]:0),X0-10,top-2); x.globalAlpha=1;
-    STOPS[d].forEach((s,j)=>{
-      const on=act.has(d+':'+s[0]), y=yOf(s[2])-(j%4)*3, side=j%2?1:-1, len=on?20:6;
-      if (y<stemTop && !on) return;
-      x.strokeStyle=on?FAMCOL[s[3]]:'#22302a'; x.lineWidth=on?1.6:1;
-      x.beginPath(); x.moveTo(X0,y); x.lineTo(X0+side*len,y-len*.45); x.stroke(); x.lineWidth=1;
-      if (on){ x.fillStyle=FAMCOL[s[3]]; x.textAlign=side>0?'left':'right'; x.fillText(s[1],X0+side*(len+3),y-len*.45+3); x.textAlign='left'; }
-    });
-  }
-  // couplers as clonal integration
-  const used=new Set(SECTIONS.flatMap(s=>s.couplers)); let lane=0;
-  for (const k of used){ const C=COUPLERS[k], on=sec.couplers.includes(k);
-    x.strokeStyle=on?'#b6ffcf':'#1a2520'; x.fillStyle=on?'#b6ffcf':'#2c3b33'; x.setLineDash(on?[]:[3,3]);
-    if (C.from===C.to){
-      const X0=pos[C.to];
-      if (C.tr<0){ for (const a of [-10,0,10]){ x.beginPath(); x.moveTo(X0,ground); x.lineTo(X0+a,ground+26); x.stroke(); } x.fillText(C.label+' roots',X0-26,ground+36); }
-      else { x.beginPath(); x.moveTo(X0-7,top+12); x.lineTo(X0,top+2); x.lineTo(X0+7,top+12); x.stroke(); x.fillText(C.label+' shoot',X0+9,top+10); }
-    } else if (C.to==='pe'){
-      const dy=18+lane*9; x.beginPath(); x.moveTo(pos[C.from],ground+3); x.bezierCurveTo(pos[C.from],ground+dy,pos.pe,ground+dy,pos.pe,ground+3); x.stroke();
-      x.fillText(`${C.label} ${C.morph}`,(pos[C.from]+pos.pe)/2-20,ground+dy*.75+8); lane++;
-    } else {
-      const y=yOf(1)-6-lane*7, dy=-16-lane*4;
-      x.beginPath(); x.moveTo(pos[C.from],y); x.bezierCurveTo(pos[C.from],y+dy,pos[C.to],y+dy,pos[C.to],y); x.stroke();
-      if (on) x.fillText(`${C.label} ${C.morph}`,(pos[C.from]+pos[C.to])/2-16,y+dy*.75-2); lane++;
-    }
-    x.setLineDash([]);
-  }
-  for (const d of ['po','re']){ const sy=ground-12; x.strokeStyle=DIVCOL[d]; x.beginPath(); x.ellipse(pos[d]-16,sy,6,1+4*sec.swell,0,0,Math.PI*2); x.stroke(); }
-  x.fillStyle='#4c5f55'; x.fillText('swell = stomata',pos.re-12,ground-22);
-  x.strokeStyle='#27352f'; x.strokeRect(6.5,h-12.5,w-13,6); x.fillStyle='#ffd27a88'; x.fillRect(7,h-12,(w-14)*sec.cresc,5);
-  x.fillStyle='#4c5f55'; x.fillText('crescendo = turgor pressure',8,h-16);
-}
+function drawMorph(){drawMorphology(cv.morph,morphologyState(score,S,tNow));}
 function drawMicro(t){
-  const [x,w,h]=fit(cv.micro); x.clearRect(0,0,w,h);
-  const sec=SECTIONS[secAt(t)], beat=60/sec.bpm, span=4*beat, t0=t-span*.75, L=26;
-  const X=tt=>L+(tt-t0)/span*(w-L-4), Y=m=>h-10-(m-24)/(98-24)*(h-20);
-  x.font='8px ui-monospace,monospace';
-  for (let m=24;m<=96;m+=12){ x.strokeStyle='#141d18'; x.beginPath(); x.moveTo(L,Y(m)+.5); x.lineTo(w,Y(m)+.5); x.stroke(); x.fillStyle='#4c5f55'; x.fillText('C'+(m/12-1),4,Y(m)+3); }
-  const b0=sec.start+Math.floor((t0-sec.start)/beat)*beat;
-  for (let b=b0;b<t0+span;b+=beat){ x.strokeStyle='#27352f'; x.beginPath(); x.moveTo(X(b)+.5,4); x.lineTo(X(b)+.5,h-6); x.stroke(); }
-  for (const e of S.events){ if (e.t+e.d<t0||e.t>t0+span) continue;
-    x.globalAlpha=e.t<=t?1:.35;
-    if (e.sat){ x.strokeStyle='#ffffff22'; x.setLineDash([1,2]); x.beginPath(); x.moveTo(X(e.pt),Y(e.pm)); x.lineTo(X(e.t),Y(e.midi)); x.stroke(); x.setLineDash([]); }
-    x.strokeStyle=e.hack?'#ff87ad':DIVCOL[e.div]; x.lineWidth=e.sat?1:e.tuber?3:2;
-    x.beginPath(); x.moveTo(X(e.t),Y(e.midi)); x.lineTo(Math.max(X(e.t)+2,X(e.t+e.d)),Y(e.midi)); x.stroke(); }
-  x.globalAlpha=1; x.lineWidth=1;
-  x.strokeStyle='#ff87ad'; x.beginPath(); x.moveTo(X(t)+.5,4); x.lineTo(X(t)+.5,h-6); x.stroke();
-  const tex=texOverride||sec.texture; x.fillStyle='#b6ffcf'; x.font='10px ui-monospace,monospace';
-  x.fillText(`${tex.toUpperCase()}  ←  ${TEX[tex].repro}   + EMBRYO MODE ${satOn?harmLabel():'off'}`,L+6,14);
-  x.fillStyle='#80948a'; x.font='9px ui-monospace,monospace'; x.fillText(TEX[tex].note,L+6,26);
+  const [x,w,h]=fit(cv.micro);x.clearRect(0,0,w,h);if(w<1||h<1)return;
+  const L=w<300?38:49,R=8,width=Math.max(1,w-L-R),span=PIECE_END/2**microZoom,start=microZoom?Math.max(0,Math.min(PIECE_END-span,t-span*.5)):0,end=start+span;
+  const X=time=>L+(time-start)/span*width,Y=note=>h-14-(note+.5)/128*(h-20),pixelWidth=Math.max(1,Math.ceil(width)),key=`${pixelWidth}:${start.toFixed(3)}:${end.toFixed(3)}:${density.version}`;
+  if(key!==microKey&&(performance.now()-microStamp>100||microCache.width!==pixelWidth)){
+    microCache.width=pixelWidth;microCache.height=128;const ctx=microCache.getContext('2d');
+    // OR every source time-bin into each visible pixel: downsampling cannot erase an attack.
+    for(let px=0;px<pixelWidth;px++){const [a,b]=density.columnRange(px,pixelWidth,start,end);for(let note=0;note<128;note++){let bits=0;for(let c=a;c<b;c++)bits|=density.pitches[c*128+note];if(!bits)continue;const lane=Math.floor(Math.log2(bits&-bits));ctx.fillStyle=(bits&(bits-1))?'#d5e8cf':DIVISION_UI[DIVISION_ORDER[lane]].color;ctx.fillRect(px,127-note,1,1);}}
+    microKey=key;microStamp=performance.now();
+  }
+  x.save();x.beginPath();x.rect(L,4,width,h-18);x.clip();x.imageSmoothingEnabled=false;x.globalAlpha=.8;x.drawImage(microCache,L,4,width,h-18);x.restore();x.globalAlpha=1;
+  x.font='7px ui-monospace,monospace';for(let note=24;note<=108;note+=12){x.strokeStyle='#27352f66';x.beginPath();x.moveTo(L,Y(note)+.5);x.lineTo(w-R,Y(note)+.5);x.stroke();x.fillStyle='#607b69';x.fillText('C'+(note/12-1),4,Y(note)+3);}
+  x.strokeStyle='#ff87ad';x.beginPath();x.moveTo(X(t)+.5,4);x.lineTo(X(t)+.5,h-14);x.stroke();
+  const maxTicks=Math.max(2,Math.floor(width/48)),step=[1,2,5,10,15,30,60,120,300,600].find(value=>span/value<=maxTicks)||Math.ceil(span/maxTicks/600)*600;
+  x.fillStyle='#80948a';for(let seconds=Math.ceil(start/step)*step;seconds<=end;seconds+=step){const label=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;x.fillText(label,Math.max(L,Math.min(w-R-x.measureText(label).width,X(seconds)-10)),h-3);}
+  cv.micro.title=`${microZoom?'×'+2**microZoom:'Full score · aligned with MACRO'} · transport note intent · P/I/II/III/IV colours · overlapping divisions pale · no hardware feedback`;
 }
 function harmLabel(){
   const p=harm.pos, lo=Math.floor(p), hi=Math.min(MODES.length-1,lo+1), f=p-lo;
@@ -176,7 +161,16 @@ function drawHarm(){
   x.fillText('←/→ step · drag/wheel = continuous · dbl-click snap · 0 poly on/off · S score/manual', tx, h-4);
 }
 
-  return { render(state, time, options) {
+  // Compact copy of the five pitch-roll lanes for the remote: 384 time columns x 5 divisions, one byte of
+  // 8 pitch rows each (same data as the MACRO lanes), base64. Rebuilt only when the note history changes.
+  let rollVersion=-1,rollText='';
+  function roll(columns=384){
+    if(density.version===rollVersion)return rollText;
+    const bytes=new Uint8Array(5*columns);for(let k=0;k<5;k++)for(let px=0;px<columns;px++){const [a,b]=density.columnRange(px,columns);let bits=0;for(let c=a;c<b;c++)bits|=density.lanes[k][c];bytes[k*columns+px]=bits;}
+    let binary='';for(let i=0;i<bytes.length;i+=4096)binary+=String.fromCharCode(...bytes.subarray(i,i+4096));
+    rollVersion=density.version;rollText=btoa(binary);return rollText;
+  }
+  return { roll,note:event=>density.add(event),clearNotes(){density.clear();rollKey='';microKey='';},render(state, time, options) {
     if(!cv.macro.getBoundingClientRect().width)return;
     S=state; tNow=time;texOverride=options.texture==='auto'?'':options.texture;satOn=options.polyembryony;
     harm={pos:options.harmonicity??harmonicityAt(score,time),src:options.harmonicity===null?'score':'manual'};

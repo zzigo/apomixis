@@ -1,0 +1,68 @@
+HYLON-SCORE 1
+# LAB 16 / HORVITZ — harmonic rates. Candidate lab score.
+# After Seth Horvitz, Eight Studies for Automatic Piano (2010/2011), and behind it Cowell's
+# Rhythmicon and Tenney's Spectral Canon: a "basic shape" copied at whole-number rates.
+#   rhythmicon NOTE… base 6 voices 8        voice k pulses k times every 6 s (mode sub: once every k·6 s)
+#   step -1                                  each pulse moves one note down the list: a glissando per voice
+#   arch on                                  the second half mirrors the first in time
+#   accel 1->3                               the global tempo accelerates against the voice tempi
+# Nothing here is quoted from the Studies; only the procedures are tested on pipes.
+id apomixis.lab.horvitz
+version 0.1.0-lab.1
+title "HORVITZ"
+number lab16
+duration 270
+seed 3161
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P8" "whole numbers"
+harmonicity 270 "P8" ""
+
+set TOP8 = C6 B5 A5 G5 F5 E5 D5 C5
+set WHITE = C6 B5 A5 G5 F5 E5 D5 C5 B4 A4 G4 F4 E4 D4 C4 B3 A3 G3 F3 E3 D3 C3
+
+section A "Arch for eight high notes" for 80 bpm 60
+native off
+pgm @cloud2 III.fluteOctaviante4 73
+laser off
+rhythmicon @TOP8 base 8 voices 8 mode sub ms 60 arch on accel 1->12 div manuals
+bio "subharmonic pulses on eight high pipes · the tempo accelerates to a flutter and returns"
+end
+
+section B "Sixteen glissandi" for 70 bpm 60
+native off
+pgm I.fluteHarmonique8 II.fluteTraversiere4 III.fluteOctaviante4 73
+laser midixy src so size 0 prob 40 max 2 dur 0.08
+rhythmicon @WHITE base 5 voices 16 mode harmonic step 1 ms 50 arch on accel 1->4 div manuals
+bio "sixteen white-key scales fall at rates 1…16 · at the middle only the slowest remains"
+end
+
+section C "Rhythmicon" for 60 bpm 60
+native off
+pgm @principals -19 -4 @pedalvoice
+laser off
+cresc 0->0.6
+rhythmicon C2 C3 G3 C4 E4 G4 Bb4 C5 D5 E5 F#5 G5 base 6 voices 12 mode harmonic ms 80->200 div go,po,re,so
+pedal drone 24
+bio "pitch and rhythm share one series: partial k pulses k times per period"
+end
+
+section D "Bells" for 60 bpm 60
+native off
+pgm @voix 73 II.bourdon8
+laser off
+exp3 0.2~0.9 7
+rhythmicon E5 E5 E5 E5 E5 E5 base 9 voices 6 mode sub ms 400->1500 accel 1->0.5 div re,so,po
+chord E3:0,7,16,22 pat x............... rate 1/16 ms 5000 hold 1 div go
+bio "one repeated note at six slow rates, three timbres · the box breathes"
+end

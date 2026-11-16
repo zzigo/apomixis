@@ -8,7 +8,7 @@ export function createFollowerRouter({audio,midiOut,sampler,onMessage=()=>{},onE
     oscillator.onended=()=>{oscillator.disconnect();level.disconnect();};
     return{renew(){try{oscillator.stop(context.currentTime+1);}catch{}},stop(){const now=context.currentTime;level.gain.cancelScheduledValues(now);level.gain.setTargetAtTime(0,now,.008);try{oscillator.stop(now+.05);}catch{}}};
   }
-  function release(owner){const group=voices.get(owner);if(!group)return;voices.delete(owner);for(const voice of group.sends){voice.local?.stop();if(voice.klais)sampler?.stopFollower(voice.owner);if(voice.midi)midiOut.stopFollower(voice.midi);onMessage([0x80|(voice.channel-1),voice.note,0]);}}
+  function release(owner){const group=voices.get(owner);if(!group)return;voices.delete(owner);for(const voice of group.sends){voice.local?.stop();if(voice.klais)sampler?.stopFollower(voice.owner);if(voice.midi)midiOut.stopFollower(voice.midi);onMessage([0x80|(voice.channel-1),voice.note,0],voice.owner);}}
   function stopFollower(){for(const owner of [...voices.keys()])release(owner);}
   function attemptMidi(voice){if(!routes.midi||!midiOut.summary().armed||audio.midiLevel<=0||performance.now()<voice.retryAt)return;voice.retryAt=performance.now()+250;try{voice.midi=midiOut.startFollower(voice);}catch(error){onError(error.message);}}
   return{
@@ -28,7 +28,7 @@ export function createFollowerRouter({audio,midiOut,sampler,onMessage=()=>{},onE
         const voice={owner:`${owner}:${key}`,channel,note:pitch,velocity,local:null,klais:false,midi:null,retryAt:0};
         if(routes.audio)voice.local=localVoice(pitch,velocity);
         if(routes.klais)voice.klais=!!sampler?.startFollower(voice.owner,pitch,velocity,channel);
-        attemptMidi(voice);group.sends.push(voice);onMessage([0x90|(channel-1),pitch,velocity]);
+        attemptMidi(voice);group.sends.push(voice);onMessage([0x90|(channel-1),pitch,velocity],voice.owner);
       }
       voices.set(owner,group);return owner;
     },

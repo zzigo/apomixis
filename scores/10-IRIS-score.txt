@@ -1,0 +1,116 @@
+HYLON-SCORE 1
+# LAB 10 / IRIS — iridescent chord number. Candidate lab score, not an approved release.
+# One chord seen under a changing angle: the pitches stay, the light moves. The "angle" is
+#   iris   which manual sounds which chord tone (rotates per hit)
+#   ms     absolute attack length in milliseconds (30 = staccatissimo … 100)
+#   hold   hits before the chord changes (5|3|7|2 = uneven arithmetic, never a metre)
+#   morph  tones migrate to the next chord one by one instead of cutting
+#   shadow a second, softer manual repeats each tone N ms later: the perceptual shadow
+# Four GLINT sections are the only places where the laser answers (single points, Solo only).
+# New sentences: set / @name, chord, silence, section … for SECONDS. See docs/LAB-SCORES.md.
+id apomixis.lab.iris
+version 0.1.0-lab.1
+title "IRIS"
+number lab10
+duration 270
+seed 3101
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P5" "one chord, changing light"
+harmonicity 270 "P5" ""
+
+# Material. A chord is ROOT:semitones. FILM is the object; TILT moves two tones; the rest drift.
+set FILM = E3:0,7,14,16,21,23
+set TILT = E3:0,7,13,16,21,24
+set DEEP = D3:0,7,14,17,21,26
+set HIGH = F#3:0,5,10,16,21,26
+# Registrations as sets: fast-speaking 4' flutes for the hits, céleste for the shadow.
+set HITS = 25 42 58 27
+set DARK = 56 57
+set GLINT = 73
+
+section I "Film" for 40 bpm 132
+native off
+pgm @HITS
+laser off
+chord @FILM pat x..x.x.. rate 1/16 ms 30 hold 4 iris 0 div go,po
+bio "thin film · one chord, two manuals, 30 ms"
+end
+
+section G1 "Glint 1" for 6 bpm 132
+native off
+pgm @GLINT
+laser midixy src so size 0 prob 100 max 1 dur 0.08
+chord @FILM pat X....... rate 1/8 ms 40 hold 1 div so voicing split
+bio "first glint · Seraphon alone, one laser point per attack"
+end
+
+section II "Angle" for 50 bpm 132
+native off
+pgm @HITS @DARK
+laser off
+chord @FILM | @TILT pat x..x.x..x.x. rate 1/16 ms 30->60 hold 6 morph 1 iris 1 div go,po,re shadow 45 sdiv re sms 90
+bio "the angle changes · tones migrate one by one, the Récit keeps a 45 ms shadow"
+end
+
+section G2 "Glint 2" for 8 bpm 132
+native off
+pgm @GLINT
+laser midixy src so size 0 prob 100 max 1 dur 0.08
+chord @TILT pat X.....x......... rate 1/16 ms 40 hold 1 oct 0|1 div so
+bio "second glint"
+end
+
+section III "Interference" for 56 bpm 138
+native off
+pgm @HITS @DARK @pedalvoice
+laser off
+chord @FILM | @TILT | @DEEP | @HIGH pat x..x.x..x. rate 1/16 ms 40->100 hold 5|3|7|2 morph 0.5 iris 1 rot 1 div go,po,re
+chord @FILM | @DEEP pat x.....x.... rate 1/12 ms 60 hold 3 iris 2 tr 0|12 div re,pe
+silence every 16 dur 0.12
+bio "two films interfere · 16th against triplet 8th, the pedal sings at 8 feet"
+end
+
+section G3 "Glint 3" for 6 bpm 138
+native off
+pgm @GLINT
+laser midixy src so size 0 prob 100 max 2 dur 0.06
+chord @HIGH pat X..X.... rate 1/16 ms 30 hold 1 oct 0|1|0|2 div so
+bio "third glint · two points"
+end
+
+section IV "Shadow" for 50 bpm 126
+native off
+exp3 0.1~0.5 7
+pgm 25 @DARK 69
+laser off
+chord @FILM | @TILT pat x....x..x...... rate 1/16 ms 30 hold 4|4|5 morph 0 iris 0 div go shadow 60->140 sdiv re sms 100->400
+silence 12 0.4 25 0.25 38 0.6
+bio "the object is short, its shadow grows · Great 30 ms, Récit céleste + trémolo up to 400 ms"
+end
+
+section G4 "Glint 4" for 8 bpm 126
+native off
+pgm @GLINT
+laser midixy src so size 0 prob 60 max 1 dur 0.1
+chord @FILM pat X........... rate 1/16 ms 30 hold 1 div so prob 0.8
+bio "last glint · some attacks stay dark"
+end
+
+section V "Residue" for 46 bpm 126
+native off
+pgm @HITS
+laser off
+chord @FILM pat x..x.x.. rate 1/16 ms 100->30 hold 4 iris 1 div go,po prob 1->0.12
+bio "the film thins until single hits remain"
+end

@@ -1,5 +1,6 @@
 import { CATALOG } from './catalog.js';
-import { ENGINE_VERSION, validateSporeScore, harmonicityAt } from './score.js';
+import { phraseSporeNotes, sporeBeat } from './phrasing.js';
+import { ENGINE_VERSION, validateSporeScore, harmonicityAt, ambitusAt, elongationAt } from './score.js';
 export { ENGINE_VERSION };
 // Pure bounded generator: no DOM, clocks, AudioContext, MIDI, USB or network.
 export function createSporeGenerator(inputScore, { seed = inputScore.seed } = {}) {
@@ -10,7 +11,12 @@ export function createSporeGenerator(inputScore, { seed = inputScore.seed } = {}
   const ranges = Object.fromEntries(Object.values(score.voiceBindings).map(binding => [binding.division, binding.range]));
   const fertile = (d, t) => t >= OPEN[d] && t < CLOSE[d];
   const RULES = Object.fromEntries(SECTIONS.map(section => { const [, birth, survival] = section.rule.match(/B(\d*)\/S(\d*)/); return [section.rule, { b: new Set([...birth].map(Number)), s: new Set([...survival].map(Number)) }]; }));
-  let options = { texture: 'auto', polyembryony: true, harmonicity: null }, journal = [], running = false, disposed = false;
+  // vector: live multipliers on the score's biological parameters (mutation, dispersal, polyembryony,
+  // tuber, density). 1 = the score as written. Journaled like every option, so a take replays.
+  const VECTOR_KEYS = ['mu', 'disp', 'poly', 'tuber', 'cap'], VECTOR_ONE = Object.freeze({ mu: 1, disp: 1, poly: 1, tuber: 1, cap: 1 });
+  const unit = x => Math.max(0, Math.min(1, x));
+  const withVector = sec => { const v = options.vector; if (VECTOR_KEYS.every(k => v[k] === 1)) return sec; return { ...sec, mu: unit(sec.mu * v.mu), disp: unit(sec.disp * v.disp), poly: unit(sec.poly * v.poly), tuber: unit(sec.tuber * v.tuber), cap: Math.max(1, Math.min(96, Math.round(sec.cap * v.cap))) }; };
+  let options = { texture: 'auto', polyembryony: true, harmonicity: null, elongation: null, vector: { ...VECTOR_ONE } }, ambitusNow = 1, journal = [], running = false, disposed = false;
   const pickMode = () => { const p = options.harmonicity ?? harmonicityAt(score, S.tNext), lo = Math.floor(p), hi = Math.min(MODES.length - 1, lo + 1); return rng() < p - lo ? hi : lo; };
   const shuffle = values => { for (let i = values.length - 1; i > 0; i--) { const j = ri(i + 1); [values[i], values[j]] = [values[j], values[i]]; } return values; };
 function mulberry32(a){const next = function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}; next.state = () => a >>> 0; return next;}
@@ -147,13 +153,14 @@ function measure(){
 
 /* ================================================================ textural functions */
 function quant(n,f){ for (const d of [0,1,-1,2,-2,3,-3,4,-4,5,-5,6]) if (pcIn(n+d,f)) return n+d; return n; }
-const RANGE = d => ranges[d];
+// Ambitus calibre: the active range opens downward from the apex octave of each voice (min one octave).
+const RANGE = d => { const [lo, hi] = ranges[d]; if (ambitusNow >= 1) return [lo, hi]; const width = Math.max(12, Math.round(ambitusNow * (hi - lo))); return [Math.max(lo, hi - width), hi]; };
 function fold(n,d){ const [lo,hi]=RANGE(d); while (n<lo) n+=12; while (n>hi) n-=12; return n; }   // keeps n mod 12
 const hasRegs = (sec,d) => (sec.regs[d]||[]).length>0;
 function euclid(n,k,rot){ const out=[]; for (let i=0;i<n;i++) out.push((Math.floor(i*k/n)+rot)%k); return out; }
 
 function makeNotes(sec){
-  const tex = options.texture === 'auto' ? sec.texture : options.texture, beatSec = 60/sec.bpm;
+  const tex = options.texture === 'auto' ? sec.texture : options.texture, beatSec = sporeBeat(score.scoreId, S.tNext, sec.bpm);
   const cands=[];
   for (let i=0;i<W*H;i++){
     const gid=S.grid[i]; if (gid<0) continue;
@@ -223,30 +230,37 @@ function makeNotes(sec){
   }
   const budget=Math.max(0, Math.floor(ATTACK_BUDGET*beatSec)-notes.length);   // keep total attacks under budget
   if (sats.length>budget) sats=sats.slice(0,budget);
-  return {notes:notes.concat(sats), tex, nPrim:notes.length, nSat:sats.length};
+  const phrased = phraseSporeNotes(notes.concat(sats), { scoreId: score.scoreId, time: S.tNext, beat: beatSec, generation: S.gen, seed: S.seed });
+  return {notes:phrased, tex, nPrim:phrased.filter(n=>!n.sat).length, nSat:phrased.filter(n=>n.sat).length};
 }
 
   const validateOptions = value => {
     if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some(k => !Object.hasOwn(options, k))) throw new Error('Unknown SPORE option');
     const result = { ...options, ...value };
-    if (!['auto', ...Object.keys(CATALOG.TEX)].includes(result.texture) || typeof result.polyembryony !== 'boolean' || (result.harmonicity !== null && (!Number.isFinite(result.harmonicity) || result.harmonicity < 0 || result.harmonicity > MODES.length - 1))) throw new Error('Invalid SPORE option');
+    if (!['auto', ...Object.keys(CATALOG.TEX)].includes(result.texture) || typeof result.polyembryony !== 'boolean' || (result.harmonicity !== null && (!Number.isFinite(result.harmonicity) || result.harmonicity < 0 || result.harmonicity > MODES.length - 1)) || (result.elongation !== null && (!Number.isFinite(result.elongation) || result.elongation < 0.02 || result.elongation > 4))) throw new Error('Invalid SPORE option');
+    if (value.vector && typeof value.vector === 'object' && !Array.isArray(value.vector)) result.vector = { ...options.vector, ...value.vector };
+    const v = result.vector;
+    if (!v || typeof v !== 'object' || Array.isArray(v) || Object.keys(v).some(k => !VECTOR_KEYS.includes(k)) || !VECTOR_KEYS.every(k => Number.isFinite(v[k]) && v[k] >= 0 && v[k] <= 4)) throw new Error('Invalid SPORE vector');
+    result.vector = { ...v };
     return result;
   };
   function configure(value) {
     if (disposed) throw new Error('SPORE disposed'); options = validateOptions(value);
     if (journal.at(-1)?.generation === S.gen) journal.pop();
-    journal.push({ generation: S.gen, options: { ...options } });
+    journal.push({ generation: S.gen, options: { ...options, vector: { ...options.vector } } });
   }
   function nextGeneration() {
-    S.si = secAt(S.tNext); const sec = SECTIONS[S.si], beat = 60 / sec.bpm, generation = S.gen, result = [];
+    S.si = secAt(S.tNext); const sec = withVector(SECTIONS[S.si]), beat = sporeBeat(score.scoreId, S.tNext, sec.bpm), generation = S.gen, result = [];
+    ambitusNow = ambitusAt(score, S.tNext); const elongation = options.elongation ?? elongationAt(score, S.tNext); S.ambitus = ambitusNow; S.elongation = elongation;
     if (S.gen > 0) { stepGen(sec); measure(); }
     const { notes, tex, nPrim, nSat } = makeNotes(sec); S.lastNotes = nPrim; S.lastSats = nSat; S.lastTex = tex;
     if (!generation || secAt(Math.max(0, S.tNext - beat)) !== S.si) result.push({ eventId: `spore:g${generation}:scene`, sourceId: 'spore', generationId: generation, atSessionMs: S.tNext * 1000, division: null, kind: 'scene', payload: { sceneId: sec.id, stops: structuredClone(sec.regs), couplers: [...sec.couplers], swell: sec.swell, crescendo: sec.cresc, verified: false } });
-    notes.forEach((note, index) => {
+    // `native off`: the genetic substrate keeps evolving (visuals/state) but emits no SPORE notes.
+    if (sec.native !== false) notes.forEach((note, index) => {
       const t = S.tNext + note.on * beat, bucket = Math.floor(t * 2), count = S.bucket.get(bucket) || 0;
       if (t >= score.duration || (note.sat && count >= ATTACK_BUDGET / 2)) { if (note.sat) S.lastSats--; return; }
       S.bucket.set(bucket, count + 1);
-      const duration = Math.min(note.dur * beat, score.duration - t);
+      const duration = Math.max(0.03, Math.min(note.dur * beat * elongation, score.duration - t));
       const ev = { t, d: duration, midi: note.midi, div: note.div, hack: note.hack, gen: generation, gid: note.gid, sec: sec.id, tex, sat: note.sat || 0, mode: note.mode || null, tuber: !!note.tuber, pt: note.sat ? S.tNext + note.pon * beat : null, pm: note.sat ? note.pmidi : null };
       S.events.push(ev); if (S.allEvents.length < 60000) S.allEvents.push(ev);
       result.push({ eventId: `spore:g${generation}:n${index}`, sourceId: 'spore', generationId: generation, atSessionMs: t * 1000, division: note.div, kind: 'note', payload: { voice: Object.keys(score.voiceBindings).find(name => score.voiceBindings[name].division === note.div), note: note.midi, velocity: 80, durationMs: duration * 1000, sceneId: sec.id, lineageId: note.gid, satellite: note.sat || 0, mode: note.mode || null, hack: !!note.hack, tuber: !!note.tuber } });

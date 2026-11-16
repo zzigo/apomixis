@@ -1,6 +1,9 @@
+import { CONSOLE_CAPTURE_GROUPS } from './console-captures.js';
+import { knobForSlot } from './registration-map.js';
+import { KNOB } from '../../../packages/hylon-registers/console.js';
 import { KLAIS_CATALOG } from './catalog.js';
 
-export const LIMITS = Object.freeze({ bytes: 4096, events: 2000, storedBytes: 262144, slotEvents: 64, windowMs: 15000, fragmentMs: 2000, ports: 32, importBytes: 8 * 1024 * 1024 });
+export const LIMITS = Object.freeze({ bytes: 4096, events: 2000, storedBytes: 262144, slotEvents: 256, windowMs: 60000, fragmentMs: 2000, ports: 32, importBytes: 8 * 1024 * 1024 });
 const uid = () => globalThis.crypto?.randomUUID?.() || `capture-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const hex = (bytes) => bytes.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
 // FNV-1a is a repeat-comparison checksum, NOT a security or authenticity proof.
@@ -25,7 +28,7 @@ export function validateSession(raw) {
   if (typeof raw === 'string') { if (raw.length > LIMITS.importBytes) fail(); try { raw = JSON.parse(raw); } catch { fail(); } }
   if (!raw || raw.schemaVersion !== 1 || !str(raw.id) || !stamp(raw.createdAt) || !stamp(raw.updatedAt) || !Array.isArray(raw.slots) || !raw.slots.length || raw.slots.length > 256 || !Array.isArray(raw.events) || raw.events.length > LIMITS.events) fail();
   const ids = new Set();
-  for (const s of raw.slots) { if (!s || !str(s.id) || ids.has(s.id) || !str(s.division) || !str(s.label) || !str(s.kind) || !str(s.notes, 4096)) fail(); ids.add(s.id); }
+  for (const s of raw.slots) { if (!s || !str(s.id) || ids.has(s.id) || !str(s.division) || !str(s.label) || !str(s.kind) || !str(s.notes, 4096)) fail(); if (s.reference !== undefined && (!s.reference || !str(s.reference.key, 64) || !Number.isInteger(s.reference.pair) || s.reference.pair < 1 || s.reference.pair > 512)) fail(); if (s.preset !== undefined && !str(s.preset, 64)) fail(); if (s.knob !== undefined && (!Number.isInteger(s.knob) || s.knob < 0 || s.knob > 75)) fail(); ids.add(s.id); }
   let byteCount = 0;
   const record = r => {
     if (!r || !str(r.id) || !Number.isFinite(r.time) || !r.source || !['id', 'name', 'manufacturer'].every(k => str(r.source[k])) || !validMessage(r.bytes) || r.kind !== kindOf(r.bytes) || r.channel !== (r.bytes[0] === 0xf0 ? null : (r.bytes[0] & 15) + 1) || r.hex !== hex(r.bytes) || r.verified !== false || !(r.slotId === null || ids.has(r.slotId)) || !(r.transition === null || ['on', 'off'].includes(r.transition)) || ((r.slotId === null) !== (r.transition === null))) fail();
@@ -34,7 +37,7 @@ export function validateSession(raw) {
     if (r.length !== r.bytes.length || r.checksum !== checksum(r.bytes)) fail();
     return { id: r.id, time: r.time, source: { id: r.source.id, name: r.source.name, manufacturer: r.source.manufacturer }, bytes: [...r.bytes], length: r.length, checksum: r.checksum, hex: r.hex, kind: r.kind, channel: r.channel, slotId: r.slotId, transition: r.transition, verified: false };
   };
-  const slots = raw.slots.map(s => ({ id: s.id, division: s.division, label: s.label, kind: s.kind, notes: s.notes, ...Object.fromEntries(['on', 'off'].map(t => {
+  const slots = raw.slots.map(s => ({ id: s.id, division: s.division, label: s.label, kind: s.kind, notes: s.notes, ...(s.reference ? { reference: { key: s.reference.key, pair: s.reference.pair } } : {}), ...(s.preset !== undefined ? { preset: s.preset } : {}), ...(s.knob !== undefined ? { knob: s.knob } : {}), ...Object.fromEntries(['on', 'off'].map(t => {
     if (!Array.isArray(s[t]) || s[t].length > LIMITS.slotEvents) fail();
     return [t, s[t].map(r => { const x = record(r); if (x.slotId !== s.id || x.transition !== t || !['cc', 'pc', 'sysex'].includes(x.kind)) fail(); return x; })];
   })) }));
@@ -43,17 +46,80 @@ export function validateSession(raw) {
 
 export class CaptureStore {
   #target = null;
+  #burstTimer;
+  #replace = false;
+  #sequence = false;
   #streams = new Map();
   warning = '';
-  constructor(session = createSession()) { this.session = validateSession(session); }
+  constructor(session = createSession()) { this.session = validateSession(session); this.installReferenceCaptures(); }
+  installReferenceCaptures() {
+    for (const group of CONSOLE_CAPTURE_GROUPS) for (const pair of group.captures) {
+      let slot = this.session.slots.find(s => knobForSlot(s)?.n === pair.knob);
+      if (slot?.preset === group.version) continue; // Keep subsequent operator recaptures.
+      const knob = KNOB.get(pair.knob);
+      const needsBackup = slot && (slot.on.length || slot.off.length);
+      if (this.session.slots.length + (needsBackup || !slot ? 1 : 0) > 256) { this.warning = 'No room to install console references; export session and free a slot.'; continue; }
+      const used = [...this.session.slots.flatMap(s => [...s.on, ...s.off]), ...this.session.events].reduce((n, record) => n + record.bytes.length, 0);
+      if (used + pair.on.bytes.length + pair.off.bytes.length > LIMITS.storedBytes * 2) { this.warning = 'No room to install console references; export session first.'; continue; }
+      if (needsBackup) {
+        const backup = structuredClone(slot); backup.id = `backup.${uid()}`; backup.knob = 0; backup.division = 'custom';
+        backup.label = `Previous ${pair.knob}: ${slot.label}`.slice(0, 256);
+        for (const transition of ['on', 'off']) for (const record of backup[transition]) record.slotId = backup.id;
+        this.session.slots.push(backup);
+      }
+      if (!slot) {
+        slot = { id: `console.${pair.knob}`, division: group.division, label: knob.label, kind: knob.kind, notes: '', on: [], off: [] };
+        this.session.slots.push(slot);
+      }
+      slot.knob = pair.knob; slot.preset = group.version;
+      slot.reference = { key: group.key, pair: pair.pair || pair.knob-group.first+1 };
+      slot.kind = knob.kind; // Preserve console tremulant/coupler classification.
+      for (const transition of ['on', 'off']) {
+        const { bytes, time } = pair[transition];
+        slot[transition] = [{ id: `${group.key}:${pair.knob}:${transition}`, time, source: { id: group.sourceId, name: `USB MIDI Device · ${group.filename}`, manufacturer: '' }, bytes: [...bytes], length: bytes.length, checksum: checksum(bytes), hex: hex(bytes), kind: 'sysex', channel: null, slotId: slot.id, transition, verified: false }];
+      }
+      this.session.updatedAt = new Date().toISOString();
+    }
+  }
+  setReferencePair(slotId, key, pairNumber) {
+    if (this.target) throw new Error('Stop capture before changing source pairs');
+    const slot = this.session.slots.find(s => s.id === slotId), group = CONSOLE_CAPTURE_GROUPS.find(g => g.key === key);
+    const pair = group && (group.pairs || group.captures)[pairNumber-1];
+    if (!slot || !pair) throw new Error('Select a source and pair');
+    if (slot.reference?.key === key && slot.reference?.pair === pairNumber && ['on','off'].every(t => slot[t].length === 1 && slot[t][0].hex === hex(pair[t].bytes))) return;
+    const used = [...this.session.slots.flatMap(s => [...s.on, ...s.off]), ...this.session.events].reduce((n,r) => n+r.bytes.length,0);
+    if (used+pair.on.bytes.length+pair.off.bytes.length > LIMITS.storedBytes*2) throw new Error('Export session and free capture space first');
+    if (slot.on.length || slot.off.length) {
+      if (this.session.slots.length >= 256) throw new Error('Export session and free a backup slot first');
+      const backup = structuredClone(slot); backup.id = `backup.${uid()}`; backup.knob = 0; backup.division = 'custom';
+      backup.label = `Previous ${knobForSlot(slot)?.n || ''}: ${slot.label}`.slice(0,256);
+      for (const action of ['on','off']) for (const record of backup[action]) record.slotId = backup.id;
+      this.session.slots.push(backup);
+    }
+    for (const action of ['on','off']) {
+      const { bytes, time } = pair[action];
+      slot[action] = [{ id: `${group.key}:pair:${pairNumber}:${action}`, time, source: { id: group.sourceId, name: `USB MIDI Device · ${group.filename}`, manufacturer: '' }, bytes: [...bytes], length: bytes.length, checksum: checksum(bytes), hex: hex(bytes), kind: 'sysex', channel: null, slotId: slot.id, transition: action, verified: false }];
+    }
+    slot.reference = { key, pair: pairNumber }; this.session.updatedAt = new Date().toISOString();
+  }
   get target() { if (this.#target && Date.now() > this.#target.expiresAt) this.cancel(); return this.#target ? { ...this.#target } : null; }
-  arm(slotId, transition = 'on', portId, channel = 'all') {
+  arm(slotId, transition = 'on', portId, channel = 'all', { sequence = false, replace = false } = {}) {
     if (!this.session.slots.some(s => s.id === slotId) || !['on', 'off'].includes(transition) || !str(portId) || !portId || !(channel === 'all' || Number.isInteger(Number(channel)) && Number(channel) >= 1 && Number(channel) <= 16)) throw new Error('Select a slot, input port, transition and channel');
-    this.#streams.clear();
+    this.cancel();
+    this.#sequence = sequence; this.#replace = replace;
     this.warning = '';
     this.#target = { slotId, transition, portId, channel: channel === 'all' ? 'all' : Number(channel), expiresAt: Date.now() + LIMITS.windowMs, count: 0 };
   }
-  cancel() { this.#target = null; this.#streams.clear(); }
+  cancel() { clearTimeout(this.#burstTimer); this.#target = null; this.#streams.clear(); }
+  #settle(target) {
+    clearTimeout(this.#burstTimer);
+    this.#burstTimer = setTimeout(() => {
+      if (this.#target !== target || !this.target) return;
+      if (this.#sequence && target.transition === 'on') {
+        this.#target = { ...target, transition: 'off', count: 0 }; this.#streams.clear();
+      } else { this.cancel(); this.warning = 'Capture complete · messages saved locally'; }
+    }, 300);
+  }
   clearSlot(id, transition) {
     const s = this.session.slots.find(s => s.id === id);
     if (!s || !['on', 'off'].includes(transition)) throw new Error('Invalid slot transition');
@@ -67,7 +133,8 @@ export class CaptureStore {
     const input = Array.from(data);
     if (input.some(x => !Number.isInteger(x) || x < 0 || x > 255)) { this.warning = 'Malformed MIDI bytes dropped.'; this.#streams.delete(source.id); return null; }
     const src = { id: source.id, name: String(source.name || '').slice(0, 256), manufacturer: String(source.manufacturer || '').slice(0, 256) };
-    const active = this.target;
+    this.target; // expire a stale capture before processing
+    const active = this.#target;
     if (!this.#streams.has(src.id) && this.#streams.size >= LIMITS.ports) this.#streams.delete(this.#streams.keys().next().value);
     let state = this.#streams.get(src.id) || { bytes: [], at: time };
     if (time - state.at > LIMITS.fragmentMs || time < state.at) { if (state.bytes[0] === 0xf0) this.warning = 'Incomplete SysEx timed out.'; state = { bytes: [], at: time }; }
@@ -77,15 +144,16 @@ export class CaptureStore {
       const kind = kindOf(bytes), channel = bytes[0] === 0xf0 ? null : (bytes[0] & 15) + 1;
       const target = active && time <= active.expiresAt && src.id === active.portId && (channel === null || active.channel === 'all' || active.channel === channel) && ['sysex', 'cc', 'pc'].includes(kind) ? active : null;
       const slot = target && this.session.slots.find(s => s.id === target.slotId);
+      const replacing = slot && this.#replace && target.count === 0;
       const savedBytes = this.session.slots.reduce((n, s) => n + [...s.on, ...s.off].reduce((m, r) => m + r.bytes.length, 0), 0);
-      const capture = slot && slot[target.transition].length < LIMITS.slotEvents && target.count < LIMITS.slotEvents && savedBytes + bytes.length <= LIMITS.storedBytes;
+      const capture = slot && slot[target.transition].length < LIMITS.slotEvents && target.count < LIMITS.slotEvents && savedBytes - (replacing ? slot[target.transition].reduce((n, r) => n + r.bytes.length, 0) : 0) + bytes.length <= LIMITS.storedBytes;
       const record = { id: uid(), time, source: src, bytes: [...bytes], length: bytes.length, checksum: checksum(bytes), hex: hex(bytes), kind, channel, slotId: capture ? target.slotId : null, transition: capture ? target.transition : null, verified: false };
       this.session.events.push(record);
       let monitorBytes = this.session.events.reduce((n, r) => n + r.bytes.length, 0);
       while (this.session.events.length > LIMITS.events || monitorBytes > LIMITS.storedBytes) { monitorBytes -= this.session.events.shift().bytes.length; this.warning = 'Monitor limit reached: oldest monitor events removed. Slot captures retained.'; }
-      if (capture) { slot[target.transition].push(structuredClone(record)); target.count++; if (this.#target) this.#target.count = target.count; }
+      if (capture) { if (replacing) { slot[target.transition] = []; delete slot.reference; } slot[target.transition].push(structuredClone(record)); target.count++; if (this.#target) this.#target.count = target.count; if (this.#replace || this.#sequence) this.#settle(target); }
       this.session.updatedAt = new Date().toISOString(); last = record;
-      if (target && (!capture || target.count >= LIMITS.slotEvents)) { this.#target = null; this.warning = 'Capture limit reached. Export observations, clear a slot explicitly, then rearm.'; }
+      if (target && (!capture || target.count >= LIMITS.slotEvents)) { this.cancel(); this.warning = 'Capture limit reached. Export observations, clear a slot explicitly, then rearm.'; }
     };
     for (const byte of input) {
       if (byte >= 0xf8) continue; // Realtime interleaving never enters SysEx or running status.

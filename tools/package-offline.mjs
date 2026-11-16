@@ -22,8 +22,8 @@ try {
   await cp('contracts/spore-score.schema.json', join(folder, 'contracts/spore-score.schema.json'));
   await mkdir(join(folder, 'scores'), { recursive: true });
   await cp('apps/hylon/scores', join(folder, 'scores/app'), { recursive: true });
-  await cp('scores/apomixis/spore/0.1.0-draft.1/score.txt', join(folder, 'scores/SPORE.score.txt'));
-  await cp('scores/apomixis/spore/0.1.0-draft.1/score.json', join(folder, 'scores/SPORE.score.json'));
+  await cp('archive/scores/apomixis/spore/0.1.0-draft.1/score.txt', join(folder, 'scores/SPORE.score.txt'));
+  await cp('archive/scores/apomixis/spore/0.1.0-draft.1/score.json', join(folder, 'scores/SPORE.score.json'));
   await cp('docs/AUDIO-POD-GUIDE.md', join(folder, 'AUDIO-POD-GUIDE.md'));
   await cp('docs/HELIOS-POD-GUIDE.md', join(folder, 'HELIOS-POD-GUIDE.md'));
   await cp('licenses/HELIOS-SDK-MIT.txt', join(folder, 'HELIOS-SDK-LICENSE'));

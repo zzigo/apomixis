@@ -1,0 +1,53 @@
+.impro-pod{display:flex;flex-direction:column;gap:6px;padding:8px;height:100%;min-height:0;overflow:auto}
+.impro-bar{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:0}
+.impro-bar button{height:26px;min-height:26px;min-width:26px;padding:0 6px;font-size:9px}
+.impro-bar label{display:flex;align-items:center;gap:3px;font-size:9px}
+.impro-bar output{font-size:9px;color:var(--muted);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.impro-routes{display:flex;gap:3px}
+.impro-states{display:grid;grid-template-columns:26px 1fr;gap:3px;align-items:center}
+.impro-states button{height:22px;min-height:22px;padding:0;font-size:10px}
+.impro-states button.active{border-color:var(--green);color:var(--green)}
+.impro-states input{font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;min-height:22px;height:22px;padding:0 6px;width:100%;box-sizing:border-box}
+.impro-states input.invalid{border-color:#ff3b4e;color:#ff8f9a}
+.impro-taps{display:flex;flex-direction:column;gap:2px;font:10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted)}
+.impro-tap{display:grid;grid-template-columns:26px 34px 1fr 56px;gap:6px;align-items:center}
+.impro-tap i{display:block;height:5px;background:currentColor;opacity:.75;min-width:2px}
+.impro-pod.armed [data-arm]{border-color:#ff5fa8;color:#ff5fa8}
+
+/* Activity LEDs: green = MIDI in reached the pod, red = the pod produced a note. */
+.impro-led{display:inline-block;width:5px;height:5px;border-radius:50%;flex:0 0 5px;background:#1d2a22}
+.impro-led.in.on{background:#5dff8a;box-shadow:0 0 6px #5dff8a}.impro-led.out.on{background:#ff4b4b;box-shadow:0 0 6px #ff4b4b}
+.impro-bar output{margin-left:6px}
+
+.impro-status{display:block;font-size:11px;line-height:1.4;color:#ffb36b;white-space:normal;overflow-wrap:anywhere}
+.impro-pod.armed .impro-status{color:#b6ffcf}
+.impro-pod.armed [data-arm]{background:#ff5fa822}
+
+/* ARM is the one switch of this pod: it must look like one. */
+.impro-bar [data-arm]{border:1px solid #ff5fa8!important;color:#ff5fa8;min-width:64px;font-weight:700;letter-spacing:.08em}
+.impro-pod.armed [data-arm]{background:#ff5fa8!important;color:#000!important;box-shadow:0 0 8px #ff5fa88c}
+
+/* Patch selector in the sub-header, and the BOTONERA: routing matrix + kind / interval / time / count. */
+.impro-patch{display:inline-flex;align-items:center;gap:2px;margin-left:auto}
+.impro-patch output{margin:0!important;min-width:22px;text-align:center;font:700 20px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#75ff9f}
+.impro-patch output.score{color:#ff9d3c}
+.impro-pad{display:flex;flex-direction:column;gap:5px;padding:4px 0 6px;border-bottom:1px solid #1d2a22}
+.impro-line{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.impro-route{display:grid;grid-template-columns:24px repeat(6,30px);gap:3px;align-items:center}
+.impro-row{font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;color:var(--row-color,#8aa596)}
+.impro-pad button{padding:0;font-size:9px;border:1px solid #2a3a31!important;background:transparent;color:#8aa596;border-radius:0}
+.impro-route button{width:30px;min-width:30px;height:30px;min-height:30px}
+.impro-pad button:disabled{opacity:.18}
+.impro-route button.active{background:var(--division-color,#ff9d3c)!important;border-color:var(--division-color,#ff9d3c)!important;color:#000!important;font-weight:800}
+.impro-quads{display:flex;flex-wrap:wrap;gap:4px 8px;padding-left:27px;opacity:.45}
+.impro-line.routed .impro-quads{opacity:1}
+.impro-quad{display:grid;grid-template-columns:repeat(2,26px);grid-auto-rows:14px;gap:2px;width:54px;height:30px}
+.impro-quad button{width:26px;min-width:26px;height:14px;min-height:14px;font-size:8px;line-height:1}
+.impro-quad button.active{background:var(--row-color,#ff9d3c)!important;border-color:var(--row-color,#ff9d3c)!important;color:#000!important;font-weight:800}
+.impro-tools{display:flex;gap:3px;padding-left:27px}
+.impro-tools button{width:30px;min-width:30px;height:20px;min-height:20px}
+.impro-pod.pad-idle .impro-pad{opacity:.75}
+
+
+/* IMPRO modal (key E): reuses the MIXER dialog frame. */
+.impro-dialog{width:min(860px,95vw)}.impro-dialog .impro-pod{height:auto;overflow:visible}

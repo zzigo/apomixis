@@ -485,6 +485,13 @@ export const KLAIS_CATALOG = Object.freeze([
     "verified": false
   },
   {
+    "id": "coupler.super_iii",
+    "division": "coupler",
+    "label": "Super III",
+    "kind": "coupler",
+    "verified": false
+  },
+  {
     "id": "coupler.i_ped",
     "division": "coupler",
     "label": "I / Ped.",

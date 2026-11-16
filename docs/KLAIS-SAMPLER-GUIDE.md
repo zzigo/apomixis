@@ -64,3 +64,8 @@ No samples are checked into Git or uploaded to a service by these tools. Online 
 - Automated tests cover root selection/zones, layering, asynchronous note cancellation/retrigger, pinned LRU budgets, load dedup/retry/concurrency, voice/release limits, approved loops, one-shot audition, loader integrity/timeouts and safe local HTTP/range delivery.
 - Browser smoke uses actual OGG recordings: one bank warms 32 samples, about 79.8 MiB decoded, with zero errors; a muted-output test chord produces three real sample voices. Additional browser checks are recorded in the PR.
 - No physical Klais MIDI source, hardware output, room tuning, loop approval or public deployment was tested.
+
+
+## Current compact controls · 2026-11-12
+
+MI is ON by default and routes selected MIDI input to the local Klais bank when audio is enabled. The top keyboard defaults to61keys/five octaves, scales proportionally to the pod's content width and scrolls below300px. MIDI activity highlights by division/channel even with audio OFF; release messages are still processed while suspended. Gain/release/transpose/stretch live in the subheader. Catalog loading and per-note decoded caching are automatic; optional reload/preload/export/chord controls are in ADVANCED. The square stop releases bank voices without unloading cache. MASTER starts0.9; panic mute remains0. These updates have not been runtime/UI/device tested under the rapid-session instruction.

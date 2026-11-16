@@ -1,0 +1,100 @@
+.registers-pod{--reg-scale:1;position:relative;overflow:auto;--f32:#ff4d5e;--f16:#ff9d3a;--f8:#b6ffcf;--f4:#5fd6ff;--f2:#a98bff;--mut:#ff2bd6;--mix:#ffe14a;--aux:#4c5e54}
+.reg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.reg-combo,.reg-zoom,.reg-pgm,.reg-cc{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.reg-zoom{margin-left:auto}
+.reg-display{width:calc(4ch + 0.72em + 22px);flex:0 0 auto;text-align:center;font-size:22px;letter-spacing:.18em;padding:4px 4px 4px calc(4px + .18em);color:#3d5a48;background:#050807;border:1px solid #27352f;font-variant-numeric:tabular-nums}
+.reg-display.stored{color:var(--green);text-shadow:0 0 8px #83ffb060;border-color:#3d6b4c}
+.reg-display.dirty{color:#ffe14a;text-shadow:0 0 8px #ffe14a50}
+.reg-step,.reg-cmd,.reg-link{min-height:30px;padding:5px 9px;font-size:10px}
+.reg-status{font-size:10px;color:var(--muted);padding:8px 0;line-height:1.6;overflow-wrap:anywhere}
+.reg-jambs{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line)}
+.reg-jamb{display:grid;grid-template-rows:repeat(5,minmax(calc(46px * var(--reg-scale)),auto));padding:6px 10px}
+.reg-jamb-L{border-right:1px solid var(--line)}
+.reg-row{display:flex;align-items:center;gap:8px;border-bottom:1px dashed #1b2620;padding:5px 0}
+.reg-row:last-child{border-bottom:0}
+.reg-row.empty .reg-row-tag{opacity:.25}
+.reg-row-tag{flex:0 0 calc(22px * var(--reg-scale));font-size:calc(9px * var(--reg-scale));color:#5f7568;letter-spacing:.08em}
+.reg-strip{display:flex;flex-wrap:wrap;gap:calc(6px * var(--reg-scale))}
+.reg-knob{--c:var(--aux);position:relative;width:calc(30px * var(--reg-scale));height:calc(30px * var(--reg-scale));min-height:0;padding:0;border-radius:50%;border:1.5px solid var(--c);background:transparent;color:#9fb3a7;font-size:calc(10px * var(--reg-scale));letter-spacing:0;line-height:1;display:grid;place-items:center;transition:box-shadow .12s,color .12s}
+.reg-knob:hover{background:transparent;color:#fff;border-color:var(--c);box-shadow:0 0 0 1px var(--c)}
+.reg-knob.f32{--c:var(--f32)}.reg-knob.f16{--c:var(--f16)}.reg-knob.f8{--c:var(--f8)}.reg-knob.f4{--c:var(--f4)}.reg-knob.f2{--c:var(--f2)}
+.reg-knob.mut{--c:var(--mut);border-width:2.5px}
+.reg-knob.mix{--c:var(--mix)}
+.reg-knob.nosample{border-style:dashed}
+.reg-knob.aux{color:#6d8276;border-style:dotted}
+.reg-knob.verify::after{content:'?';position:absolute;right:-5px;top:-6px;font-size:8px;color:#ffe14a}
+.reg-knob.on{color:#fff;border-width:3px;box-shadow:0 0 10px var(--c),inset 0 0 6px var(--c)}
+.reg-knob.aux.on{border-style:solid}
+.reg-legend{display:flex;flex-wrap:wrap;gap:12px;padding-top:10px;font-size:calc(9px * var(--reg-scale));color:var(--muted)}
+.reg-legend-item{display:flex;align-items:center;gap:5px}
+.reg-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--aux)}
+.reg-dot.f32{border-color:var(--f32)}.reg-dot.f16{border-color:var(--f16)}.reg-dot.f8{border-color:var(--f8)}.reg-dot.f4{border-color:var(--f4)}.reg-dot.f2{border-color:var(--f2)}
+.reg-dot.mut{border-color:var(--mut);border-width:2.5px}.reg-dot.mix{border-color:var(--mix)}.reg-dot.nosample{border-color:#9fb3a7;border-style:dashed}.reg-dot.aux{border-style:dotted}
+.reg-tip{position:absolute;z-index:5;font-size:calc(10px * var(--reg-scale)) !important;transform:translate(-50%,-100%);pointer-events:none;background:#050807;border:1px solid #3d6b4c;padding:6px 8px;font-size:10px;line-height:1.5;display:flex;flex-direction:column;white-space:nowrap}
+.reg-tip strong{font-weight:400;color:var(--green)}
+.reg-tip span{color:#9fb3a7}.reg-tip .warn{color:#ffe14a}.reg-tip .ok{color:var(--green)}
+@media (max-width:640px){.reg-jambs{grid-template-columns:1fr}.reg-jamb-L{border-right:0;border-bottom:1px solid var(--line)}}
+.reg-pgm-select{width:auto;min-height:30px;padding:4px 6px;font-size:10px}
+.reg-pgm-out{color:var(--pink);border-color:#744155}
+.reg-pgm-out.sent{background:#3a1424;box-shadow:0 0 10px var(--pink)}
+.reg-cc-input{width:7ch;min-height:30px;padding:4px 6px;font-size:12px;text-align:right}
+.reg-cc-input.sent{border-color:var(--pink);box-shadow:0 0 8px var(--pink)}
+.reg-cc-tag{font-size:10px;color:var(--muted)}
+.reg-header-counter{display:flex;align-items:center;gap:3px;flex:0 0 auto;color:#75ff9f}.reg-header-counter button{width:24px;min-width:24px;height:28px;min-height:28px;padding:0;color:#75ff9f;border-color:transparent;font-size:20px;line-height:1;background:transparent}.reg-header-digits{display:flex;align-items:center;min-width:0;flex:0 0 auto}.reg-header-digits svg{display:block;overflow:visible}.reg-header-digits .lit{fill:#75ff9f;filter:drop-shadow(0 0 1px #75ff9f80)}.reg-header-digits .unlit{fill:#153123}.reg-display{font-style:italic;color:#75ff9f;font-family:'DSEG7 Classic','Digital-7',ui-monospace,monospace}
+.reg-header-counter{margin-left:auto;order:1}.masthead>.score-fast-line{order:2}
+.reg-combo .reg-square,.reg-generated .reg-square{display:inline-flex;align-items:center;justify-content:center;width:30px;min-width:30px;height:30px;padding:0}
+.reg-generated{padding:2px 0 10px;color:var(--muted);font-size:10px}.reg-generated[hidden]{display:none}.reg-generated summary{cursor:pointer;font-size:9px;letter-spacing:.08em;padding:4px 0}.reg-generated-rows{display:flex;flex-direction:column;gap:3px}.reg-generated-row{display:flex;gap:8px;align-items:center;min-width:0}.reg-generated-row button{flex-shrink:0;width:auto!important;padding:0 4px!important}.reg-generated-row span{overflow-wrap:anywhere;line-height:1.5}
+
+/* One-line local commander; experimental MIDI controls stay at the bottom. */
+.registers-pod .reg-head{flex-wrap:nowrap;justify-content:flex-start;gap:6px;overflow-x:auto;min-width:0;padding-bottom:6px;border:0}.reg-head>.reg-combo,.reg-head>.reg-zoom{flex-wrap:nowrap;gap:3px;flex-shrink:0}.reg-head>button{flex-shrink:0}.reg-head .reg-display{font-size:18px}.reg-head .reg-cmd,.reg-head .reg-step{padding:3px 5px;font-size:9px;white-space:nowrap}.reg-head .reg-link{display:inline-flex;align-items:center;justify-content:center;width:28px;min-width:28px;height:28px;padding:0}
+.reg-generated{margin-top:8px}.reg-generated-rows{overflow-x:auto}.reg-generated-row{display:grid;grid-template-columns:34px max-content 7px max-content 7px minmax(220px,1fr);align-items:center;gap:7px;width:max-content;min-width:100%}.reg-program-numbers{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.reg-program-number{font-variant-numeric:tabular-nums}.reg-program-divider{color:#52695b}.reg-program-cues{white-space:nowrap;font-size:9px}.reg-experimental{margin-top:10px;color:var(--muted)}.reg-experimental>summary{cursor:pointer;font-size:9px;letter-spacing:.08em;padding:6px 0}.reg-experimental .reg-pgm,.reg-experimental .reg-cc{margin:6px 0}
+@keyframes hylon-program-cue{0%,42%,84%{filter:brightness(1);background:transparent}21%,63%{filter:brightness(1.8);background:#b6ffcf25}}
+.reg-header-counter.score-cue-flash{animation:hylon-program-cue .65s ease-out 1}
+@media(prefers-reduced-motion:reduce){.reg-header-counter.score-cue-flash{animation:none;outline:1px solid #b6ffcf}}
+
+/* Next manual registration change: orange preview under the counter, right aligned on the score-button line. */
+.reg-preview{margin-left:auto;display:flex;align-items:center;gap:5px;color:#ff9d3c;font:11px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;padding-right:22px}
+.reg-preview-digits svg{display:block;height:19px;width:auto}.reg-preview-digits .lit{fill:#ff9d3c}.reg-preview-digits .unlit{fill:#ff9d3c18}
+.reg-preview-arrow{font-size:15px}.reg-preview-time{min-width:30px;color:#c9813a}.reg-preview-loop{border:1px solid #ff9d3c80;padding:0 4px}
+.reg-preview.slow .reg-preview-arrow{color:#ff5a4e}
+.reg-preview.soon .reg-change,.reg-gesture.soon{animation:hylon-reg-preview .5s steps(2,jump-none) infinite}
+@keyframes hylon-reg-preview{from{opacity:1}to{opacity:.15}}
+@media(prefers-reduced-motion:reduce){.reg-preview.soon .reg-change,.reg-gesture.soon,.reg-gesture i{animation:none!important}.reg-gesture.soon{outline:1px solid #ff9d3c}.reg-preview.soon .reg-change{outline:0}}
+
+/* Manual gestures in the preview: CRESC (crescendo pedal), EXP3 / EXP2 (expression boxes). */
+.reg-change,.reg-gestures{display:flex;align-items:center;gap:5px}.reg-gestures{gap:8px;margin-right:6px}
+.reg-gesture{position:relative;display:flex;align-items:center;gap:4px;padding:1px 5px 3px;border:1px solid #ff9d3c55;color:#ff9d3c}
+.reg-gesture b{font-weight:600;letter-spacing:.06em}.reg-gesture i{font-style:normal;display:inline-block;width:11px;text-align:center}.reg-gesture em{font-style:normal;color:#c9813a}
+.reg-gesture u{position:absolute;left:0;bottom:0;height:2px;width:var(--position,0%);background:#ff9d3c;text-decoration:none}
+.reg-gesture.up i{animation:hylon-gesture-up .9s ease-in infinite}.reg-gesture.down i{animation:hylon-gesture-down .9s ease-in infinite}.reg-gesture.wave i{animation:hylon-gesture-wave 1.6s ease-in-out infinite}
+@keyframes hylon-gesture-up{from{transform:translateY(4px);opacity:.2}to{transform:translateY(-4px);opacity:1}}
+@keyframes hylon-gesture-down{from{transform:translateY(-4px);opacity:.2}to{transform:translateY(4px);opacity:1}}
+@keyframes hylon-gesture-wave{0%,100%{transform:translateY(-3px) scaleX(1.3)}50%{transform:translateY(3px) scaleX(.8)}}
+
+.registers-pod>.reg-status{margin:8px 0 0;overflow-wrap:anywhere;font-size:9px;color:#789383}
+
+/* Register names under each knob (N switch in the pod header). */
+.reg-cell{display:inline-flex;flex-direction:column;align-items:center;gap:calc(5px * var(--reg-scale))}
+.reg-name{display:none;width:calc(48px * var(--reg-scale));font-size:calc(7px * var(--reg-scale));line-height:1.15;text-align:center;color:var(--muted);hyphens:none;overflow-wrap:normal;word-break:normal}
+.reg-names .reg-name{display:block}
+.reg-names .reg-strip{gap:calc(6px * var(--reg-scale)) calc(2px * var(--reg-scale))}
+.reg-cmd.active{background:#9fb3a7!important;color:#000!important}
+
+/* Header program digits: click to type a program number. */
+.reg-header-digits{cursor:text}.reg-header-digits:focus-visible{outline:1px solid #75ff9f;outline-offset:2px}
+.reg-header-input{width:3.2ch;height:28px;min-height:28px;padding:0 2px;font:700 22px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#75ff9f;background:#000;border:1px solid #75ff9f;border-radius:0;text-align:center;caret-color:#75ff9f}
+.reg-header-input::placeholder{color:#75ff9f55}
+
+/* Stopped: where the organ must be before play (steady, not blinking). */
+.reg-preview.prep .reg-preview-time{color:#ff9d3c;font-weight:700;letter-spacing:.06em}.reg-preview.prep.slow .reg-preview-time{color:#ff5a4e}
+
+/* Bigger knob numbers (composer 2026-11-14). */
+.reg-knob{width:calc(36px * var(--reg-scale));height:calc(36px * var(--reg-scale));font-size:calc(14px * var(--reg-scale));font-weight:600}
+.reg-name{width:calc(52px * var(--reg-scale))}
+
+/* Last 3 s before a registration change: the countdown uses the same seven-segment digits as the program, in yellow, no unit. */
+.reg-preview-time.countdown{min-width:0;display:inline-flex;align-items:center}
+.reg-preview-time.countdown svg{display:block;height:19px;width:auto}.reg-preview-time.countdown .lit{fill:#ffe14a}.reg-preview-time.countdown .unlit{fill:none}
+
+/* No frame around the next-program preview (its clipped outline showed as two orange bars). */
+.reg-preview .reg-change,.reg-preview.soon .reg-change{outline:0!important;border:0!important;box-shadow:none!important}

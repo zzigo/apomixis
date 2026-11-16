@@ -44,7 +44,8 @@ export function compileLaserFrame(strokes, profile) {
   const paths=strokes.map((stroke,index)=>{
     if(!Array.isArray(stroke.points)||stroke.points.length<2||stroke.points.length>256||!Number.isFinite(stroke.intensity)||stroke.intensity<0||stroke.intensity>1)throw new Error('Invalid laser stroke');
     for(const p of stroke.points)if(!Array.isArray(p)||p.length!==2||p.some(v=>!Number.isFinite(v)||v<0||v>1))throw new Error('Invalid laser coordinate');
-    return {id:index+1,intensity:stroke.intensity,path:stroke.points.map(([x,y])=>projectLaserPoint(profile,x,y,mapper))};
+    const strokeColor=stroke.colorRgb??color;if(!Array.isArray(strokeColor)||strokeColor.length!==3||strokeColor.some(v=>!Number.isFinite(v)||v<0||v>1))throw new Error('Invalid stroke RGB');
+    return {colorRgb:strokeColor,id:index+1,intensity:stroke.intensity,path:stroke.points.map(([x,y])=>projectLaserPoint(profile,x,y,mapper))};
   });
   const ordered=[];let cursor=center;
   if(tuning.route==='original')ordered.push(...paths);
@@ -69,10 +70,10 @@ export function compileLaserFrame(strokes, profile) {
   const anchor=tuning.returnToCenter?center:(ordered[0]?.path[0]||center);
   const maxPoints=Math.min(1600,Math.floor(pps*.04)),points=[],lanes=[];
   const samples=us=>Math.round(us*pps/1e6),dark=point=>Object.assign(point,{r:0,g:0,b:0,i:0});
-  cursor=anchor;
+  cursor=anchor;let traceColor=color;
   function emit(xy,intensity=0,lane=0){
     const level=Math.round(255*profile.intensityPercent/100*intensity);
-    const point={x:Math.round(xy[0]*4095),y:Math.round((1-xy[1])*4095),r:Math.round(level*color[0]),g:Math.round(level*color[1]),b:Math.round(level*color[2]),i:color.some(v=>v>0)?level:0};
+    const point={x:Math.round(xy[0]*4095),y:Math.round((1-xy[1])*4095),r:Math.round(level*traceColor[0]),g:Math.round(level*traceColor[1]),b:Math.round(level*traceColor[2]),i:traceColor.some(v=>v>0)?level:0};
     const previous=points.at(-1);
     if(point.i>0&&previous?.i>0&&previous.x===point.x&&previous.y===point.y)return;
     points.push(point);lanes.push(lane);
@@ -100,6 +101,7 @@ export function compileLaserFrame(strokes, profile) {
   }
   emit(anchor);
   for(const stroke of ordered){
+    traceColor=stroke.colorRgb;
     move(stroke.path[0]);
     for(let i=0;i<samples(tuning.settleUs);i++)emit(cursor); // Settling is always dark.
     const first=points.length,amount=tuning.cornerSlowdown/100;

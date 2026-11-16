@@ -1,0 +1,130 @@
+HYLON-SCORE 1
+# LAB 13 / PSALM — vocal number. Candidate lab score; lyric text is a draft, not approved copy.
+#
+# LYRIC SYSTEM · psalmody, not song. One verse = two hemistichs separated by "/" (the caesura).
+#   verse "first half / second half"     text for the singer and the public viewer
+#   psalm init … tenor … med … fin …     the organ's tone formula:
+#       init   intonation, sung once at the start of the first half
+#       tenor  the reciting pitch: almost all syllables are chanted on it, in speech rhythm
+#       med    mediant cadence closing the first half, then a half-breath
+#       fin    final cadence closing the second half, then a full breath
+#   verse 18 = one verse every 18 seconds; breath 3 = seconds of silence after it.
+#   syll N re-attacks the tenor about N times per second (parlando); syll 0 holds it.
+#   organum 0,7 doubles the tone at those intervals (fauxbourdon), one division per interval.
+#   ison D2 holds a pedal note under each half and releases it in the breaths.
+# The singer follows the organ's breathing, never a click. Text density is free: fewer or more
+# syllables fit the same tenor.
+#
+# MIC FOLLOWER · `follow DIVISION SEMITONES …` sets the follower sends for the section, so the
+# harmony that grows out of the voice changes with the form. The score never switches the
+# follower on: enable MIC MIDI FOLLOWER in MIXER. Intervals are the matrix rows (0 2 3 4 5 7 10 12 21 26, ±).
+id apomixis.lab.psalm
+version 0.1.0-lab.1
+title "PSALM"
+number lab13
+duration 300
+seed 3131
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P5" "D · tenor A"
+harmonicity 300 "P5" ""
+
+# The tone (first mode on D, tenor A). Change it here and every section follows.
+set TONE = init F3 G3 tenor A3 med Bb3 A3 fin G3 F3 E3 D3
+set TONE2 = init A3 C4 tenor D4 med E4 D4 fin C4 A3 G3 A3
+
+section I "Invitatory" for 32 bpm 60
+native off
+exp3 0.1->0.4
+pgm @voix @pedalvoice -9
+laser off
+follow off
+psalm @TONE verse 16 breath 3 syll 0 div re ison D2
+bio "the organ sings the tone alone, twice · voix humaine, voix céleste, trémolo"
+end
+
+section V1 "Verse 1" for 54 bpm 60
+native off
+exp3 0.2~0.6 9
+pgm @voix @pedalvoice -9
+laser off
+follow III 0
+verse "sin polen, sin encuentro / la semilla copia a la madre"
+verse "no hay otro en la célula / la célula alcanza"
+verse "lo que crece es lo mismo / y no es lo mismo"
+psalm @TONE verse 18 breath 3 syll 0 div re ison D2
+bio "voice enters on the tenor · the follower doubles it at the unison on III"
+end
+
+section V2 "Verse 2" for 54 bpm 60
+native off
+exp3 0.2~0.7 6
+exp2 0.3
+pgm @voix II.salicional8 II.bourdon8 @pedalvoice -9
+laser off
+follow III 0 II 7
+verse "el óvulo no espera / se divide sin reducirse"
+verse "la mitad no se pierde / nadie trae la otra mitad"
+verse "una planta entera / dentro de una planta entera"
+psalm @TONE verse 18 breath 3 syll 3 organum 0,7 div re,po ison D2
+bio "parlando · the organ recites three syllables per second, a fifth appears on II"
+end
+
+section V3 "Verse 3" for 54 bpm 60
+native off
+exp3 0.4->0.9
+exp2 0.3->0.8
+pgm @voix II.salicional8 II.bourdon8 I.bourdon8 I.dulciane8 73 @pedalvoice
+laser off
+follow III 0 II 7 I -12 IV 12
+verse "clon tras clon / la deriva escribe pequeñas diferencias"
+verse "ningún padre, ningún azar de encuentro / sólo el error al copiar"
+verse "el jardín es un solo individuo / repartido en el tiempo"
+psalm @TONE verse 18 breath 3 syll 4 organum 0,7,-5 div re,po,go ison D2
+bio "fauxbourdon · the voice now pulls four manuals: unison, fifth, octave below, octave above"
+end
+
+section V4 "Verse 4" for 54 bpm 60
+native off
+exp3 0.3~1 4
+exp2 0.8
+pgm @voix II.salicional8 II.bourdon8 I.bourdon8 I.dulciane8 73 @pedalvoice
+laser off
+follow III 0 II 5 IV 10 P -12
+verse "la voz entra en la máquina / como entra el agua en la semilla"
+verse "no la conduce / la humedece"
+verse "lo que canta ya estaba cantando / antes de la boca"
+psalm @TONE2 verse 18 breath 3 syll 5 organum 0,5,-7 div re,po,go ison G2
+bio "the tenor rises a fourth · quartal follower: fourth, seventh, pedal an octave below"
+end
+
+section X "Jubilus" for 32 bpm 132
+native off
+pgm @voix 58 42 25 73
+laser midixy src so size 0 prob 40 max 2 dur 0.15
+follow III 0 II 7 IV 12 I 4 P -12
+verse "a —"
+chord D4:0,7,12,16,19 | A3:0,7,12,15,19 pat x..x.x.. rate 1/16 ms 40 hold 6 morph 1 iris 1 div po,go,so
+bio "one vowel, free melisma · the follower spreads a major triad, 4-foot flutes glitter at 40 ms"
+end
+
+section O "Residue" for 20 bpm 60
+native off
+exp3 0.5->0
+pgm @voix -67
+laser off
+follow off
+verse "(aliento)"
+pedal drone 38
+bio "breath only · the follower is cut, voix céleste and a pedal D remain"
+end

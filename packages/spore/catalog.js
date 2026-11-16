@@ -1,3 +1,4 @@
+import { DIVISION_UI } from '../hylon-midi/divisions.js';
 // Sketch v2 vocabulary; logical stop labels are unverified, not device commands.
 export const CATALOG = {
   "W": 61,
@@ -9,13 +10,7 @@ export const CATALOG = {
     "go",
     "pe"
   ],
-  "DIVCOL": {
-    "go": "#b6ffcf",
-    "po": "#8fe3ff",
-    "re": "#c9a7ff",
-    "so": "#ffa070",
-    "pe": "#ffd27a"
-  },
+  "DIVCOL": Object.fromEntries(Object.entries(DIVISION_UI).map(([id,info])=>[id,info.color])),
   "INT": [
     -5,
     -3,

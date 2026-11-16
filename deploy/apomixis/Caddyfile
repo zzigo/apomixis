@@ -1,0 +1,4 @@
+# APOMIXIS public viewer. Imported by /etc/caddy/Caddyfile on the Hetzner VPS.
+apomixis.zztt.org {
+    reverse_proxy 127.0.0.1:4175
+}

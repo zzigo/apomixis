@@ -66,5 +66,15 @@ export function mountLaserProfile(container, { onApply = () => {}, onChange = ()
     catch (error) { if (!disposed) { q('settings-status').textContent = error.message; notify(error.message); } } finally { event.target.value = ''; }
   };
   populate();
-  return { get: () => current, setQuad(warpQuad) { apply({ ...current, warpQuad }, true); }, dispose() { disposed = true; container.replaceChildren(); } };
+  // Score override shown on the sliders (display only: never applied or saved). null restores.
+  let shown = null;
+  function showOverride(o) {
+    const key = o ? JSON.stringify(o) : null; if (key === shown) return; shown = key;
+    container.classList.toggle('score-driven', !!o);
+    if (!o) { populate(); return; }
+    if (o.colorRgb) ['r','g','b'].forEach((ch,i)=>{ q('color-'+ch).value = Math.round(o.colorRgb[i]*100); });
+    if (o.widthPercent !== undefined) { q('size').value = Math.min(o.widthPercent, o.heightPercent); q('size-label').value = `${o.widthPercent}% × ${o.heightPercent}% · SCORE`; }
+    if (o.intensityPercent !== undefined) { q('power').value = o.intensityPercent; q('power-label').value = `${o.intensityPercent}% · SCORE`; }
+  }
+  return { get: () => current, showOverride, setQuad(warpQuad) { apply({ ...current, warpQuad }, true); }, dispose() { disposed = true; container.replaceChildren(); } };
 }

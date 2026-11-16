@@ -1,0 +1,133 @@
+HYLON-SCORE 1
+# Apomixis03 / MEIOSIS — from LAB12 HUMUS, with its form and material retained.
+# Noise families become a sustained harmonic object at Cut soil (240s).
+# Previous MEIOSIS Perforation / Residue survives as one held cluster process:
+# attack240, perforate241–250, exact seven-note residue held250–270.
+# The original HUMUS lab and previous cantabile MEIOSIS are preserved separately.
+id apomixis.meiosis
+version 0.2.0-draft.1
+title "MEIOSIS"
+number meiosis
+duration 270
+seed 3121
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "m2" "no pitch centre"
+harmonicity 240 "m2" "Cut soil · chromatic perforation"
+harmonicity 250 "P5" "exact thematic residue"
+harmonicity 270 "P5" ""
+
+# Noise objects.
+set CLOUD = pedal ostinato 24 25 26 27 28 27 26 25 rate 1/32 dur 6 rdur 40
+set SOIL = pedal ostinato 29 31 30 33 32 35 34 rate 1/16 dur 5 rdur 30
+# Inherited terminal object from MEIOSIS v0.1; absolute times shared by both final sections.
+set RESIDUE = cluster C4 D5 keep C4 D4 E4 F4 G4 A4 Bb4 pcs C,D,E,F,G,A,Bb origin 240 holes-from 241 holes-to 250 until 270 div re
+set SWARM = arp dir random step 1 len 12 rate 1/32 rand 60 rint 6 calibre 2 rexp 1 rer 20
+
+section A "Substrate" for 40 bpm 120
+native off
+pgm @noise32
+laser off
+@CLOUD
+bio "32-foot pipes below E1 · no pitch, only air and beating"
+end
+
+section B "Flutes" for 40 bpm 132
+native off
+pgm @flutes @bourdons -1 -2
+laser off
+@SWARM root 60 voices 6->16 dur 0.4 rdur 30
+@SOIL
+bio "flute swarm · semitone lattice, every attack displaced"
+end
+
+section C "Reeds" for 40 bpm 60
+native off
+exp3 0~1 8
+exp2 1~0 8
+pgm @reeds @trem II.bourdon16 III.quintaton16
+laser off
+@SWARM root 38 voices 6->14 dur 6 rdur 40
+chord C2:0,1,2,3,4,5,6 | F#2:0,1,2,3,4,5 pat x....... rate 1/4 ms 2400 hold 2 iris 1 div po,re
+silence 20 0.8
+bio "reed clusters in the bass, tremulants on · slow beating mass"
+end
+
+section D "Brass" for 40 bpm 144
+native off
+pgm @brass -74 -75 -10
+laser midixy src go size 0 prob 50 max 2 dur 0.1
+chord C3:0,1,2,3,4,5,6,7 | G3:0,1,2,3,4,5,6,7 | C4:0,1,3,4,6,7,9,10 pat X..x....x.X..... rate 1/16 ms 50->180 hold 3|2|4 oct 0|-1|1|0 div go,re voicing stack
+pedal ostinato 24 36 24 30 rate 1/8 dur 0.3
+silence every 8 dur 0.2
+bio "chorus reeds as percussion · cluster stabs with holes"
+end
+
+section E "Cloud" for 40 bpm 150
+native off
+pgm @cloud2 @mixtures
+laser off
+@SWARM root 72 voices 10->16 dur 0.5 rdur 50
+arp dir up step 0 len 1 root 84 rate 1/32 calibre 2 voices 4 rexp 1 dur 0.3
+bio "every 2-foot stop and the mixtures · the high dense cloud"
+end
+
+section F1 "Cut flutes" for 12 bpm 132
+native off
+pgm @flutes -1
+laser off
+@SWARM root 60 voices 16 dur 0.4 rdur 30
+bio "contrast block"
+end
+
+section F2 "Cut brass" for 8 bpm 144
+native off
+pgm @brass -74 -75 -10
+laser midixy src go size 0 prob 100 max 3 dur 0.08
+chord C3:0,1,2,3,4,5,6,7 pat X.x..x.. rate 1/16 ms 60 hold 1 oct 0|1|-1 div go,re voicing stack
+bio "contrast block"
+end
+
+section F3 "Cut reeds" for 12 bpm 60
+native off
+pgm @reeds @trem
+laser off
+@SWARM root 38 voices 14 dur 6 rdur 40
+bio "contrast block"
+end
+
+section F4 "Cut cloud" for 8 bpm 150
+native off
+pgm @cloud2 @mixtures
+laser off
+@SWARM root 72 voices 16 dur 0.5 rdur 50
+bio "contrast block"
+end
+
+section F5 "Cut soil / Perforation" for 10 bpm 120
+native off
+pgm @noise32 III.corDeNuit8
+laser midixy src pe size 60 prob 80 max 4 dur 1
+@SOIL
+@RESIDUE
+bio "F1–B1 pedal texture retained · C4–D5 cluster enters above it, then loses eight pitches"
+end
+
+section Z "Humus / Residue" for 20 bpm 120
+native off
+pgm @noise32 III.corDeNuit8 -10
+laser off
+@CLOUD
+@RESIDUE
+bio "32-foot cloud without Contrebombarde under the seven held pitches · no new cluster attack or terminal silence holes"
+end

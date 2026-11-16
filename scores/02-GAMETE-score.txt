@@ -1,0 +1,171 @@
+HYLON-SCORE 1
+# Apomixis 02 / GAMETE — Gameto / el grano. Candidate score from lab 10 IRIS. Seconds; MIDI C4=60.
+# Genre: iridescent hocket-chorale. One object (the gamete) seen from many angles; it never fuses.
+# OBJ  the object: two open layers a tritone apart (B–F# below, F–C–G above) around the minor second
+#      B3–C4 at the centre. It stays the same; only its angle (manual, octave, moment) changes.
+# Drift chords: B Phrygian (melancholy, C natural) against F Lydian (B natural). The two modes differ
+# by one semitone (F / F#): micro; their roots are a tritone apart: macro.
+# Roles: drift chords on I (3+3+2: X..x.x..), their complement on II (.xx.x.xx): together every
+# sixteenth sounds, no gaps. Satellites: the object in running hockets at double speed (1/32, odd
+# thirty-seconds only) on Manual III, never on the same tick as I–II: encounters that do not arrive.
+# Glints: hardcore techno at 150 BPM. 32' noise kick on every beat, diffuse FM clusters in 1/32,
+# the object as off-beat stab; white full-field laser flash on kick and stab.
+# The end turns to major chords (the Fell side), the Interference pedal comes back, and Manual IV is
+# kept silent for the super brass (Tuba magna 16, Tuba 8), heard only in Glint 4 and the re-exposition.
+# Programs 20–27 (eight, inside the ten of 02). Previous tonal draft: archive/scores/gamete/.
+id apomixis.gamete
+version 0.2.0-draft.1
+title "GAMETE"
+number gameto
+duration 282
+seed 2027
+audition-transpose 0
+
+voice $SO = so range 36 96
+voice $RE = re range 36 96
+voice $PO = po range 36 96
+voice $GO = go range 36 96
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "m2" "one object, many angles"
+harmonicity 282 "M3" ""
+
+# The object (fixed).
+set OBJ = B2,F#3,B3,C4,F4,C5,G5
+# B Phrygian angles: B minor with G above (bVI), E–B open fifth with G–A suspended.
+set PH1 = B2,F#3,B3,C4,G4,D5
+set PH2 = E3,B3,C4,G4,A4,E5
+# F Lydian angles: F–C–G fifths with B (#4); A–E open with F–G–D above.
+set LY1 = F2,C3,G3,B3,C4,E4,A4
+set LY2 = A2,E3,B3,C4,F4,G4,D5
+# Polytonal: Bb–F and B–F#–C# a semitone apart, the centre still B–C.
+set POLY = Bb2,F3,B3,C4,F#4,C#5
+# Major chords for the end: Bmaj9, Gmaj9, Fmaj7#11 and the IRIS film (Emaj9).
+set MJ1 = B2,F#3,C#4,D#4,A#4,F#5
+set MJ2 = G2,D3,A3,B3,F#4,D5
+set MJ3 = F2,C3,A3,E4,B4,G5
+set FILM = E3:0,7,14,16,21,23
+# The Interference pedal of IRIS, unchanged.
+set DEEP = D3:0,7,14,17,21,26
+# Registrations.
+set HITS = 25 42 58 27
+set DARK = 56 57
+set GLINT = 25 42 58 27 43 61 1 2 10
+set BRASS = 74 75
+
+section I "Film" for 36 bpm 132
+native off
+pgm @HITS
+laser off
+chord @PH1 | @LY1 pat X..x.x.. rate 1/16 ms 30 hold 4 div go
+chord @LY1 | @PH1 pat .xx.x.xx rate 1/16 ms 30 hold 4 div po
+chord @OBJ pat .................................................X.x.x.x.x.x.... rate 1/32 ms 30 hold 1 div re
+bio "Fell clarity · Phrygian on I, Lydian on II in a continuous interlock; one satellite burst per cycle on III"
+end
+
+section G1 "Glint 1" for 6 bpm 150
+native off
+pgm @GLINT
+laser flash src pe,re prob 100 dur 0.06 color 1,1,1 field 100 signal 100
+chord C1,G1 pat x... rate 1/16 ms 150 hold 1 div pe voicing stack
+chord FM:B4:1:1.5:4 | FM:C5:2:1.41:4 | FM:F4:3:1.7:4 pat xxXxxxXx rate 1/32 ms 25 hold 3 iris 1 prob 0.85 div go,po
+chord @OBJ pat ..X. rate 1/16 ms 40 hold 1 oct 0|1 div re voicing stack
+bio "techno glint · kick, diffuse FM pulses, the object as stab, white flash"
+end
+
+section II "Angle" for 44 bpm 132
+native off
+pgm @HITS @DARK
+laser off
+chord @PH1 | @PH2 | @LY1 | @LY2 pat X..x.x.. rate 1/16 ms 30->60 hold 4 morph 1 div go
+chord @LY2 | @LY1 | @PH2 | @PH1 pat .xx.x.xx rate 1/16 ms 30 hold 4 morph 1 div po
+chord @OBJ pat ...............X.x.x.x.x...................X.x.x.x.x.x.x........ rate 1/32 ms 30 hold 1 oct 0|1 div re shadow 45 sdiv re sms 90
+bio "the angles migrate tone by tone · two satellite bursts, the second an octave up, céleste shadow"
+end
+
+section G2 "Glint 2" for 8 bpm 150
+native off
+pgm @GLINT
+laser flash src pe,re prob 100 dur 0.06 color 1,1,1 field 100 signal 100
+chord C1,G1 pat x... rate 1/16 ms 150 hold 1 div pe voicing stack
+chord FM:B4:1:1.5:4 | FM:C5:2:1.41:4 | FM:F4:3:1.7:4 pat xxXxxxXx rate 1/32 ms 25 hold 3 iris 1 prob 0.85 div go,po
+chord @OBJ pat ..X. rate 1/16 ms 40 hold 1 oct 0|1 div re voicing stack
+bio "second techno glint"
+end
+
+section III "Interference" for 50 bpm 138
+native off
+pgm @HITS @DARK @pedalvoice
+laser off
+chord @PH1 | @LY2 | @POLY | @LY1 pat X..x.x.. rate 1/16 ms 40->100 hold 5|3|7|2 morph 0.5 div go
+chord @POLY | @LY1 | @PH1 | @LY2 pat .xx.x.xx rate 1/16 ms 40 hold 5|3|7|2 div po
+chord @OBJ pat .......X.x.x.x.............X.x.x.x.x.x.............X.x.x.x.x.x.. rate 1/32 ms 30 hold 1 oct 0|1|0|-1 div re
+chord @FILM | @DEEP pat x.....x.... rate 1/12 ms 60 hold 3 iris 2 tr 0|12 div re,pe
+bio "polytonal angles against three satellite bursts · the IRIS pedal sings at 8 feet"
+end
+
+section G3 "Glint 3" for 6 bpm 150
+native off
+pgm @GLINT
+laser flash src pe,re prob 100 dur 0.06 color 1,1,1 field 100 signal 100
+chord C1,G1 pat x... rate 1/16 ms 150 hold 1 div pe voicing stack
+chord FM:B4:1:1.5:4 | FM:C5:2:1.41:4 | FM:F4:3:1.7:4 pat xxXxxxXx rate 1/32 ms 25 hold 3 iris 1 prob 0.85 div go,po
+chord @OBJ pat ..X. rate 1/16 ms 40 hold 1 oct 0|1|0|-1 div re voicing stack
+bio "third techno glint"
+end
+
+section IV "Shadow" for 44 bpm 126
+native off
+exp3 0.1~0.5 7
+pgm 25 42 @DARK 69
+laser off
+chord @PH1 | @PH2 pat X..x.x.. rate 1/16 ms 30 hold 4 div go shadow 60->140 sdiv re sms 100->400
+chord @PH2 | @PH1 pat .xx.x.xx rate 1/16 ms 30 hold 4 div po
+chord @OBJ pat ...............................X.x.x.x.......................... rate 1/32 ms 30 hold 1 oct 1 div re
+bio "Phrygian melancholy · the shadow grows on III under a continuous interlock"
+end
+
+section V "Major" for 40 bpm 132
+native off
+pgm @HITS @DARK @pedalvoice 20 38 53
+laser off
+chord @MJ1 | @MJ2 | @MJ3 | @FILM pat X..x.x.. rate 1/16 ms 30 hold 4 div go
+chord @FILM | @MJ3 | @MJ2 | @MJ1 pat .xx.x.xx rate 1/16 ms 30 hold 4 div po
+chord @OBJ pat .........X.x.x.x.x.x.x.x.x.x.x...........X.x.x.x.x.x.x.x.x.x.x.. rate 1/32 ms 30 hold 1 oct 0|1 div re
+chord @FILM | @DEEP pat x.....x.... rate 1/12 ms 60 hold 3 iris 2 tr 0|12 div re,pe
+bio "the Fell side · major chords interlocked on I and II, long satellite hockets of the unresolved object; Interference pedal"
+end
+
+section G4 "Glint 4" for 8 bpm 150
+native off
+pgm @GLINT @BRASS
+laser flash src pe,so prob 100 dur 0.06 color 1,1,1 field 100 signal 100
+chord C1,G1 pat x... rate 1/16 ms 150 hold 1 div pe voicing stack
+chord FM:B4:1:1.5:4 | FM:C5:2:1.41:4 | FM:F4:3:1.7:4 pat xxXxxxXx rate 1/32 ms 25 hold 3 iris 1 prob 0.85 div go,po
+chord @OBJ pat ..X. rate 1/16 ms 90 hold 1 oct 0|1 div so voicing stack
+bio "Manual IV for the first time · the stab in Tuba magna 16 and Tuba 8"
+end
+
+section R "Re-exposition" for 28 bpm 132
+native off
+pgm @HITS @DARK @pedalvoice @BRASS
+laser flash src so prob 100 dur 0.05 color 1,1,1 field 100 signal 100
+chord @MJ1 | @FILM pat X..x.x.. rate 1/16 ms 30 hold 4 div go
+chord @FILM | @MJ1 pat .xx.x.xx rate 1/16 ms 30 hold 4 div po
+chord @OBJ pat .....X.x.x.x.x.x.x.x.x.x.x.x.........X.x.x.x.x.x.x.x.x.x.x.x.... rate 1/32 ms 60 hold 1 iris 1 div re,so
+chord @FILM | @DEEP pat x.....x.... rate 1/12 ms 60 hold 3 iris 2 tr 0|12 div re,pe
+bio "re-exposition · the film in major; the object's satellites shared between III and the IV brass, which flash"
+end
+
+section Z "Even film" for 12 bpm 132
+native off
+pgm @HITS
+laser off
+chord @PH1 | @LY1 pat x.x.x.x. rate 1/16 ms 30 hold 4 div go
+chord @LY1 | @PH1 pat .x.x.x.x rate 1/16 ms 30 hold 4 div po
+bio "coda · the opening chords of I and II at the opening tempo, now an even pulse: no syncopation, no satellites"
+end

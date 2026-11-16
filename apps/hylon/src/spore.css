@@ -1,3 +1,48 @@
 .spore-pod{padding:16px}.spore-heading{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.spore-heading h1{margin:4px 0}.spore-heading .badge{margin-left:auto}.spore-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:12px 0}.spore-controls .field{margin:0;min-width:80px}.spore-controls input[type=number]{width:110px}.spore-controls select{width:auto}.spore-metrics{display:flex;flex-wrap:wrap;gap:18px;font-size:10px;padding:10px 0;color:#b6ffcf}.spore-grid{display:grid;gap:8px;grid-template-columns:2fr 1fr;grid-template-rows:150px 320px 220px 200px;grid-template-areas:'macro macro' 'meso morph' 'micro harm' 'micro side'}.spore-figure{border:1px solid var(--line);background:#090f0c;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}.spore-figure h3{font-size:9px;letter-spacing:.08em;display:flex;justify-content:space-between;padding:9px;border-bottom:1px solid var(--line);color:#b6ffcf;flex:0 0 auto}.spore-figure canvas{display:block;width:100%;flex:1;min-height:0}.spore-figure.active{border-color:#618e70}.spore-macro{grid-area:macro}.spore-meso{grid-area:meso}.spore-morph{grid-area:morph}.spore-micro{grid-area:micro}.spore-harm{grid-area:harm}.spore-side{grid-area:side;overflow:auto}.spore-side pre{padding:10px;white-space:pre-wrap;line-height:1.6;color:#8fe3ff;font-size:10px;margin:0}.spore-harm canvas{touch-action:none;cursor:ns-resize}.spore-editor{margin:16px 0;border:1px solid var(--line);padding:10px}.spore-editor textarea{font:11px/1.65 ui-monospace,monospace;tab-size:2;height:360px;white-space:pre;overflow:auto;resize:vertical}.spore-score-status{overflow-wrap:anywhere}.spore-pod [hidden]{display:none!important}@media(max-width:1050px){.spore-grid{grid-template-columns:1fr;grid-template-rows:150px 320px 320px 240px 240px auto;grid-template-areas:'macro' 'meso' 'morph' 'micro' 'harm' 'side'}}@media(max-width:759px){.spore-pod{padding:12px}.spore-controls button{font-size:9px}.spore-metrics{gap:10px}.spore-grid{grid-template-rows:160px 300px 320px 220px 240px auto}.spore-heading .badge{margin-left:0}}
 
 .spore-output-buttons{display:flex;gap:4px;flex-wrap:wrap;border:1px solid var(--line);padding:4px}.spore-output-buttons button{font-size:10px}
+/* Primary graphs stay visible above generator controls. */
+.spore-overview{display:grid;gap:8px;grid-template-columns:2fr 1fr;grid-template-rows:150px 300px;grid-template-areas:'macro macro' 'meso morph';margin-bottom:12px}
+.spore-grid.spore-secondary{grid-template-columns:2fr 1fr;grid-template-rows:220px 200px;grid-template-areas:'micro harm' 'micro side';margin-top:12px}
+.spore-output-buttons{padding:0;border:0;gap:5px}.spore-controls{margin:8px 0}.spore-pod>.status{font-size:10px;margin:6px 0}
+.scene-metrics{flex:0 1 auto;min-width:220px;color:#b6ffcf;font-variant-numeric:tabular-nums;line-height:1.3}
+.scene-metrics-main{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:10px;row-gap:2px}
+.scene-metrics strong{font-size:18px;font-weight:650;letter-spacing:.015em;color:#d7ffe4;white-space:nowrap}
+.scene-metrics [data-population]{font-size:9px;white-space:nowrap}.scene-metrics small{display:block;font-size:8px;color:#7c9485;margin-top:3px}
+.masthead{column-gap:12px;flex-wrap:wrap;height:auto;min-height:72px;padding-top:8px;padding-bottom:8px}
+@media(max-width:1050px){.spore-overview{grid-template-columns:1fr;grid-template-rows:150px 280px 280px;grid-template-areas:'macro' 'meso' 'morph'}.spore-grid.spore-secondary{grid-template-columns:1fr;grid-template-rows:300px 240px auto;grid-template-areas:'micro' 'harm' 'side'}}
+@media(max-width:759px){.scene-metrics{min-width:190px}.scene-metrics strong{font-size:16px}.scene-metrics [data-population]{font-size:8px}}
+.spore-subheader{display:flex;align-items:center;flex-wrap:nowrap;gap:7px;overflow-x:auto;overflow-y:hidden;padding:6px 0;margin:6px 0 10px;white-space:nowrap;border-bottom:1px solid var(--line);scrollbar-width:thin}
+.spore-subheader>*{flex:0 0 auto}.spore-subheader .field{display:flex;flex-direction:row;align-items:center;gap:4px;margin:0;min-width:0;font-size:9px}.spore-subheader input,.spore-subheader select{min-height:26px;padding:3px 5px;font-size:10px;width:auto}.spore-subheader [data-seed]{width:10ch}.spore-subheader [data-seek]{width:7ch}.spore-subheader input[type=range]{width:75px;padding:0}.spore-subheader select{max-width:110px}.spore-subheader button:not(.route-button){width:26px;min-height:26px;height:26px;padding:0;font-size:12px}.spore-subheader .spore-output-buttons{display:flex;flex-wrap:nowrap}.spore-subheader output{font-size:9px;max-width:130px;overflow:hidden;text-overflow:ellipsis}.spore-subheader [data-status]{font-size:9px;line-height:1.3;margin:0;padding:0;border:0;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Score control order: routes + manual controls, macro, micro, meso/morphology. */
+.spore-overview{grid-template-columns:2fr 1fr;grid-template-rows:230px 220px 300px;grid-template-areas:'macro macro' 'micro micro' 'meso morph';margin-bottom:8px}
+.spore-grid.spore-secondary{grid-template-columns:1fr 1fr;grid-template-rows:210px;grid-template-areas:'harm side';margin-top:8px}
+.spore-macro{position:relative}.spore-macro>h3{position:absolute;bottom:2px;left:8px;z-index:1;margin:0;padding:0;border:0;font-size:8px;line-height:11px;pointer-events:none;color:#8da997}.spore-macro>canvas{width:100%;height:100%;flex:1}
+.spore-subheader{display:block;padding:4px 0;margin:0 0 7px;overflow-x:auto;overflow-y:hidden;max-width:100%;white-space:normal}
+.spore-subheader-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px 7px;width:100%;box-sizing:border-box}.spore-subheader-controls>*{flex:0 0 auto;white-space:nowrap}.spore-subheader-controls .spore-output-buttons{order:-1}
+@media(max-width:759px){.spore-overview{grid-template-columns:1fr 1fr;grid-template-rows:230px 200px 260px;grid-template-areas:'macro macro' 'micro micro' 'meso morph'}.spore-grid.spore-secondary{grid-template-columns:1fr;grid-template-rows:200px auto;grid-template-areas:'harm' 'side'}}
+.score-fast-line{flex:0 0 100%;width:100%;min-width:0;display:flex;align-items:center;padding:0;margin-top:2px}.score-fast-buttons{display:flex;align-items:center;gap:4px;flex:0 0 auto}.score-fast-buttons .score-fast-button{width:32px;height:27px;min-height:27px;min-width:32px;flex:0 0 auto;padding:0;font-size:9px;letter-spacing:.02em;background:transparent}.score-fast-buttons .score-fast-button.active{color:var(--green);border-color:#618e70;background:#b6ffcf0b}.score-sub select[data-score-file]{display:none!important}.score-sub .score-init-picker{flex:0 0 auto;width:auto;max-width:90px;min-width:32px;min-height:22px;padding:2px 4px;font-size:9px}.score-sub .score-fast-button{width:28px;min-width:28px;height:22px;min-height:22px;font-size:8px}
+/* Two structural header rows only: commands, then quick score loading. */
+.masthead{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;gap:4px;padding-top:6px;padding-bottom:6px;min-width:0}
+.header-main-row{display:flex;align-items:center;flex-wrap:nowrap;gap:10px;min-width:0;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}.header-main-row>*{flex-shrink:0}.header-main-row .scene-metrics-main{flex-wrap:nowrap}.masthead>.score-fast-line{margin:0;min-height:27px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scrollbar-width:thin}.header-main-row .reg-header-counter{position:sticky;right:0;z-index:2;background:#070909;padding-left:5px}
+
+.micro-zoom{display:inline-flex;gap:2px;margin-left:auto}.micro-zoom button{width:18px;height:16px;min-width:0;padding:0;border:0;background:transparent;color:#80948a;font:11px ui-monospace,monospace}.micro-zoom button:hover{color:#b6ffcf}.micro-zoom button:disabled{opacity:.25}
+
+/* Score buttons: the nine pieces of APOMIXIS in their own hue, lab scores (10+) neutral after a gap. */
+.score-fast-button.piece{color:var(--piece);border-color:transparent;border-bottom:2px solid var(--piece);background:var(--piece-soft)}
+.score-fast-button.piece:hover{border-color:var(--piece)}
+.score-fast-button.piece.active{color:#07100b!important;background:var(--piece)!important;border-color:var(--piece)!important;font-weight:700}
+.score-fast-button.lab{color:#6f8478;border-style:dashed}
+.score-fast-button.lab.first-lab{margin-left:12px}
+
+/* LIVE: biological vector over the generation timeline (top of the SPORE pod). */
+.spore-live{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;padding:6px 8px}
+.spore-vector{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font:10px ui-monospace,SFMono-Regular,Menlo,monospace}
+.spore-vector h3{margin:0;font-size:9px;letter-spacing:.1em;color:var(--muted)}
+.spore-vector label{display:inline-flex;align-items:center;gap:5px;margin:0}
+.spore-vector label span{font-size:13px;color:#b6ffcf;min-width:10px;text-align:center}
+.spore-vector input[type=range]{width:86px;min-height:0}
+.spore-vector output{min-width:36px;color:var(--muted)}.spore-vector output.moved{color:#ff9d3c;font-weight:700}
+.spore-vector button{min-height:22px;height:22px;padding:0 8px;font-size:10px}
+.spore-vector small{margin-left:auto;color:#8aa596;letter-spacing:.06em}
+.spore-live canvas{width:100%;height:150px;display:block}

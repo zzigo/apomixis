@@ -1,0 +1,74 @@
+HYLON-SCORE 1
+# Apomixis 06 / OOSPHERE — Oósfera. PLACEHOLDER: form only, no composed music yet.
+# ANTH IV · at most three human events · RE SO PE.
+# Five sections, durations and tempi from the archived tempo map (archive/supercollider/exports/
+# apomixis_tempo_nodes.csv, rounded to whole seconds). One registration for the whole piece, one soft
+# chord per bar and a pedal note, only so that every output, cue and pod has something to show.
+id apomixis.oosfera
+version 0.0.0-placeholder
+title "OOSPHERE"
+number oosfera
+duration 270
+seed 2036
+audition-transpose 0
+
+voice $SO = so range 36 84
+voice $RE = re range 36 84
+voice $PO = po range 36 84
+voice $GO = go range 36 84
+voice $PE = pe range 24 55
+fertility $SO 0 end
+fertility $RE 0 end
+fertility $PO 0 end
+fertility $GO 0 end
+fertility $PE 0 end
+harmonicity 0 "P5" "placeholder"
+harmonicity 270 "P5" ""
+
+set REG = III.voixCeleste8 73 P.soubasse16
+set MARK = chord F3:0,5,10 pat x............... rate 1/16 ms 1200 hold 1 iris 1 div re,so
+
+section I "Introduction" for 43 bpm 42
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 29
+bio "placeholder · piece reset"
+end
+
+section R "Replication" for 92 bpm 56
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 29
+bio "placeholder · 4:3 activation"
+end
+
+section B "Bridge" for 38 bpm 42
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 29
+bio "placeholder · 3:4 hollowing"
+end
+
+section C "Climax" for 59 bpm 70
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 29
+bio "placeholder · 5:3 ignition"
+end
+
+section O "Coda" for 38 bpm 49
+native off
+pgm @REG
+laser off
+@MARK
+pedal drone 29
+bio "placeholder · 7:10 seal"
+end
